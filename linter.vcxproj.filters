@@ -16,6 +16,15 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav</Extensions>
     </Filter>
+    <Filter Include="Source Files\notepad">
+      <UniqueIdentifier>{bb266a58-166d-40aa-bded-c7c712afdf5c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\notepad\DockingFeature">
+      <UniqueIdentifier>{2fe37eee-18ba-4d0c-909c-87db8ba36769}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\notepad\DockingFeature">
+      <UniqueIdentifier>{3cb54f12-86ac-45cf-ac8a-89baf9a2ae51}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="encoding.cpp">
@@ -44,6 +53,12 @@
     </ClCompile>
     <ClCompile Include="HandleWrapper.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="OutputDialog.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="notepad\DockingFeature\StaticDialog.cpp">
+      <Filter>Source Files\notepad\DockingFeature</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -92,10 +107,22 @@
     <ClInclude Include="HandleWrapper.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="OutputDialog.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="notepad\DockingFeature\StaticDialog.h">
+      <Filter>Header Files\notepad\DockingFeature</Filter>
+    </ClInclude>
+    <ClInclude Include="notepad\DockingFeature\DockingDlgInterface.h">
+      <Filter>Header Files\notepad\DockingFeature</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Resource.rc">
       <Filter>Resource Files</Filter>
     </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="cpp.hint" />
   </ItemGroup>
 </Project>

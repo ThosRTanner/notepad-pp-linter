@@ -10,84 +10,89 @@
 #include <vector>
 #include <map>
 
-bool isReady = false;
-bool isChanged = true;
-bool isBufferChanged = false;
-
-HANDLE timer(0);
-HANDLE threadHandle(0);
-
-std::vector<XmlParser::Error> errors;
-std::map<LRESULT, std::wstring> errorText;
-XmlParser::Settings settings;
-
-void ClearErrors()
+namespace
 {
-    LRESULT length = SendEditor(SCI_GETLENGTH);
-    ShowError(0, length, false);
-    SendEditor(SCI_ANNOTATIONCLEARALL);
-}
 
-void InitErrors()
-{
-    SendEditor(SCI_INDICSETSTYLE, SCE_SQUIGGLE_UNDERLINE_RED, INDIC_BOX);    // INDIC_SQUIGGLE);
-    SendEditor(SCI_INDICSETFORE, SCE_SQUIGGLE_UNDERLINE_RED, 0x0000ff);
+    bool isReady = false;
+    bool isChanged = true;
+    bool isBufferChanged = false;
 
-    if (!settings.m_linters.empty() && (settings.m_alpha != -1 || settings.m_color != -1))
+    HANDLE timer(0);
+    HANDLE threadHandle(0);
+
+    std::vector<XmlParser::Error> errors;
+    std::map<LRESULT, std::wstring> errorText;
+    XmlParser::Settings settings;
+
+    void ClearErrors()
     {
-        SendEditor(SCI_INDICSETSTYLE, SCE_SQUIGGLE_UNDERLINE_RED, INDIC_ROUNDBOX);
+        LRESULT length = SendEditor(SCI_GETLENGTH);
+        ShowError(0, length, false);
+        SendEditor(SCI_ANNOTATIONCLEARALL);
+    }
 
-        if (settings.m_alpha != -1)
-        {
-            SendEditor(SCI_INDICSETALPHA, SCE_SQUIGGLE_UNDERLINE_RED, settings.m_alpha);
-        }
+    void InitErrors()
+    {
+        SendEditor(SCI_INDICSETSTYLE, SCE_SQUIGGLE_UNDERLINE_RED, INDIC_BOX);    // INDIC_SQUIGGLE);
+        SendEditor(SCI_INDICSETFORE, SCE_SQUIGGLE_UNDERLINE_RED, 0x0000ff);
 
-        if (settings.m_color != -1)
+        if (!settings.m_linters.empty() && (settings.m_alpha != -1 || settings.m_color != -1))
         {
-            SendEditor(SCI_INDICSETFORE, SCE_SQUIGGLE_UNDERLINE_RED, settings.m_color);
+            SendEditor(SCI_INDICSETSTYLE, SCE_SQUIGGLE_UNDERLINE_RED, INDIC_ROUNDBOX);
+
+            if (settings.m_alpha != -1)
+            {
+                SendEditor(SCI_INDICSETALPHA, SCE_SQUIGGLE_UNDERLINE_RED, settings.m_alpha);
+            }
+
+            if (settings.m_color != -1)
+            {
+                SendEditor(SCI_INDICSETFORE, SCE_SQUIGGLE_UNDERLINE_RED, settings.m_color);
+            }
         }
     }
-}
 
-std::wstring GetFilePart(unsigned int part)
-{
-    LPTSTR buff = new TCHAR[MAX_PATH + 1];
-    SendApp(part, MAX_PATH, (LPARAM)buff);
-    std::wstring text(buff);
-    delete[] buff;
-    return text;
-}
-
-void showTooltip(std::wstring message = std::wstring())
-{
-    const LRESULT position = SendEditor(SCI_GETCURRENTPOS);
-
-    HWND main = GetParent(getScintillaWindow());
-    HWND childHandle = FindWindowEx(main, NULL, L"msctls_statusbar32", NULL);
-
-    auto error = errorText.find(position);
-    if (error != errorText.end())
+    std::wstring GetFilePart(unsigned int part)
     {
-        SendMessage(childHandle, WM_SETTEXT, 0, reinterpret_cast<LPARAM>((std::wstring(L" - ") + error->second).c_str()));
-        //OutputDebugString(error->second.c_str());
+        LPTSTR buff = new TCHAR[MAX_PATH + 1];
+        SendApp(part, MAX_PATH, (LPARAM)buff);
+        std::wstring text(buff);
+        delete[] buff;
+        return text;
     }
-    else
+
+    void showTooltip(std::wstring message = std::wstring())
     {
-        wchar_t title[256] = {0};
-        SendMessage(childHandle, WM_GETTEXT, sizeof(title) / sizeof(title[0]) - 1, reinterpret_cast<LPARAM>(title));
+        const LRESULT position = SendEditor(SCI_GETCURRENTPOS);
 
-        std::wstring str(title);
-        if (message.empty() && str.find(L" - ") == 0)
+        HWND main = GetParent(getScintillaWindow());
+        HWND childHandle = FindWindowEx(main, NULL, L"msctls_statusbar32", NULL);
+
+        auto error = errorText.find(position);
+        if (error != errorText.end())
         {
-            message = L" - ";
+            SendMessage(childHandle, WM_SETTEXT, 0, reinterpret_cast<LPARAM>((std::wstring(L" - ") + error->second).c_str()));
+            //OutputDebugString(error->second.c_str());
         }
-
-        if (!message.empty())
+        else
         {
-            SendMessage(childHandle, WM_SETTEXT, 0, reinterpret_cast<LPARAM>(message.c_str()));
+            wchar_t title[256] = {0};
+            SendMessage(childHandle, WM_GETTEXT, sizeof(title) / sizeof(title[0]) - 1, reinterpret_cast<LPARAM>(title));
+
+            std::wstring str(title);
+            if (message.empty() && str.find(L" - ") == 0)
+            {
+                message = L" - ";
+            }
+
+            if (!message.empty())
+            {
+                SendMessage(childHandle, WM_SETTEXT, 0, reinterpret_cast<LPARAM>(message.c_str()));
+            }
         }
     }
-}
+
+}    // namespace
 
 unsigned int __stdcall AsyncCheck(void *)
 {
@@ -150,66 +155,70 @@ unsigned int __stdcall AsyncCheck(void *)
     return 0;
 }
 
-void DrawBoxes()
+namespace
 {
-    ClearErrors();
-    errorText.clear();
-    if (!errors.empty())
-    {
-        InitErrors();
-    }
 
-    for (const XmlParser::Error &error : errors)
+    void DrawBoxes()
     {
-        auto position = getPositionForLine(error.m_line - 1);
-        position += Encoding::utfOffset(getLineText(error.m_line - 1), error.m_column - 1);
-        errorText[position] = error.m_message;
-        ShowError(position, position + 1);
-    }
-}
-
-VOID CALLBACK RunThread(PVOID /*lpParam*/, BOOLEAN /*TimerOrWaitFired*/)
-{
-    if (threadHandle == 0)
-    {
-        for (const XmlParser::Linter &linter : settings.m_linters)
+        ClearErrors();
+        errorText.clear();
+        if (!errors.empty())
         {
-            if (GetFilePart(NPPM_GETEXTPART) == linter.m_extension)
+            InitErrors();
+        }
+
+        for (const XmlParser::Error &error : errors)
+        {
+            auto position = getPositionForLine(error.m_line - 1);
+            position += Encoding::utfOffset(getLineText(error.m_line - 1), error.m_column - 1);
+            errorText[position] = error.m_message;
+            ShowError(position, position + 1);
+        }
+    }
+
+    VOID CALLBACK RunThread(PVOID /*lpParam*/, BOOLEAN /*TimerOrWaitFired*/)
+    {
+        if (threadHandle == 0)
+        {
+            for (const XmlParser::Linter &linter : settings.m_linters)
             {
-                unsigned threadID(0);
-                threadHandle = (HANDLE)_beginthreadex(NULL, 0, &AsyncCheck, NULL, 0, &threadID);
-                isChanged = false;
-                break;
+                if (GetFilePart(NPPM_GETEXTPART) == linter.m_extension)
+                {
+                    unsigned threadID(0);
+                    threadHandle = (HANDLE)_beginthreadex(NULL, 0, &AsyncCheck, NULL, 0, &threadID);
+                    isChanged = false;
+                    break;
+                }
             }
         }
     }
-}
 
-void Check()
-{
-    if (isChanged)
+    void Check()
     {
-        (void)DeleteTimerQueueTimer(timers, timer, NULL);
-        CreateTimerQueueTimer(&timer, timers, (WAITORTIMERCALLBACK)RunThread, NULL, 300, 0, 0);
-    }
-}
-
-void initLinters()
-{
-    try
-    {
-        settings = XmlParser::getLinters(getIniFileName());
-        if (settings.m_linters.empty())
+        if (isChanged)
         {
-            showTooltip(L"Linter: Empty linters.xml.");
+            (void)DeleteTimerQueueTimer(timers, timer, NULL);
+            CreateTimerQueueTimer(&timer, timers, (WAITORTIMERCALLBACK)RunThread, NULL, 300, 0, 0);
         }
     }
-    catch (std::exception const &e)
+
+    void initLinters()
     {
-        std::string str(e.what());
-        showTooltip(L"Linter: " + std::wstring(str.begin(), str.end()));
+        try
+        {
+            settings = XmlParser::getLinters(getIniFileName());
+            if (settings.m_linters.empty())
+            {
+                showTooltip(L"Linter: Empty linters.xml.");
+            }
+        }
+        catch (std::exception const &e)
+        {
+            std::string str(e.what());
+            showTooltip(L"Linter: " + std::wstring(str.begin(), str.end()));
+        }
     }
-}
+}    // namespace
 
 extern "C" __declspec(dllexport) void beNotified(SCNotification *notifyCode)
 {
@@ -235,6 +244,7 @@ extern "C" __declspec(dllexport) void beNotified(SCNotification *notifyCode)
             }
         }
     }
+
     switch (notifyCode->nmhdr.code)
     {
         case NPPN_READY:

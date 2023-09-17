@@ -4,14 +4,13 @@
 #include <string>
 
 extern HANDLE timers;
-extern NppData nppData;
+//extern NppData nppData;
 
 static const int SCE_SQUIGGLE_UNDERLINE_RED = INDIC_CONTAINER + 2;
 
 void commandMenuCleanUp();
-void pluginInit(HANDLE hModule);
-void pluginCleanUp();
-void commandMenuInit();
+//void pluginInit(HANDLE hModule);
+//void pluginCleanUp();
 void initConfig();
 
 TCHAR *getIniFileName();

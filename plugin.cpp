@@ -2,19 +2,80 @@
 #include "plugin.h"
 #include "linter.h"
 
-#include "notepad/Scintilla.h"
+#include "OutputDialog.h"
 #include "XmlParser.h"
 
+#include "notepad/Scintilla.h"
+
+#include <memory>
 #include <string>
 
-const TCHAR PLUGIN_NAME[] = L"Linter";
-TCHAR iniFilePath[MAX_PATH];
-
-static const int FUNCTIONS_COUNT = 1;
-FuncItem funcItem[FUNCTIONS_COUNT];
-
-NppData nppData;
 HANDLE timers(0);
+
+namespace
+{
+    HANDLE module_handle;
+    const TCHAR PLUGIN_NAME[] = L"Linter";
+    TCHAR iniFilePath[MAX_PATH];
+
+    static const int FUNCTIONS_COUNT = 1;
+    FuncItem funcItem[FUNCTIONS_COUNT];
+
+    NppData nppData;
+
+    std::unique_ptr<Linter::OutputDialog> output_dialogue;
+
+    void pluginInit(HANDLE module)
+    {
+        module_handle = module;
+        timers = CreateTimerQueue();
+    }
+
+    void pluginCleanUp()
+    {
+    }
+
+    bool setCommand(size_t index, TCHAR *cmdName, PFUNCPLUGINCMD pFunc, ShortcutKey *sk, bool check0nInit)
+    {
+        if (index >= FUNCTIONS_COUNT)
+        {
+            return false;
+        }
+
+        if (!pFunc)
+        {
+            return false;
+        }
+
+        lstrcpy(funcItem[index]._itemName, cmdName);
+        funcItem[index]._pFunc = pFunc;
+        funcItem[index]._init2Check = check0nInit;
+        funcItem[index]._pShKey = sk;
+
+        return true;
+    }
+
+    void editConfig()
+    {
+        static bool called = false;
+        if (!called)
+        {
+            called = true;
+            return;
+        }
+        ::SendMessage(nppData._nppHandle, NPPM_DOOPEN, 0, (LPARAM)iniFilePath);
+        if (! output_dialogue)
+        {
+            output_dialogue.reset(new Linter::OutputDialog(nppData, module_handle));
+        }
+    }
+
+    void commandMenuInit()
+    {
+        setCommand(0, bstr_t(L"Edit config"), editConfig, NULL, false);
+    }
+
+}    // namespace
 
 BOOL APIENTRY DllMain(HANDLE hModule, DWORD reasonForCall, LPVOID /*lpReserved*/)
 {
@@ -66,15 +127,6 @@ extern "C" __declspec(dllexport) BOOL isUnicode()
     return TRUE;
 }
 
-void pluginInit(HANDLE /*hModule*/)
-{
-    timers = CreateTimerQueue();
-}
-
-void pluginCleanUp()
-{
-}
-
 TCHAR *getIniFileName()
 {
     return iniFilePath;
@@ -88,36 +140,6 @@ void initConfig()
         ::CreateDirectory(iniFilePath, NULL);
     }
     PathAppend(iniFilePath, L"linter.xml");
-}
-
-void editConfig()
-{
-    ::SendMessage(nppData._nppHandle, NPPM_DOOPEN, 0, (LPARAM)iniFilePath);
-}
-
-bool setCommand(size_t index, TCHAR *cmdName, PFUNCPLUGINCMD pFunc, ShortcutKey *sk, bool check0nInit)
-{
-    if (index >= FUNCTIONS_COUNT)
-    {
-        return false;
-    }
-
-    if (!pFunc)
-    {
-        return false;
-    }
-
-    lstrcpy(funcItem[index]._itemName, cmdName);
-    funcItem[index]._pFunc = pFunc;
-    funcItem[index]._init2Check = check0nInit;
-    funcItem[index]._pShKey = sk;
-
-    return true;
-}
-
-void commandMenuInit()
-{
-    setCommand(0, bstr_t(L"Edit config"), editConfig, NULL, false);
 }
 
 void commandMenuCleanUp()

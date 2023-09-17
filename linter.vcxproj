@@ -176,6 +176,13 @@
     <ClCompile Include="file.cpp" />
     <ClCompile Include="HandleWrapper.cpp" />
     <ClCompile Include="linter.cpp" />
+    <ClCompile Include="notepad\DockingFeature\StaticDialog.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="OutputDialog.cpp" />
     <ClCompile Include="plugin.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
@@ -192,10 +199,13 @@
     <ClInclude Include="file.h" />
     <ClInclude Include="HandleWrapper.h" />
     <ClInclude Include="linter.h" />
+    <ClInclude Include="notepad\DockingFeature\DockingDlgInterface.h" />
+    <ClInclude Include="notepad\DockingFeature\StaticDialog.h" />
     <ClInclude Include="notepad\menuCmdID.h" />
     <ClInclude Include="notepad\Notepad_plus_msgs.h" />
     <ClInclude Include="notepad\PluginInterface.h" />
     <ClInclude Include="notepad\Scintilla.h" />
+    <ClInclude Include="OutputDialog.h" />
     <ClInclude Include="plugin.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="stdafx.h" />
