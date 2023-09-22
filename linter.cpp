@@ -2,6 +2,7 @@
 #include "linter.h"
 
 #include "plugin.h"
+#include "OutputDialog.h"
 #include "XmlParser.h"
 #include "encoding.h"
 #include "file.h"
@@ -125,6 +126,7 @@ unsigned int __stdcall AsyncCheck(void *)
             catch (std::exception const &e)
             {
                 std::string const str{e.what()};
+                output_dialogue->add_error(str);
                 showTooltip(L"Linter: Temp file write error:" + std::wstring(str.begin(), str.end()));
                 return 0;
             }
@@ -147,6 +149,7 @@ unsigned int __stdcall AsyncCheck(void *)
             catch (std::exception const &e)
             {
                 std::string str(e.what());
+                output_dialogue->add_error(str);
                 showTooltip(L"Linter: " + std::wstring(str.begin(), str.end()));
             }
         }

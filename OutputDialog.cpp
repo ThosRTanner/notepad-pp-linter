@@ -38,11 +38,15 @@ namespace Linter
 
     ////////////////////////////////////////////////////////////////////////////////
 
-    OutputDialog::OutputDialog(NppData const &npp_data, HANDLE module_handle) : DockingDlgInterface(IDD_OUTPUT), npp_data_(npp_data)
+    //Note: we do actually initialise tab window during the construction, but it's done
+    //in a callback from create...
+    OutputDialog::OutputDialog(NppData const &npp_data, HANDLE module_handle, int dlg_num)
+        : DockingDlgInterface(IDD_OUTPUT), npp_data_(npp_data), tab_window_()
     {
         init(static_cast<HINSTANCE>(module_handle), npp_data._nppHandle);
 
-        tTbData data = {0};
+        tTbData data{};
+
         create(&data);
         // define the default docking behaviour
         data.uMask = DWS_DF_CONT_BOTTOM | DWS_ICONTAB;
@@ -52,7 +56,7 @@ namespace Linter
         //data.hIconTab = GetTabIcon();
 
         //The dialogue ID is the function that caused this dialogue to be displayed.
-        //data.dlgID = FUNC_INDEX_SHOW_LINTS;
+        data.dlgID = dlg_num;
 
         ::SendMessage(npp_data._nppHandle, NPPM_DMMREGASDCKDLG, 0, reinterpret_cast<LPARAM>(&data));
 
@@ -60,6 +64,8 @@ namespace Linter
         {
             tab_views_[i] = 0;
         }
+
+        display(false);
     }
 
     OutputDialog::~OutputDialog()
@@ -76,6 +82,16 @@ namespace Linter
             //::SetFocus(::GetDlgItem(_hSelf, IDC_OUTPUT));
             ::SetFocus(tab_window_);
         }
+    }
+
+    void OutputDialog::clear_lint_info()
+    {
+        errors_.clear();
+    }
+
+    void OutputDialog::add_error(std::string const &err)
+    {
+        errors_.push_back(err);
     };
 
     INT_PTR CALLBACK OutputDialog::run_dlgProc(UINT message, WPARAM wParam, LPARAM lParam)
@@ -186,11 +202,12 @@ namespace Linter
                             selected_tab_changed();
                             return TRUE;
                         }
+#if __cplusplus >= 201703L
                         [[fallthrough]];
+#endif
 
                     default:
-                        DockingDlgInterface::run_dlgProc(message, wParam, lParam);
-                        return FALSE;
+                        return DockingDlgInterface::run_dlgProc(message, wParam, lParam);
                 }
             }
             break;
@@ -252,7 +269,8 @@ namespace Linter
 
             case WM_SIZE:
             case WM_MOVE:
-                //FIXME Resize currently does nothing.
+                //FIXME Resize currently does nothing. Maybe we should just default this
+                //and the next one.
                 resize();
                 break;
 

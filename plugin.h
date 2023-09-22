@@ -1,10 +1,18 @@
 #pragma once
 
 #include "notepad/PluginInterface.h"
+
+#include <memory>
 #include <string>
+
+namespace Linter
+{
+    class OutputDialog;
+}
 
 extern HANDLE timers;
 //extern NppData nppData;
+extern std::unique_ptr<Linter::OutputDialog> output_dialogue;
 
 static const int SCE_SQUIGGLE_UNDERLINE_RED = INDIC_CONTAINER + 2;
 

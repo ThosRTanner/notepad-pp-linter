@@ -12,18 +12,18 @@
 
 HANDLE timers(0);
 
+std::unique_ptr<Linter::OutputDialog> output_dialogue;
+
 namespace
 {
     HANDLE module_handle;
     const TCHAR PLUGIN_NAME[] = L"Linter";
     TCHAR iniFilePath[MAX_PATH];
 
-    static const int FUNCTIONS_COUNT = 1;
+    static const int FUNCTIONS_COUNT = 2;
     FuncItem funcItem[FUNCTIONS_COUNT];
 
     NppData nppData;
-
-    std::unique_ptr<Linter::OutputDialog> output_dialogue;
 
     void pluginInit(HANDLE module)
     {
@@ -64,15 +64,18 @@ namespace
             return;
         }
         ::SendMessage(nppData._nppHandle, NPPM_DOOPEN, 0, (LPARAM)iniFilePath);
-        if (! output_dialogue)
-        {
-            output_dialogue.reset(new Linter::OutputDialog(nppData, module_handle));
-        }
+    }
+
+    void show_results()
+    {
+        output_dialogue->display();
     }
 
     void commandMenuInit()
     {
         setCommand(0, bstr_t(L"Edit config"), editConfig, NULL, false);
+        setCommand(1, bstr_t(L"Show linter results"), show_results, NULL, false);
+        output_dialogue.reset(new Linter::OutputDialog(nppData, module_handle, 1));
     }
 
 }    // namespace
@@ -102,8 +105,8 @@ BOOL APIENTRY DllMain(HANDLE hModule, DWORD reasonForCall, LPVOID /*lpReserved*/
 extern "C" __declspec(dllexport) void setInfo(NppData notpadPlusData)
 {
     nppData = notpadPlusData;
-    commandMenuInit();
     initConfig();
+    commandMenuInit();
 }
 
 extern "C" __declspec(dllexport) const TCHAR *getName()

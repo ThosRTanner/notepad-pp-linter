@@ -1,6 +1,9 @@
 #pragma once
 #include "Notepad/DockingFeature/DockingDlgInterface.h"
 
+#include <string>
+#include <vector>
+
 struct NppData;
 
 namespace Linter
@@ -9,10 +12,16 @@ namespace Linter
     class OutputDialog : public DockingDlgInterface
     {
       public:
-        OutputDialog(NppData const &, HANDLE module);
+        OutputDialog(NppData const &, HANDLE module, int dlg_num);
         ~OutputDialog();
 
-        void display(bool toShow) const override;
+        void display(bool toShow = true) const override;
+
+        /** Clears all linting information */
+        void clear_lint_info();
+
+        /** Add a system error to the list */
+        void add_error(std::string const &);
 
         /*
         HICON GetTabIcon();
@@ -25,7 +34,7 @@ namespace Linter
       protected:
         INT_PTR CALLBACK run_dlgProc(UINT message, WPARAM wParam, LPARAM lParam) override;
 
-        void on_toolbar_cmd(UINT message);
+        void on_toolbar_cmd(UINT message); //If we actually implement any...
         //void OnToolbarDropDown(LPNMTOOLBAR lpnmtb);
 
       private:
@@ -61,6 +70,8 @@ namespace Linter
         };
         std::vector<FileLint> m_fileLints[NUM_TABS];
         */
+
+        std::vector<std::string> errors_;
 
         void initialise_tab();
         void initialise_list_view(int tab);
