@@ -35,7 +35,7 @@ namespace
     {
     }
 
-    bool setCommand(size_t index, TCHAR *cmdName, PFUNCPLUGINCMD pFunc, ShortcutKey *sk, bool check0nInit)
+    bool setCommand(size_t index, wchar_t const *cmdName, PFUNCPLUGINCMD pFunc, ShortcutKey *sk, bool checkOnInit)
     {
         if (index >= FUNCTIONS_COUNT)
         {
@@ -49,7 +49,7 @@ namespace
 
         lstrcpy(funcItem[index]._itemName, cmdName);
         funcItem[index]._pFunc = pFunc;
-        funcItem[index]._init2Check = check0nInit;
+        funcItem[index]._init2Check = checkOnInit;
         funcItem[index]._pShKey = sk;
 
         return true;
@@ -57,12 +57,6 @@ namespace
 
     void editConfig()
     {
-        static bool called = false;
-        if (!called)
-        {
-            called = true;
-            return;
-        }
         ::SendMessage(nppData._nppHandle, NPPM_DOOPEN, 0, (LPARAM)iniFilePath);
     }
 
@@ -73,8 +67,8 @@ namespace
 
     void commandMenuInit()
     {
-        setCommand(0, bstr_t(L"Edit config"), editConfig, NULL, false);
-        setCommand(1, bstr_t(L"Show linter results"), show_results, NULL, false);
+        setCommand(0, L"Edit config", editConfig, NULL, false);
+        setCommand(1, L"Show linter results", show_results, NULL, false);
         output_dialogue.reset(new Linter::OutputDialog(nppData, module_handle, 1));
     }
 
@@ -173,26 +167,26 @@ LRESULT SendApp(UINT Msg, WPARAM wParam, LPARAM lParam)
 
 std::string getDocumentText()
 {
-    LRESULT lengthDoc = SendEditor(SCI_GETLENGTH) + 1;
-
-    char *buff = new char[lengthDoc];
-    SendEditor(SCI_GETTEXT, lengthDoc, (LPARAM)buff);
-    std::string text(buff, lengthDoc);
-    text = text.c_str();
-    delete[] buff;
-    return text;
+    LRESULT lengthDoc = SendEditor(SCI_GETLENGTH);
+#if __cplusplus >= 202002L
+    auto buff = std::make_unique_for_overwrite<char[]>(lengthDoc + 1);
+#else
+    auto buff = std::unique_ptr<char[]>{new char[lengthDoc + 1]};
+#endif
+    SendEditor(SCI_GETTEXT, lengthDoc, reinterpret_cast<LPARAM>(buff.get()));
+    return std::string(buff.get(), lengthDoc);
 }
 
 std::string getLineText(int line)
 {
     LRESULT length = SendEditor(SCI_LINELENGTH, line);
-
-    char *buff = new char[length + 1];
-    SendEditor(SCI_GETLINE, line, (LPARAM)buff);
-    std::string text(buff, length);
-    text = text.c_str();
-    delete[] buff;
-    return text;
+#if __cplusplus >= 202002L
+    auto buff = std::make_unique_for_overwrite<char[]>(length + 1);
+#else
+    auto buff = std::unique_ptr < char[]>{new char[length + 1] };
+#endif
+    SendEditor(SCI_GETLINE, line, reinterpret_cast<LPARAM>(buff.get()));
+    return std::string(buff.get(), length);
 }
 
 LRESULT getPositionForLine(int line)

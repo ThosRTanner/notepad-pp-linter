@@ -65,6 +65,8 @@ namespace Linter
             tab_views_[i] = 0;
         }
 
+        //FIXME I'm not sure why I need this. I don't want this to open automatically unless it
+        //was open when npp was last exited, but it seems to all the time.
         display(false);
     }
 
@@ -214,6 +216,7 @@ namespace Linter
 
             case WM_CONTEXTMENU:
             {
+                // Right click in docked window.
                 // build context menu
                 HMENU menu = ::CreatePopupMenu();
 
@@ -333,7 +336,7 @@ namespace Linter
         for (int i = 0; i < NUM_TABS; ++i)
         {
             //This const cast is in no way worrying.
-            tie.pszText = static_cast<LPTSTR>(const_cast<wchar_t *>(tab_definitions_[i].tab_name_));
+            tie.pszText = const_cast<wchar_t *>(tab_definitions_[i].tab_name_);
             TabCtrl_InsertItem(tab_window_, i, &tie);
         }
     }
@@ -350,7 +353,7 @@ namespace Linter
         int column = 0;
 
         lvc.iSubItem = 0;
-        lvc.pszText = TEXT("");
+        lvc.pszText = const_cast<wchar_t *>(L"");
         lvc.cx = 28;
         lvc.fmt = LVCFMT_RIGHT;
         ListView_InsertColumn(tab_views_[i], column, &lvc);
@@ -359,7 +362,7 @@ namespace Linter
         if (tab_definitions_[i].type_ == TabDefinition::SYSTEM_ERROR)
         {
             lvc.iSubItem = 1;
-            lvc.pszText = TEXT("Reason");
+            lvc.pszText = const_cast<wchar_t *>(L"Reason");
             lvc.cx = 500;
             lvc.fmt = LVCFMT_LEFT;
             ListView_InsertColumn(tab_views_[i], column, &lvc);
@@ -367,28 +370,28 @@ namespace Linter
         else
         {
             lvc.iSubItem = column;
-            lvc.pszText = TEXT("Reason");
+            lvc.pszText = const_cast<wchar_t *>(L"Reason");
             lvc.cx = 200;
             lvc.fmt = LVCFMT_LEFT;
             ListView_InsertColumn(tab_views_[i], column, &lvc);
 
             column += 1;
             lvc.iSubItem = column;
-            lvc.pszText = TEXT("File");
+            lvc.pszText = const_cast<wchar_t *>(L"File");
             lvc.cx = 200;
             lvc.fmt = LVCFMT_LEFT;
             ListView_InsertColumn(tab_views_[i], column, &lvc);
 
             column += 1;
             lvc.iSubItem = column;
-            lvc.pszText = TEXT("Line");
+            lvc.pszText = const_cast<wchar_t *>(L"Line");
             lvc.cx = 50;
             lvc.fmt = LVCFMT_RIGHT;
             ListView_InsertColumn(tab_views_[i], column, &lvc);
 
             column += 1;
             lvc.iSubItem = column;
-            lvc.pszText = TEXT("Column");
+            lvc.pszText = const_cast<wchar_t *>(L"Column");
             lvc.cx = 50;
             lvc.fmt = LVCFMT_RIGHT;
             ListView_InsertColumn(tab_views_[i], column, &lvc);
@@ -443,12 +446,12 @@ namespace Linter
     void OutputDialog::get_name_from_cmd(UINT resID, LPTSTR tip, UINT count)
     {
         // NOTE: On change, keep sure to change order of IDM_EX_... in toolBarIcons also
-        static LPTSTR szToolTip[] = {
-            TEXT("JSLint Current File"),
-            TEXT("JSLint All Files"),
-            TEXT("Go To Previous Lint"),
-            TEXT("Go To Next Lint"),
-            TEXT("JSLint Options"),
+        static wchar_t const * szToolTip[] = {
+            L"JSLint Current File",
+            L"JSLint All Files",
+            L"Go To Previous Lint",
+            L"Go To Next Lint",
+            L"JSLint Options",
         };
 
         //This is almost definitely wrong.

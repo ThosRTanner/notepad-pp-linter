@@ -28,7 +28,7 @@ namespace Linter
     {
         init();
 
-        BSTR bstrValue{(bstr_t(xml.c_str()))};
+        BSTR bstrValue{bstr_t(xml.c_str())};
 
         VARIANT_BOOL resultCode = FALSE;
         HRESULT hr = document_->loadXML(bstrValue, &resultCode);
