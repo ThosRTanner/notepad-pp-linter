@@ -100,6 +100,7 @@ unsigned int __stdcall AsyncCheck(void *)
     (void)CoInitialize(NULL);
 
     errors.clear();
+    output_dialogue->clear_lint_info();
 
     std::vector<std::pair<std::wstring, bool>> commands;
     bool useStdin = true;
@@ -112,46 +113,52 @@ unsigned int __stdcall AsyncCheck(void *)
         }
     }
 
-    if (!commands.empty())
+    if (commands.empty())
     {
-        const std::string &text = getDocumentText();
+        return 0;
+    }
 
-        File file(GetFilePart(NPPM_GETFILENAME), GetFilePart(NPPM_GETCURRENTDIRECTORY));
-        if (!useStdin)
+    const std::string &text = getDocumentText();
+
+    File file(GetFilePart(NPPM_GETFILENAME), GetFilePart(NPPM_GETCURRENTDIRECTORY));
+    if (!useStdin)
+    {
+        try
         {
-            try
-            {
-                file.write(text);
-            }
-            catch (std::exception const &e)
-            {
-                std::string const str{e.what()};
-                output_dialogue->add_error(str);
-                showTooltip(L"Linter: Temp file write error:" + std::wstring(str.begin(), str.end()));
-                return 0;
-            }
+            file.write(text);
         }
-
-        for (const auto &command : commands)
+        catch (std::exception const &e)
         {
-            //std::string xml = File::exec(L"C:\\Users\\deadem\\AppData\\Roaming\\npm\\jscs.cmd --reporter=checkstyle ", file);
-            try
+            std::string const str{e.what()};
+            std::wstring const wstr{str.begin(), str.end()};
+            output_dialogue->add_system_error(wstr);
+            showTooltip(L"Linter: Temp file write error:" + wstr);
+            return 0;
+        }
+    }
+
+    for (const auto &command : commands)
+    {
+        //std::string xml = File::exec(L"C:\\Users\\deadem\\AppData\\Roaming\\npm\\jscs.cmd --reporter=checkstyle ", file);
+        try
+        {
+            nonstd::optional<std::string> str;
+            if (command.second)
             {
-                nonstd::optional<std::string> str;
-                if (command.second)
-                {
-                    str = text;
-                }
-                std::string xml = file.exec(command.first, str);
-                std::vector<XmlParser::Error> parseError = XmlParser::getErrors(xml);
-                errors.insert(errors.end(), parseError.begin(), parseError.end());
+                str = text;
             }
-            catch (std::exception const &e)
-            {
-                std::string str(e.what());
-                output_dialogue->add_error(str);
-                showTooltip(L"Linter: " + std::wstring(str.begin(), str.end()));
-            }
+            std::string xml = file.exec(command.first, str);
+            std::vector<XmlParser::Error> parseError = XmlParser::getErrors(xml);
+            errors.insert(errors.end(), parseError.begin(), parseError.end());
+            //FIXME don't add the full command line, just the command name.
+            output_dialogue->add_lint_errors(command.first, parseError);
+        }
+        catch (std::exception const &e)
+        {
+            std::string const str(e.what());
+            std::wstring const wstr{str.begin(), str.end()};
+            output_dialogue->add_system_error(wstr);
+            showTooltip(L"Linter: " + wstr);
         }
     }
 

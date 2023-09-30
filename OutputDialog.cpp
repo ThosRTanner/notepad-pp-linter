@@ -1,10 +1,14 @@
 #include "stdafx.h"
 #include "OutputDialog.h"
+
 #include "resource.h"
 
 #include "notepad/PluginInterface.h"
 
 #include <CommCtrl.h>
+
+#include <algorithm>
+#include <sstream>
 
 namespace Linter
 {
@@ -30,10 +34,8 @@ namespace Linter
 */
     OutputDialog::TabDefinition OutputDialog::tab_definitions_[] = {
   //FIXME certain amount of redefinition here
-        {TEXT("System"),   IDC_TEXTOUT,      TabDefinition::SYSTEM_ERROR},
-        {TEXT("Errors"),   IDC_ERROR_LIST,   TabDefinition::LINT_ERROR  },
-        {TEXT("Warnings"), IDC_WARNING_LIST, TabDefinition::LINT_WARNING},
-        {TEXT("Info"),     IDC_INFO_LIST,    TabDefinition::LINT_INFO   }
+        {TEXT("System Errors"), IDC_LIST_OUTPUT,  TabDefinition::SYSTEM_ERROR},
+        {TEXT("Lint Errors"),   IDC_LIST_LINTS,   TabDefinition::LINT_ERROR  },
     };
 
     ////////////////////////////////////////////////////////////////////////////////
@@ -43,6 +45,8 @@ namespace Linter
     OutputDialog::OutputDialog(NppData const &npp_data, HANDLE module_handle, int dlg_num)
         : DockingDlgInterface(IDD_OUTPUT), npp_data_(npp_data), tab_window_()
     {
+        std::fill_n(&tab_views_[0], NUM_TABS, static_cast<HWND>(NULL));
+
         init(static_cast<HINSTANCE>(module_handle), npp_data._nppHandle);
 
         tTbData data{};
@@ -59,11 +63,6 @@ namespace Linter
         data.dlgID = dlg_num;
 
         ::SendMessage(npp_data._nppHandle, NPPM_DMMREGASDCKDLG, 0, reinterpret_cast<LPARAM>(&data));
-
-        for (int i = 0; i < NUM_TABS; ++i)
-        {
-            tab_views_[i] = 0;
-        }
 
         //FIXME I'm not sure why I need this. I don't want this to open automatically unless it
         //was open when npp was last exited, but it seems to all the time.
@@ -88,13 +87,100 @@ namespace Linter
 
     void OutputDialog::clear_lint_info()
     {
+        for (auto const &tab : tab_views_)
+        {
+            ListView_DeleteAllItems(tab);
+        }
+
         errors_.clear();
     }
 
-    void OutputDialog::add_error(std::string const &err)
+    void OutputDialog::add_system_error(std::wstring const &err)
     {
-        errors_.push_back(err);
-    };
+        std::vector<XmlParser::Error> errs;
+//C++20
+//        errs.push_back(XmlParser::Error(0, 0, err));
+        XmlParser::Error xerr;
+        xerr.m_line = 0;
+        xerr.m_column = 0;
+        xerr.m_message = err;
+        errs.push_back(xerr);
+        add_lint_errors(L"", errs);
+    }
+
+    void OutputDialog::add_lint_errors(const std::wstring &file, std::vector<XmlParser::Error> const &lints)
+    {
+        std::wstringstream stream;
+
+        LVITEM lvI;
+        lvI.mask = LVIF_TEXT | LVIF_STATE;
+
+        for (auto const &lint : lints)
+        {
+            auto const type = file.empty() ? 0 : 1; /*lint.GetType()*/
+            HWND hWndListView = tab_views_[type];
+
+            lvI.iSubItem = 0;
+            lvI.iItem = ListView_GetItemCount(hWndListView);
+            lvI.state = 0;
+            lvI.stateMask = 0;
+
+            stream.str(L"");
+            stream << lvI.iItem + 1;
+            std::wstring strNum = stream.str();
+            lvI.pszText = const_cast<wchar_t *>(strNum.c_str());
+            ListView_InsertItem(hWndListView, &lvI);
+
+            int column = 1;
+
+            ListView_SetItemText(hWndListView, lvI.iItem, column, const_cast<wchar_t *>(lint.m_message.c_str()));
+
+            column += 1;
+            std::wstring strFile = L"Not quite sure"; //Path::GetFileName(file);
+            ListView_SetItemText(hWndListView, lvI.iItem, column, const_cast<wchar_t *>(strFile.c_str()));
+
+            column += 1;
+            stream.str(L"");
+            stream << lint.m_line + 1;
+            std::wstring strLine = stream.str();
+            ListView_SetItemText(hWndListView, lvI.iItem, column, const_cast<wchar_t *>(strLine.c_str()));
+
+            column += 1;
+            stream.str(L"");
+            stream << lint.m_column + 1;
+            std::wstring strColumn = stream.str();
+            ListView_SetItemText(hWndListView, lvI.iItem, column, const_cast<wchar_t *>(strColumn.c_str()));
+
+            //m_fileLints[lint.GetType()].push_back(FileLint(file, lint));
+        }
+
+        for (int tab = 0; tab < NUM_TABS; ++tab)
+        {
+            std::wstring strTabName;
+            int count = ListView_GetItemCount(tab_views_[tab]);
+            if (count > 0)
+            {
+                stream.str(L"");
+                stream << tab_definitions_[tab].tab_name_ << L" (" << count << L")";
+                strTabName = stream.str();
+            }
+            else
+            {
+                strTabName = tab_definitions_[tab].tab_name_;
+            }
+            TCITEM tie;
+            tie.mask = TCIF_TEXT;
+            tie.pszText = const_cast<wchar_t *>(strTabName.c_str());
+            BOOL res = TabCtrl_SetItem(tab_window_, tab, &tie);
+            if (!res)
+            {
+                continue;
+            }
+            (void)res;
+        }
+
+        InvalidateRect(getHSelf(), NULL, TRUE);
+    }
 
     INT_PTR CALLBACK OutputDialog::run_dlgProc(UINT message, WPARAM wParam, LPARAM lParam)
     {
@@ -102,6 +188,7 @@ namespace Linter
         {
             case WM_INITDIALOG:
                 initialise_tab();
+                //This is wrong. we need to dynamically allocate these
                 for (int tab = 0; tab < NUM_TABS; tab += 1)
                 {
                     initialise_list_view(tab);
@@ -358,7 +445,7 @@ namespace Linter
         lvc.fmt = LVCFMT_RIGHT;
         ListView_InsertColumn(tab_views_[i], column, &lvc);
         column += 1;
-        
+
         if (tab_definitions_[i].type_ == TabDefinition::SYSTEM_ERROR)
         {
             lvc.iSubItem = 1;
@@ -418,9 +505,9 @@ namespace Linter
 
         TabCtrl_AdjustRect(tab_window_, FALSE, &rc);
         //InflateRect(&rc, -4, -4);
-        for (int i = 0; i < NUM_TABS; ++i)
+        for (auto const &tab : tab_views_)
         {
-            ::SetWindowPos(tab_views_[i], tab_window_, rc.left, rc.top, rc.right - rc.left, rc.bottom - rc.top, 0);
+            ::SetWindowPos(tab, tab_window_, rc.left, rc.top, rc.right - rc.left, rc.bottom - rc.top, 0);
         }
     }
 
@@ -446,7 +533,7 @@ namespace Linter
     void OutputDialog::get_name_from_cmd(UINT resID, LPTSTR tip, UINT count)
     {
         // NOTE: On change, keep sure to change order of IDM_EX_... in toolBarIcons also
-        static wchar_t const * szToolTip[] = {
+        static wchar_t const *szToolTip[] = {
             L"JSLint Current File",
             L"JSLint All Files",
             L"Go To Previous Lint",
@@ -458,6 +545,7 @@ namespace Linter
         wcscpy_s(tip, count, szToolTip[resID /* - IDM_TB_JSLINT_CURRENT_FILE*/]);
     }
 
+    /*
     void OutputDialog::clear_all_lints()
     {
         for (int i = 0; i < NUM_TABS; ++i)
@@ -465,87 +553,6 @@ namespace Linter
             //m_fileLints[tab].clear();
             ListView_DeleteAllItems(tab_views_[i]);
         }
-    }
-
-    /*
-    void OutputDialog::AddLints(const std::wstring &strFilePath, const std::list<JSLintReportItem> &lints)
-    {
-        std::basic_stringstream<TCHAR> stream;
-
-        LVITEM lvI;
-        lvI.mask = LVIF_TEXT | LVIF_STATE;
-
-        for (std::list<JSLintReportItem>::const_iterator it = lints.begin(); it != lints.end(); ++it)
-        {
-            const JSLintReportItem &lint = *it;
-
-            HWND hWndListView = tab_views_[lint.GetType()];
-
-            lvI.iSubItem = 0;
-            lvI.iItem = ListView_GetItemCount(hWndListView);
-            lvI.state = 0;
-            lvI.stateMask = 0;
-
-            stream.str(TEXT(""));
-            stream << lvI.iItem + 1;
-            std::wstring strNum = stream.str();
-
-            lvI.pszText = (LPTSTR)strNum.c_str();
-
-            ListView_InsertItem(hWndListView, &lvI);
-
-            int column = 1;
-
-            if (tab_definitions_[lint.GetType()].is_error_list_)
-            {
-                std::wstring strReason = lint.GetReason();
-                ListView_SetItemText(hWndListView, lvI.iItem, column++, (LPTSTR)strReason.c_str());
-            }
-            else
-            {
-                std::wstring strVariable = lint.GetReason();
-                ListView_SetItemText(hWndListView, lvI.iItem, column++, (LPTSTR)strVariable.c_str());
-                std::wstring strFunction = lint.GetEvidence();
-                ListView_SetItemText(hWndListView, lvI.iItem, column++, (LPTSTR)strFunction.c_str());
-            }
-
-            std::wstring strFile = Path::GetFileName(strFilePath);
-            ListView_SetItemText(hWndListView, lvI.iItem, column++, (LPTSTR)strFile.c_str());
-
-            stream.str(TEXT(""));
-            stream << lint.GetLine() + 1;
-            std::wstring strLine = stream.str();
-            ListView_SetItemText(hWndListView, lvI.iItem, column++, (LPTSTR)strLine.c_str());
-
-            stream.str(TEXT(""));
-            stream << lint.GetCharacter() + 1;
-            std::wstring strColumn = stream.str();
-            ListView_SetItemText(hWndListView, lvI.iItem, column++, (LPTSTR)strColumn.c_str());
-
-            m_fileLints[lint.GetType()].push_back(FileLint(strFilePath, lint));
-        }
-
-        for (int tab = 0; tab < NUM_TABS; ++tab)
-        {
-            std::wstring strTabName;
-            int count = ListView_GetItemCount(tab_views_[tab]);
-            if (count > 0)
-            {
-                stream.str(TEXT(""));
-                stream << tab_definitions_[tab].tab_name_ << TEXT(" (") << count << TEXT(")");
-                strTabName = stream.str();
-            }
-            else
-            {
-                strTabName = tab_definitions_[tab].tab_name_;
-            }
-            TCITEM tie;
-            tie.mask = TCIF_TEXT;
-            tie.pszText = (LPTSTR)strTabName.c_str();
-            TabCtrl_SetItem(tab_window_, tab, &tie);
-        }
-
-        InvalidateRect(getHSelf(), NULL, TRUE);
     }
     */
 
