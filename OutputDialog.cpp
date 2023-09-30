@@ -98,8 +98,6 @@ namespace Linter
     void OutputDialog::add_system_error(std::wstring const &err)
     {
         std::vector<XmlParser::Error> errs;
-//C++20
-//        errs.push_back(XmlParser::Error(0, 0, err));
         XmlParser::Error xerr;
         xerr.m_line = 0;
         xerr.m_column = 0;
@@ -182,6 +180,13 @@ namespace Linter
         InvalidateRect(getHSelf(), NULL, TRUE);
     }
 
+    /** This is a strange function defined by windows.
+     * 
+     * The return value is basically TRUE if you've handled it, FALSE otherwise. If we don't
+     * understand the message, we hand it onto the DockingDialogInterface.
+     *
+     * Some messages have special returns though.
+     */
     INT_PTR CALLBACK OutputDialog::run_dlgProc(UINT message, WPARAM wParam, LPARAM lParam)
     {
         switch (message)
@@ -194,7 +199,7 @@ namespace Linter
                     initialise_list_view(tab);
                 }
                 selected_tab_changed();
-                break;
+                return FALSE; //Do NOT focus onto this dialogue
 
             case WM_COMMAND:
             {
@@ -256,7 +261,7 @@ namespace Linter
                                 copy_to_clipboard();
                             }
                         }
-                        break;
+                        return TRUE;
 
                     case NM_DBLCLK:
                         if (notify_header->idFrom == tab_definitions_[TabCtrl_GetCurSel(tab_window_)].list_view_id_)
@@ -268,7 +273,7 @@ namespace Linter
                                 show_selected_lint(iFocused);
                             }
                         }
-                        break;
+                        return TRUE;
 
                     case TTN_GETDISPINFO:
                     {
@@ -289,14 +294,8 @@ namespace Linter
                         if (notify_header->idFrom == IDC_TABBAR)
                         {
                             selected_tab_changed();
-                            return TRUE;
                         }
-#if __cplusplus >= 201703L
-                        [[fallthrough]];
-#endif
-
-                    default:
-                        return DockingDlgInterface::run_dlgProc(message, wParam, lParam);
+                        return TRUE;
                 }
             }
             break;
@@ -354,26 +353,17 @@ namespace Linter
 
                 // show context menu
                 TrackPopupMenu(menu, 0, point.x, point.y, 0, _hSelf, NULL);
+                return TRUE;
             }
             break;
 
             case WM_SIZE:
-            case WM_MOVE:
-                //FIXME Resize currently does nothing. Maybe we should just default this
-                //and the next one.
                 resize();
-                break;
-
-            case WM_PAINT:
-                //FIXME Should we just drop through?
-                /*::RedrawWindow(m_toolbar.getHSelf(), NULL, NULL, TRUE);*/
-                break;
-
-            default:
-                return DockingDlgInterface::run_dlgProc(message, wParam, lParam);
+                return TRUE;
         }
 
-        return FALSE;
+        //Don't recognise the message. Base it to the base class
+        return DockingDlgInterface::run_dlgProc(message, wParam, lParam);
     }
 
     void OutputDialog::on_toolbar_cmd(UINT /* message*/)
@@ -490,21 +480,9 @@ namespace Linter
         RECT rc;
         getClientRect(rc);
 
-        //m_toolbar.reSizeTo(rc);
-        //m_rebar.reSizeTo(rc);
-        /* Not sure what is going on here as we don't have a toolbar
-    RECT rcToolbar;
-    GetWindowRect(m_toolbar.getHSelf(), &rcToolbar);
-
-	getClientRect(rc);
-    rc.top += rcToolbar.bottom - rcToolbar.top;
-	*/
-
-        //InflateRect(&rc, -4, -4);
         ::MoveWindow(tab_window_, rc.left, rc.top, rc.right - rc.left, rc.bottom - rc.top, TRUE);
 
         TabCtrl_AdjustRect(tab_window_, FALSE, &rc);
-        //InflateRect(&rc, -4, -4);
         for (auto const &tab : tab_views_)
         {
             ::SetWindowPos(tab, tab_window_, rc.left, rc.top, rc.right - rc.left, rc.bottom - rc.top, 0);
@@ -520,16 +498,6 @@ namespace Linter
         }
     }
 
-    /*HICON OutputDialog::GetTabIcon()
-    {
-        if (tab_icon_ == NULL)
-        {
-            tab_icon_ = (HICON)::LoadImage(
-                (HINSTANCE)g_hDllModule, MAKEINTRESOURCE(IDI_JSLINT_TAB), IMAGE_ICON, 0, 0, LR_LOADMAP3DCOLORS | LR_LOADTRANSPARENT);
-        }
-        return tab_icon_;
-    }*/
-
     void OutputDialog::get_name_from_cmd(UINT resID, LPTSTR tip, UINT count)
     {
         // NOTE: On change, keep sure to change order of IDM_EX_... in toolBarIcons also
@@ -544,18 +512,7 @@ namespace Linter
         //This is almost definitely wrong.
         wcscpy_s(tip, count, szToolTip[resID /* - IDM_TB_JSLINT_CURRENT_FILE*/]);
     }
-
-    /*
-    void OutputDialog::clear_all_lints()
-    {
-        for (int i = 0; i < NUM_TABS; ++i)
-        {
-            //m_fileLints[tab].clear();
-            ListView_DeleteAllItems(tab_views_[i]);
-        }
-    }
-    */
-
+    
     /*
     void OutputDialog::select_next_lint()
     {

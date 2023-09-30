@@ -33,8 +33,6 @@ namespace Linter
         void add_lint_errors(std::wstring const &file, std::vector<XmlParser::Error> const &lints);
 
         /*
-        HICON GetTabIcon();
-        void clear_all_lints();
         void select_next_lint();
         void select_previous_lint();
         *.
