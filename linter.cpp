@@ -190,16 +190,9 @@ namespace
     {
         if (threadHandle == 0)
         {
-            for (const XmlParser::Linter &linter : settings.m_linters)
-            {
-                if (GetFilePart(NPPM_GETEXTPART) == linter.m_extension)
-                {
-                    unsigned threadID(0);
-                    threadHandle = (HANDLE)_beginthreadex(NULL, 0, &AsyncCheck, NULL, 0, &threadID);
-                    isChanged = false;
-                    break;
-                }
-            }
+            unsigned threadID(0);
+            threadHandle = (HANDLE)_beginthreadex(NULL, 0, &AsyncCheck, NULL, 0, &threadID);
+            isChanged = false;
         }
     }
 

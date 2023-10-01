@@ -86,6 +86,8 @@ namespace Linter
         void initialise_list_view(int tab);
         void resize();
         void selected_tab_changed();
+        void update_displayed_counts();
+
         void get_name_from_cmd(UINT resID, LPTSTR tip, UINT count);
         void show_selected_lint(int i);
         void copy_to_clipboard();

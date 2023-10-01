@@ -139,7 +139,7 @@ namespace Linter
 
             ListView_SetItemText(list_view, lvI.iItem, COLUMN_MESSAGE, const_cast<wchar_t *>(lint.m_message.c_str()));
 
-            std::wstring strFile = L"Not quite sure"; //Path::GetFileName(file);
+            std::wstring strFile = L"Not quite sure";    //Path::GetFileName(file);
             ListView_SetItemText(list_view, lvI.iItem, COLUMN_TOOL, const_cast<wchar_t *>(strFile.c_str()));
 
             stream.str(L"");
@@ -155,31 +155,7 @@ namespace Linter
             //m_fileLints[lint.GetType()].push_back(FileLint(file, lint));
         }
 
-        for (int tab = 0; tab < NUM_TABS; ++tab)
-        {
-            std::wstring strTabName;
-            int count = ListView_GetItemCount(tab_views_[tab]);
-            if (count > 0)
-            {
-                stream.str(L"");
-                stream << tab_definitions_[tab].tab_name_ << L" (" << count << L")";
-                strTabName = stream.str();
-            }
-            else
-            {
-                strTabName = tab_definitions_[tab].tab_name_;
-            }
-            TCITEM tie;
-            tie.mask = TCIF_TEXT;
-            tie.pszText = const_cast<wchar_t *>(strTabName.c_str());
-            BOOL res = TabCtrl_SetItem(tab_window_, tab, &tie);
-            if (!res)
-            {
-                continue;
-            }
-            (void)res;
-        }
-
+        update_displayed_counts();
         InvalidateRect(getHSelf(), NULL, TRUE);
     }
 
@@ -426,7 +402,7 @@ namespace Linter
         auto const list_view = ::GetDlgItem(_hSelf, tab_definitions_[i].list_view_id_);
         list_views_[i] = list_view;
 
-        ListView_SetExtendedListViewStyle(tab_views_[i], LVS_EX_FULLROWSELECT);
+        ListView_SetExtendedListViewStyle(list_view, LVS_EX_FULLROWSELECT | LVS_EX_AUTOSIZECOLUMNS);
 
         LVCOLUMN lvc;
         lvc.mask = LVCF_FMT | LVCF_WIDTH | LVCF_TEXT | LVCF_SUBITEM;
@@ -438,28 +414,29 @@ namespace Linter
         ListView_InsertColumn(list_view, lvc.iSubItem, &lvc);
 
         lvc.iSubItem = COLUMN_MESSAGE;
-            lvc.pszText = const_cast<wchar_t *>(L"Reason");
-            lvc.cx = 500;
-            lvc.fmt = LVCFMT_LEFT;
+        lvc.pszText = const_cast<wchar_t *>(L"Reason");
+        lvc.cx = 500;
+        lvc.fmt = LVCFMT_LEFT;
         ListView_InsertColumn(list_view, lvc.iSubItem, &lvc);
 
         lvc.iSubItem = COLUMN_TOOL;
-            lvc.pszText = const_cast<wchar_t *>(L"File");
-            lvc.cx = 200;
-            lvc.fmt = LVCFMT_LEFT;
+        lvc.pszText = const_cast<wchar_t *>(L"File");
+        lvc.cx = 200;
+        lvc.fmt = LVCFMT_LEFT;
         ListView_InsertColumn(list_view, lvc.iSubItem, &lvc);
 
         lvc.iSubItem = COLUMN_LINE;
-            lvc.pszText = const_cast<wchar_t *>(L"Line");
-            lvc.cx = 50;
-            lvc.fmt = LVCFMT_RIGHT;
+        lvc.pszText = const_cast<wchar_t *>(L"Line");
+        lvc.cx = 50;
+        lvc.fmt = LVCFMT_RIGHT;
         ListView_InsertColumn(list_view, lvc.iSubItem, &lvc);
 
         lvc.iSubItem = COLUMN_POSITION;
-            lvc.pszText = const_cast<wchar_t *>(L"Column");
-            lvc.cx = 50;
-            lvc.fmt = LVCFMT_RIGHT;
+        lvc.pszText = const_cast<wchar_t *>(L"Column");
+        lvc.cx = 50;
+        lvc.fmt = LVCFMT_RIGHT;
         ListView_InsertColumn(list_view, lvc.iSubItem, &lvc);
+        ListView_SetColumnWidth(list_view, COLUMN_POSITION, LVSCW_AUTOSIZE_USEHEADER);
     }
 
     void OutputDialog::resize()
@@ -473,6 +450,7 @@ namespace Linter
         for (auto const &list_view : list_views_)
         {
             ::SetWindowPos(list_view, tab_window_, rc.left, rc.top, rc.right - rc.left, rc.bottom - rc.top, 0);
+            ListView_SetColumnWidth(list_view, COLUMN_MESSAGE, LVSCW_AUTOSIZE);
         }
     }
 
@@ -482,6 +460,30 @@ namespace Linter
         for (int i = 0; i < NUM_TABS; ++i)
         {
             ShowWindow(list_views_[i], iSel == i ? SW_SHOW : SW_HIDE);
+        }
+    }
+
+    void OutputDialog::update_displayed_counts()
+    {
+        std::wstringstream stream;
+        for (int tab = 0; tab < NUM_TABS; ++tab)
+        {
+            std::wstring strTabName;
+            int count = ListView_GetItemCount(list_views_[tab]);
+            if (count > 0)
+            {
+                stream.str(L"");
+                stream << tab_definitions_[tab].tab_name_ << L" (" << count << L")";
+                strTabName = stream.str();
+            }
+            else
+            {
+                strTabName = tab_definitions_[tab].tab_name_;
+            }
+            TCITEM tie;
+            tie.mask = TCIF_TEXT;
+            tie.pszText = const_cast<wchar_t *>(strTabName.c_str());
+            TabCtrl_SetItem(tab_window_, tab, &tie);
         }
     }
 
