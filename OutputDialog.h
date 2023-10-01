@@ -49,7 +49,7 @@ namespace Linter
         HWND tab_window_;
 
         static const int NUM_TABS = 2;
-        HWND tab_views_[NUM_TABS];
+        HWND list_views_[NUM_TABS];
 
         struct TabDefinition
         {
