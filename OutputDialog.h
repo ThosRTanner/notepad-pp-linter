@@ -3,6 +3,7 @@
 #include "XmlParser.h"
 #include "Notepad/DockingFeature/DockingDlgInterface.h"
 
+#include <array>
 #include <string>
 #include <vector>
 #include <unordered_map>
@@ -29,10 +30,10 @@ namespace Linter
         void clear_lint_info();
 
         /** Add an error to the system error list */
-        void add_system_error(std::wstring const &);
+        void add_system_error(XmlParser::Error const &);
 
         /** Add a list of lint errors to the lint error list */
-        void add_lint_errors(std::wstring const &file, std::vector<XmlParser::Error> const &lints);
+        void add_lint_errors(std::vector<XmlParser::Error> const &lints);
 
         /*
         void select_next_lint();
@@ -46,11 +47,15 @@ namespace Linter
         //void OnToolbarDropDown(LPNMTOOLBAR lpnmtb);
 
       private:
+        //FIXME Why aren't tab_definitions_ and list_views_ merged?
+        enum
+        {
+            NUM_TABS = 2
+        };
+
         NppData const &npp_data_;
         HWND tab_window_;
-
-        static const int NUM_TABS = 2;
-        HWND list_views_[NUM_TABS];
+        std::array<HWND, NUM_TABS> list_views_;
 
         struct TabDefinition
         {
@@ -62,26 +67,12 @@ namespace Linter
                 LINT_ERROR,
             } type_;
         };
-        static TabDefinition tab_definitions_[NUM_TABS];
+        static std::array<TabDefinition, NUM_TABS> tab_definitions_;
 
-        /*
-        struct FileLint
-        {
-            FileLint(const std::wstring &strFilePath, const JSLintReportItem &lint) : strFilePath(strFilePath), lint(lint)
-            {
-            }
-            std::wstring strFilePath;
-            JSLintReportItem lint;
-        };
-        std::vector<FileLint> m_fileLints[NUM_TABS];
-        */
+        std::array<std::vector<XmlParser::Error>, NUM_TABS> errors_;
+        //std::unordered_map<std::wstring, std::vector<XmlParser::Error>> errors_;
 
-        // Collection of lint errors by generating program. Not sure whether this is useful,
-        //given you're linting the same file. Maybe it should just be system errors/linter errors.
-        //This would require to report program, line, col and string. currently we only have
-        //the entire program which would make this look VERY long.
-        //Also it'd make the list above need to be dynamic.
-        std::unordered_map<std::wstring, std::vector<XmlParser::Error>> errors_;
+        std::wstring ini_file_;
 
         void initialise_tab();
         void initialise_list_view(int tab);
@@ -89,9 +80,15 @@ namespace Linter
         void selected_tab_changed();
         void update_displayed_counts();
 
+        void add_errors(int type, std::vector<XmlParser::Error> const &lints);
+
+
         //void get_name_from_cmd(UINT resID, LPTSTR tip, UINT count);
-        void show_selected_lint(int i);
+        void show_selected_lint(int selected_item);
         void copy_to_clipboard();
+
+        /** Get the current scintilla window */
+        HWND OutputDialog::GetCurrentScintillaWindow() const;
     };
 
 }    // namespace Linter

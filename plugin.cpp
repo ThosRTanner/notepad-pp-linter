@@ -131,8 +131,8 @@ wchar_t const *getIniFileName()
 
 void initConfig()
 {
-    ::SendMessage(nppData._nppHandle, NPPM_GETPLUGINSCONFIGDIR, MAX_PATH, (LPARAM)iniFilePath);
-    if (PathFileExists(iniFilePath) == FALSE)
+    ::SendMessage(nppData._nppHandle, NPPM_GETPLUGINSCONFIGDIR, MAX_PATH, reinterpret_cast<LPARAM>(iniFilePath));
+    if (! PathFileExists(iniFilePath))
     {
         ::CreateDirectory(iniFilePath, nullptr);
     }
@@ -146,7 +146,7 @@ void commandMenuCleanUp()
 HWND getScintillaWindow()
 {
     int which = -1;
-    SendMessage(nppData._nppHandle, NPPM_GETCURRENTSCINTILLA, 0, (LPARAM)&which);
+    SendMessage(nppData._nppHandle, NPPM_GETCURRENTSCINTILLA, 0, reinterpret_cast<LPARAM>(&which));
     if (which == -1)
     {
         return nullptr;

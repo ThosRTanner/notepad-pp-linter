@@ -37,6 +37,7 @@ namespace
 
     void InitErrors()
     {
+        //FIXME Should this all be done when we reload config.
         SendEditor(SCI_INDICSETSTYLE, SCE_SQUIGGLE_UNDERLINE_RED, INDIC_BOX);    // INDIC_SQUIGGLE);
         SendEditor(SCI_INDICSETFORE, SCE_SQUIGGLE_UNDERLINE_RED, 0x0000ff);
 
@@ -100,7 +101,7 @@ namespace
     {
         std::string const str(exc.what());
         std::wstring const wstr{str.begin(), str.end()};
-        output_dialogue->add_system_error(wstr);
+        output_dialogue->add_system_error(XmlParser::Error{0, 0, wstr, getIniFileName(), L""});
         showTooltip(L"Linter: " + wstr);
     }
 
@@ -134,7 +135,8 @@ namespace
 
         std::string const &text = getDocumentText();
 
-        File file(GetFilePart(NPPM_GETFILENAME), GetFilePart(NPPM_GETCURRENTDIRECTORY));
+        std::wstring const full_path{GetFilePart(NPPM_GETFULLCURRENTPATH)};
+        File file{GetFilePart(NPPM_GETFILENAME), GetFilePart(NPPM_GETCURRENTDIRECTORY)};
         if (!useStdin)
         {
             file.write(text);
@@ -151,10 +153,10 @@ namespace
                     str = text;
                 }
                 std::string xml = file.exec(command.first, str);
-                std::vector<XmlParser::Error> parseError = XmlParser::getErrors(xml);
+                std::vector<XmlParser::Error> parseError = XmlParser::getErrors(xml, full_path, command.first);
                 errors.insert(errors.end(), parseError.begin(), parseError.end());
                 //FIXME don't add the full command line, just the command name.
-                output_dialogue->add_lint_errors(command.first, parseError);
+                output_dialogue->add_lint_errors(parseError);
             }
             catch (std::exception const &e)
             {

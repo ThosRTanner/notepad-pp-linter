@@ -41,10 +41,10 @@ namespace Linter
 ////////////////////////////////////////////////////////////////////////////////
 
 */
-    OutputDialog::TabDefinition OutputDialog::tab_definitions_[] = {
-  //FIXME certain amount of redefinition here
-        {TEXT("System Errors"), IDC_LIST_OUTPUT,  TabDefinition::SYSTEM_ERROR},
-        {TEXT("Lint Errors"),   IDC_LIST_LINTS,   TabDefinition::LINT_ERROR  },
+    //FIXME certain amount of redefinition here wit list_views. Does this need to be static?
+    std::array<OutputDialog::TabDefinition, OutputDialog::NUM_TABS> OutputDialog::tab_definitions_ = {
+        OutputDialog::TabDefinition{L"System Errors", IDC_LIST_OUTPUT, TabDefinition::SYSTEM_ERROR},
+        OutputDialog::TabDefinition{L"Lint Errors", IDC_LIST_LINTS, TabDefinition::LINT_ERROR},
     };
 
     ////////////////////////////////////////////////////////////////////////////////
@@ -98,68 +98,24 @@ namespace Linter
             ListView_DeleteAllItems(list_view);
         }
 
-        errors_.clear();
-
-        update_displayed_counts();
-    }
-
-    void OutputDialog::add_system_error(std::wstring const &err)
-    {
-        std::vector<XmlParser::Error> errs;
-        XmlParser::Error xerr;
-        xerr.m_line = 0;
-        xerr.m_column = 0;
-        xerr.m_message = err;
-        errs.push_back(xerr);
-        add_lint_errors(L"", errs);
-    }
-
-    void OutputDialog::add_lint_errors(const std::wstring &file, std::vector<XmlParser::Error> const &lints)
-    {
-        std::wstringstream stream;
-
-        LVITEM lvI;
-        lvI.mask = LVIF_TEXT | LVIF_STATE;
-
-        for (auto const &lint : lints)
+        for (auto &error : errors_)
         {
-            auto const type = file.empty() ? 0 : 1; /*lint.GetType()*/
-            HWND list_view = list_views_[type];
-
-            lvI.iSubItem = 0;
-            lvI.iItem = ListView_GetItemCount(list_view);
-            lvI.state = 0;
-            lvI.stateMask = 0;
-
-            stream.str(L"");
-            stream << lvI.iItem + 1;
-            std::wstring strNum = stream.str();
-            lvI.pszText = const_cast<wchar_t *>(strNum.c_str());
-            ListView_InsertItem(list_view, &lvI);
-
-            ListView_SetItemText(list_view, lvI.iItem, COLUMN_MESSAGE, const_cast<wchar_t *>(lint.m_message.c_str()));
-
-            std::wstring strFile = L"Not quite sure";    //Path::GetFileName(file);
-            ListView_SetItemText(list_view, lvI.iItem, COLUMN_TOOL, const_cast<wchar_t *>(strFile.c_str()));
-
-            stream.str(L"");
-            stream << lint.m_line;
-            std::wstring strLine = stream.str();
-            ListView_SetItemText(list_view, lvI.iItem, COLUMN_LINE, const_cast<wchar_t *>(strLine.c_str()));
-
-            stream.str(L"");
-            stream << lint.m_column;
-            std::wstring strColumn = stream.str();
-            ListView_SetItemText(list_view, lvI.iItem, COLUMN_POSITION, const_cast<wchar_t *>(strColumn.c_str()));
-
-            //Ensure the message column is as wide as the widest column.
-            ListView_SetColumnWidth(list_view, COLUMN_MESSAGE, LVSCW_AUTOSIZE);
-
-            //m_fileLints[lint.GetType()].push_back(FileLint(file, lint));
+            error.clear();
         }
 
         update_displayed_counts();
-        InvalidateRect(getHSelf(), nullptr, TRUE);
+    }
+
+    void OutputDialog::add_system_error(XmlParser::Error const &err)
+    {
+        std::vector<XmlParser::Error> errs;
+        errs.push_back(err);
+        add_errors(0, errs);
+    }
+
+    void OutputDialog::add_lint_errors(std::vector<XmlParser::Error> const& errs)
+    {
+        add_errors(1, errs);
     }
 
     /** This is a strange function defined by windows.
@@ -210,8 +166,8 @@ namespace Linter
                         int iLint = ListView_GetNextItem(list_views_[iTab], -1, LVIS_FOCUSED | LVIS_SELECTED);
                         if (iLint != -1)
                         {
-                            const FileLint &fileLint = m_fileLints[iTab][iLint];
-                            std::wstring var = fileLint.lint.GetUndefVar();
+                            const FileLint &lint_error = m_fileLints[iTab][iLint];
+                            std::wstring var = lint_error.lint.GetUndefVar();
                             if (!var.empty())
                             {
                                 JSLintOptions::GetInstance().AppendOption(IDC_PREDEFINED, var);
@@ -254,10 +210,10 @@ namespace Linter
                         if (notify_header->idFrom == tab_definitions_[TabCtrl_GetCurSel(tab_window_)].list_view_id_)
                         {
                             LPNMITEMACTIVATE lpnmitem = reinterpret_cast<LPNMITEMACTIVATE>(lParam);
-                            int iFocused = lpnmitem->iItem;
-                            if (iFocused != -1)
+                            int selected_item = lpnmitem->iItem;
+                            if (selected_item != -1)
                             {
-                                show_selected_lint(iFocused);
+                                show_selected_lint(selected_item);
                             }
                         }
                         return TRUE;
@@ -307,8 +263,8 @@ namespace Linter
                         /*
                         AppendMenu(menu, MF_ENABLED, ID_SHOW_LINT, TEXT("Show"));
 
-                        const FileLint &fileLint = m_fileLints[iTab][iFocused];
-                        bool reasonIsUndefVar = fileLint.lint.IsReasonUndefVar();
+                        const FileLint &lint_error = m_fileLints[iTab][iFocused];
+                        bool reasonIsUndefVar = lint_error.lint.IsReasonUndefVar();
                         if (reasonIsUndefVar)
                         {
                             AppendMenu(menu, MF_ENABLED, ID_ADD_PREDEFINED, TEXT("Add to the Predefined List"));
@@ -496,6 +452,54 @@ namespace Linter
             TabCtrl_SetItem(tab_window_, tab, &tie);
         }
     }
+
+    void OutputDialog::add_errors(int type, std::vector<XmlParser::Error> const &lints)
+    {
+        HWND list_view = list_views_[type];
+
+        std::wstringstream stream;
+
+        LVITEM lvI;
+        lvI.mask = LVIF_TEXT | LVIF_STATE;
+
+        for (auto const &lint : lints)
+        {
+            lvI.iSubItem = 0;
+            lvI.iItem = ListView_GetItemCount(list_view);
+            lvI.state = 0;
+            lvI.stateMask = 0;
+
+            stream.str(L"");
+            stream << lvI.iItem + 1;
+            std::wstring strNum = stream.str();
+            lvI.pszText = const_cast<wchar_t *>(strNum.c_str());
+            ListView_InsertItem(list_view, &lvI);
+
+            ListView_SetItemText(list_view, lvI.iItem, COLUMN_MESSAGE, const_cast<wchar_t *>(lint.m_message.c_str()));
+
+            std::wstring strFile = L"Not quite sure";    //Path::GetFileName(file);
+            ListView_SetItemText(list_view, lvI.iItem, COLUMN_TOOL, const_cast<wchar_t *>(strFile.c_str()));
+
+            stream.str(L"");
+            stream << lint.m_line;
+            std::wstring strLine = stream.str();
+            ListView_SetItemText(list_view, lvI.iItem, COLUMN_LINE, const_cast<wchar_t *>(strLine.c_str()));
+
+            stream.str(L"");
+            stream << lint.m_column;
+            std::wstring strColumn = stream.str();
+            ListView_SetItemText(list_view, lvI.iItem, COLUMN_POSITION, const_cast<wchar_t *>(strColumn.c_str()));
+
+            //Ensure the message column is as wide as the widest column.
+            ListView_SetColumnWidth(list_view, COLUMN_MESSAGE, LVSCW_AUTOSIZE);
+
+            errors_[type].push_back(lint);
+        }
+
+        update_displayed_counts();
+        InvalidateRect(getHSelf(), nullptr, TRUE);
+    }
+
 #if 0
     void OutputDialog::get_name_from_cmd(UINT resID, LPTSTR tip, UINT count)
     {
@@ -580,59 +584,58 @@ namespace Linter
     }
     */
 
-    void OutputDialog::show_selected_lint(int /*tab*/)
+    void OutputDialog::show_selected_lint(int selected_item)
     {
-        /*
-        int iTab = TabCtrl_GetCurSel(tab_window_);
-        const FileLint &fileLint = m_fileLints[iTab][tab];
+        int tab = TabCtrl_GetCurSel(tab_window_);
+        XmlParser::Error const &lint_error = errors_[tab][selected_item];
 
-        int line = fileLint.lint.GetLine();
-        int column = fileLint.lint.GetCharacter();
+        int line = std::max(lint_error.m_line - 1, 0);
+        int column = std::max(lint_error.m_column - 1, 0);
 
-        if (!fileLint.strFilePath.empty() && line >= 0 && column >= 0)
+        LRESULT lRes = ::SendMessage(npp_data_._nppHandle, NPPM_SWITCHTOFILE, 0, reinterpret_cast<LPARAM>(lint_error.m_path.c_str()));
+        if (lRes == 0)
         {
-            LRESULT lRes = ::SendMessage(g_nppData._nppHandle, NPPM_SWITCHTOFILE, 0, (LPARAM)fileLint.strFilePath.c_str());
-            if (lRes)
+            return;
+        }
+
+        HWND hWndScintilla = GetCurrentScintillaWindow();
+        if (hWndScintilla == nullptr)
+        {
+            return;
+        }
+        ::SendMessage(hWndScintilla, SCI_GOTOLINE, line, 0);
+
+        // since there is no SCI_GOTOCOLUMN, we move to the right until ...
+        for (;;)
+        {
+            ::SendMessage(hWndScintilla, SCI_CHARRIGHT, 0, 0);
+
+            int curPos = (int)::SendMessage(hWndScintilla, SCI_GETCURRENTPOS, 0, 0);
+
+            int curLine = (int)::SendMessage(hWndScintilla, SCI_LINEFROMPOSITION, curPos, 0);
+            if (curLine > line)
             {
-                HWND hWndScintilla = GetCurrentScintillaWindow();
-                if (hWndScintilla != nullptr)
-                {
-                    ::SendMessage(hWndScintilla, SCI_GOTOLINE, line, 0);
-                    // since there is no SCI_GOTOCOLUMN, we move to the right until ...
-                    while (true)
-                    {
-                        ::SendMessage(hWndScintilla, SCI_CHARRIGHT, 0, 0);
+                // ... current line is greater than desired line or ...
+                ::SendMessage(hWndScintilla, SCI_CHARLEFT, 0, 0);
+                break;
+            }
 
-                        int curPos = (int)::SendMessage(hWndScintilla, SCI_GETCURRENTPOS, 0, 0);
+            int curCol = (int)::SendMessage(hWndScintilla, SCI_GETCOLUMN, curPos, 0);
+            if (curCol > column)
+            {
+                // ... current column is greater than desired column or ...
+                ::SendMessage(hWndScintilla, SCI_CHARLEFT, 0, 0);
+                break;
+            }
 
-                        int curLine = (int)::SendMessage(hWndScintilla, SCI_LINEFROMPOSITION, curPos, 0);
-                        if (curLine > line)
-                        {
-                            // ... current line is greater than desired line or ...
-                            ::SendMessage(hWndScintilla, SCI_CHARLEFT, 0, 0);
-                            break;
-                        }
-
-                        int curCol = (int)::SendMessage(hWndScintilla, SCI_GETCOLUMN, curPos, 0);
-                        if (curCol > column)
-                        {
-                            // ... current column is greater than desired column or ...
-                            ::SendMessage(hWndScintilla, SCI_CHARLEFT, 0, 0);
-                            break;
-                        }
-
-                        if (curCol == column)
-                        {
-                            // ... we reached desired column.
-                            break;
-                        }
-                    }
-                }
+            if (curCol == column)
+            {
+                // ... we reached desired column.
+                break;
             }
         }
 
         InvalidateRect(getHSelf(), nullptr, TRUE);
-    */
     }
 
     void OutputDialog::copy_to_clipboard()
@@ -646,7 +649,7 @@ namespace Linter
         int tab = ListView_GetNextItem(list_views_[iTab], -1, LVNI_SELECTED);
         while (tab != -1)
         {
-            const FileLint &fileLint = m_fileLints[iTab][tab];
+            const FileLint &lint_error = m_fileLints[iTab][tab];
 
             if (bFirst)
             {
@@ -657,8 +660,8 @@ namespace Linter
                 stream << TEXT("\r\n");
             }
 
-            stream << TEXT("Line ") << fileLint.lint.GetLine() + 1 << TEXT(", column ") << fileLint.lint.GetCharacter() + 1 << TEXT(": ")
-                   << fileLint.lint.GetReason().c_str() << TEXT("\r\n\t") << fileLint.lint.GetEvidence().c_str() << TEXT("\r\n");
+            stream << TEXT("Line ") << lint_error.lint.GetLine() + 1 << TEXT(", column ") << lint_error.lint.GetCharacter() + 1 << TEXT(": ")
+                   << lint_error.lint.GetReason().c_str() << TEXT("\r\n\t") << lint_error.lint.GetEvidence().c_str() << TEXT("\r\n");
 
             tab = ListView_GetNextItem(list_views_[TabCtrl_GetCurSel(tab_window_)], tab, LVNI_SELECTED);
         }
@@ -697,4 +700,13 @@ namespace Linter
         }
     */
     }
+
+    HWND OutputDialog::GetCurrentScintillaWindow() const
+    {
+        int which = -1;
+        ::SendMessage(npp_data_._nppHandle, NPPM_GETCURRENTSCINTILLA, 0, reinterpret_cast<LPARAM>(&which));
+
+        return which == -1 ? nullptr : which == 0 ? npp_data_._scintillaMainHandle : npp_data_._scintillaSecondHandle;
+    }
+
 }    // namespace Linter

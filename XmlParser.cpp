@@ -12,7 +12,7 @@
 
 using Linter::SystemError;
 
-std::vector<XmlParser::Error> XmlParser::getErrors(const std::string &xml)
+std::vector<XmlParser::Error> XmlParser::getErrors(const std::string &xml, std::wstring const &path, std::wstring const &tool)
 {
     ::Linter::DomDocument XMLDocument(xml);
     // <error line="12" column="19" severity="error" message="Unexpected identifier" source="jscs" />
@@ -38,19 +38,18 @@ std::vector<XmlParser::Error> XmlParser::getErrors(const std::string &xml)
         }
 
         CComQIPtr<IXMLDOMElement> element(node);
-        Error error;
         CComVariant value;
 
         element->getAttribute(bstr_t(L"line"), &value);
-        error.m_line = _wtoi(value.bstrVal);
+        int const line = _wtoi(value.bstrVal);
 
         element->getAttribute(bstr_t(L"column"), &value);
-        error.m_column = _wtoi(value.bstrVal);
+        int const column = _wtoi(value.bstrVal);
 
         element->getAttribute(bstr_t(L"message"), &value);
-        error.m_message = value.bstrVal;
 
-        errors.push_back(error);
+
+        errors.push_back(Error{line, column, value.bstrVal, path, tool});
     }
 
     return errors;
