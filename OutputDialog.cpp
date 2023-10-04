@@ -178,45 +178,48 @@ namespace Linter
                     initialise_list_view(tab);
                 }
                 selected_tab_changed();
-                return FALSE; //Do NOT focus onto this dialogue
+                return FALSE;    //Do NOT focus onto this dialogue
 
             case WM_COMMAND:
             {
+                //Context menu responses
                 /*
-                if (LOWORD(wParam) == ID_COPY_LINTS)
+                switch LOWORD(wParam)
                 {
-                    copy_to_clipboard();
-                    return TRUE;
-                }
-                else if (LOWORD(wParam) == ID_SHOW_LINT)
-                {
-                    int iTab = TabCtrl_GetCurSel(tab_window_);
-                    int iLint = ListView_GetNextItem(list_views_[iTab], -1, LVIS_FOCUSED | LVIS_SELECTED);
-                    if (iLint != -1)
+                    case ID_COPY_LINTS:
+                        copy_to_clipboard();
+                        return TRUE;
+
+                    case ID_SHOW_LINT:
                     {
-                        show_selected_lint(iLint);
-                    }
-                    return TRUE;
-                }
-                else if (LOWORD(wParam) == ID_ADD_PREDEFINED)
-                {
-                    int iTab = TabCtrl_GetCurSel(tab_window_);
-                    int iLint = ListView_GetNextItem(list_views_[iTab], -1, LVIS_FOCUSED | LVIS_SELECTED);
-                    if (iLint != -1)
-                    {
-                        const FileLint &fileLint = m_fileLints[iTab][iLint];
-                        std::wstring var = fileLint.lint.GetUndefVar();
-                        if (!var.empty())
+                        int iTab = TabCtrl_GetCurSel(tab_window_);
+                        int iLint = ListView_GetNextItem(list_views_[iTab], -1, LVIS_FOCUSED | LVIS_SELECTED);
+                        if (iLint != -1)
                         {
-                            JSLintOptions::GetInstance().AppendOption(IDC_PREDEFINED, var);
+                            show_selected_lint(iLint);
                         }
+                        return TRUE;
                     }
-                    return TRUE;
-                }
-                else if (LOWORD(wParam) == ID_SELECT_ALL)
-                {
-                    ListView_SetItemState(list_views_[TabCtrl_GetCurSel(tab_window_)], -1, LVIS_SELECTED, LVIS_SELECTED);
-                    return TRUE;
+
+                    case ID_ADD_PREDEFINED:
+                    {
+                        int iTab = TabCtrl_GetCurSel(tab_window_);
+                        int iLint = ListView_GetNextItem(list_views_[iTab], -1, LVIS_FOCUSED | LVIS_SELECTED);
+                        if (iLint != -1)
+                        {
+                            const FileLint &fileLint = m_fileLints[iTab][iLint];
+                            std::wstring var = fileLint.lint.GetUndefVar();
+                            if (!var.empty())
+                            {
+                                JSLintOptions::GetInstance().AppendOption(IDC_PREDEFINED, var);
+                            }
+                        }
+                        return TRUE;
+                    }
+
+                    case ID_SELECT_ALL:
+                        ListView_SetItemState(list_views_[TabCtrl_GetCurSel(tab_window_)], -1, LVIS_SELECTED, LVIS_SELECTED);
+                        return TRUE;
                 }
                 */
             }
@@ -231,16 +234,18 @@ namespace Linter
                         if (notify_header->idFrom == tab_definitions_[TabCtrl_GetCurSel(tab_window_)].list_view_id_)
                         {
                             LPNMLVKEYDOWN pnkd = reinterpret_cast<LPNMLVKEYDOWN>(lParam);
-                            if (pnkd->wVKey == 'A' && (::GetKeyState(VK_CONTROL) >> 15 & 1))
+                            if (pnkd->wVKey == 'A' && (::GetKeyState(VK_CONTROL) & 0x8000U) != 0)
                             {
                                 ListView_SetItemState(list_views_[TabCtrl_GetCurSel(tab_window_)], -1, LVIS_SELECTED, LVIS_SELECTED);
+                                return TRUE;
                             }
-                            else if (pnkd->wVKey == 'C' && (::GetKeyState(VK_CONTROL) >> 15 & 1))
+                            else if (pnkd->wVKey == 'C' && (::GetKeyState(VK_CONTROL) & 0x8000U) != 0)
                             {
                                 copy_to_clipboard();
+                                return TRUE;
                             }
                         }
-                        return TRUE;
+                        break;
 
                     case NM_DBLCLK:
                         if (notify_header->idFrom == tab_definitions_[TabCtrl_GetCurSel(tab_window_)].list_view_id_)
@@ -261,11 +266,12 @@ namespace Linter
 
                         // Specify the resource identifier of the descriptive
                         // text for the given button.
+                        /*
                         int resId = int(lpttt->hdr.idFrom);
-
                         TCHAR tip[MAX_PATH];
                         get_name_from_cmd(resId, tip, sizeof(tip));
                         lpttt->lpszText = tip;
+                        */
                         return TRUE;
                     }
 
@@ -273,8 +279,9 @@ namespace Linter
                         if (notify_header->idFrom == IDC_TABBAR)
                         {
                             selected_tab_changed();
+                            return TRUE;
                         }
-                        return TRUE;
+                        break;
                 }
             }
             break;
@@ -285,7 +292,7 @@ namespace Linter
                 // build context menu
                 HMENU menu = ::CreatePopupMenu();
 
-                int numSelected = ListView_GetSelectedCount(list_views_[TabCtrl_GetCurSel(tab_window_)]);
+                int const numSelected = ListView_GetSelectedCount(list_views_[TabCtrl_GetCurSel(tab_window_)]);
 
                 if (numSelected > 0)
                 {
@@ -345,9 +352,9 @@ namespace Linter
         return DockingDlgInterface::run_dlgProc(message, wParam, lParam);
     }
 
+#if 0
     void OutputDialog::on_toolbar_cmd(UINT /* message*/)
     {
-        /*
         switch (message)
         {
             case IDM_TB_JSLINT_CURRENT_FILE:
@@ -376,7 +383,7 @@ namespace Linter
     //void OutputDialog::OnToolbarDropDown(LPNMTOOLBAR lpnmtb)
     //{
     //}
-
+#endif
     void OutputDialog::initialise_tab()
     {
         // I'd initialise this after calling create, but create calls this
@@ -456,10 +463,10 @@ namespace Linter
 
     void OutputDialog::selected_tab_changed()
     {
-        int iSel = TabCtrl_GetCurSel(tab_window_);
+        int const selected = TabCtrl_GetCurSel(tab_window_);
         for (int i = 0; i < NUM_TABS; ++i)
         {
-            ShowWindow(list_views_[i], iSel == i ? SW_SHOW : SW_HIDE);
+            ShowWindow(list_views_[i], selected == i ? SW_SHOW : SW_HIDE);
         }
     }
 
@@ -480,13 +487,14 @@ namespace Linter
             {
                 strTabName = tab_definitions_[tab].tab_name_;
             }
+
             TCITEM tie;
             tie.mask = TCIF_TEXT;
             tie.pszText = const_cast<wchar_t *>(strTabName.c_str());
             TabCtrl_SetItem(tab_window_, tab, &tie);
         }
     }
-
+#if 0
     void OutputDialog::get_name_from_cmd(UINT resID, LPTSTR tip, UINT count)
     {
         // NOTE: On change, keep sure to change order of IDM_EX_... in toolBarIcons also

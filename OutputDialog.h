@@ -28,8 +28,10 @@ namespace Linter
         /** Clears all linting information */
         void clear_lint_info();
 
-        /** Add a system error to the list */
+        /** Add an error to the system error list */
         void add_system_error(std::wstring const &);
+
+        /** Add a list of lint errors to the lint error list */
         void add_lint_errors(std::wstring const &file, std::vector<XmlParser::Error> const &lints);
 
         /*
@@ -45,7 +47,6 @@ namespace Linter
 
       private:
         NppData const &npp_data_;
-        //HICON tab_icon_;
         HWND tab_window_;
 
         static const int NUM_TABS = 2;
@@ -88,7 +89,7 @@ namespace Linter
         void selected_tab_changed();
         void update_displayed_counts();
 
-        void get_name_from_cmd(UINT resID, LPTSTR tip, UINT count);
+        //void get_name_from_cmd(UINT resID, LPTSTR tip, UINT count);
         void show_selected_lint(int i);
         void copy_to_clipboard();
     };
