@@ -124,7 +124,7 @@ extern "C" __declspec(dllexport) BOOL isUnicode()
     return TRUE;
 }
 
-TCHAR *getIniFileName()
+wchar_t const *getIniFileName()
 {
     return iniFilePath;
 }

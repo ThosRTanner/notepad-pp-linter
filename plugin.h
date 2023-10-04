@@ -21,7 +21,7 @@ void commandMenuCleanUp();
 //void pluginCleanUp();
 void initConfig();
 
-TCHAR *getIniFileName();
+wchar_t const *getIniFileName();
 
 HWND getScintillaWindow();
 LRESULT SendEditor(UINT Msg, WPARAM wParam = 0, LPARAM lParam = 0);

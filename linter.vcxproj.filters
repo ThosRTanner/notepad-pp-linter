@@ -60,6 +60,9 @@
     <ClCompile Include="notepad\DockingFeature\StaticDialog.cpp">
       <Filter>Source Files\notepad\DockingFeature</Filter>
     </ClCompile>
+    <ClCompile Include="Settings.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="encoding.h">
@@ -115,6 +118,9 @@
     </ClInclude>
     <ClInclude Include="notepad\DockingFeature\DockingDlgInterface.h">
       <Filter>Header Files\notepad\DockingFeature</Filter>
+    </ClInclude>
+    <ClInclude Include="Settings.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -184,6 +184,7 @@
     </ClCompile>
     <ClCompile Include="OutputDialog.cpp" />
     <ClCompile Include="plugin.cpp" />
+    <ClCompile Include="Settings.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
@@ -208,6 +209,7 @@
     <ClInclude Include="OutputDialog.h" />
     <ClInclude Include="plugin.h" />
     <ClInclude Include="resource.h" />
+    <ClInclude Include="Settings.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="SystemError.h" />
     <ClInclude Include="targetver.h" />

@@ -1,15 +1,18 @@
 #include "stdafx.h"
 #include "linter.h"
 
-#include "plugin.h"
-#include "OutputDialog.h"
-#include "XmlParser.h"
 #include "encoding.h"
 #include "file.h"
+#include "plugin.h"
+#include "OutputDialog.h"
+#include "Settings.h"
+#include "XmlParser.h"
 
 #include <CommCtrl.h>
-#include <vector>
+
 #include <map>
+#include <memory>
+#include <vector>
 
 namespace
 {
@@ -23,7 +26,7 @@ namespace
 
     std::vector<XmlParser::Error> errors;
     std::map<LRESULT, std::wstring> errorText;
-    XmlParser::Settings settings;
+    std::unique_ptr<Linter::Settings> settings;
 
     void ClearErrors()
     {
@@ -37,18 +40,18 @@ namespace
         SendEditor(SCI_INDICSETSTYLE, SCE_SQUIGGLE_UNDERLINE_RED, INDIC_BOX);    // INDIC_SQUIGGLE);
         SendEditor(SCI_INDICSETFORE, SCE_SQUIGGLE_UNDERLINE_RED, 0x0000ff);
 
-        if (!settings.m_linters.empty() && (settings.m_alpha != -1 || settings.m_color != -1))
+        if (!settings->empty() && (settings->alpha() != -1 || settings->color() != -1))
         {
             SendEditor(SCI_INDICSETSTYLE, SCE_SQUIGGLE_UNDERLINE_RED, INDIC_ROUNDBOX);
 
-            if (settings.m_alpha != -1)
+            if (settings->alpha() != -1)
             {
-                SendEditor(SCI_INDICSETALPHA, SCE_SQUIGGLE_UNDERLINE_RED, settings.m_alpha);
+                SendEditor(SCI_INDICSETALPHA, SCE_SQUIGGLE_UNDERLINE_RED, settings->alpha());
             }
 
-            if (settings.m_color != -1)
+            if (settings->color() != -1)
             {
-                SendEditor(SCI_INDICSETFORE, SCE_SQUIGGLE_UNDERLINE_RED, settings.m_color);
+                SendEditor(SCI_INDICSETFORE, SCE_SQUIGGLE_UNDERLINE_RED, settings->color());
             }
         }
     }
@@ -93,75 +96,87 @@ namespace
         }
     }
 
+    void handle_exception(std::exception const& exc)
+    {
+        std::string const str(exc.what());
+        std::wstring const wstr{str.begin(), str.end()};
+        output_dialogue->add_system_error(wstr);
+        showTooltip(L"Linter: " + wstr);
+    }
+
+    void apply_linters()
+    {
+        errors.clear();
+        output_dialogue->clear_lint_info();
+
+        settings->refresh();
+        if (settings->empty())
+        {
+            throw std::runtime_error("Empty linters.xml");
+        }
+
+        std::vector<std::pair<std::wstring, bool>> commands;
+        bool useStdin = true;
+        auto const extension = GetFilePart(NPPM_GETEXTPART);
+        for (auto const &linter : *settings)
+        {
+            if (extension == linter.m_extension)
+            {
+                commands.emplace_back(linter.m_command, linter.m_useStdin);
+                useStdin = useStdin && linter.m_useStdin;
+            }
+        }
+
+        if (commands.empty())
+        {
+            return;
+        }
+
+        std::string const &text = getDocumentText();
+
+        File file(GetFilePart(NPPM_GETFILENAME), GetFilePart(NPPM_GETCURRENTDIRECTORY));
+        if (!useStdin)
+        {
+            file.write(text);
+        }
+
+        for (const auto &command : commands)
+        {
+            //std::string xml = File::exec(L"C:\\Users\\deadem\\AppData\\Roaming\\npm\\jscs.cmd --reporter=checkstyle ", file);
+            try
+            {
+                nonstd::optional<std::string> str;
+                if (command.second)
+                {
+                    str = text;
+                }
+                std::string xml = file.exec(command.first, str);
+                std::vector<XmlParser::Error> parseError = XmlParser::getErrors(xml);
+                errors.insert(errors.end(), parseError.begin(), parseError.end());
+                //FIXME don't add the full command line, just the command name.
+                output_dialogue->add_lint_errors(command.first, parseError);
+            }
+            catch (std::exception const &e)
+            {
+                handle_exception(e);
+            }
+        }
+    }
+
 }    // namespace
 
 unsigned int __stdcall AsyncCheck(void *)
 {
     (void)CoInitialize(nullptr);
-
-    errors.clear();
-    output_dialogue->clear_lint_info();
-
-    std::vector<std::pair<std::wstring, bool>> commands;
-    bool useStdin = true;
-    for (const XmlParser::Linter &linter : settings.m_linters)
+    try
     {
-        if (GetFilePart(NPPM_GETEXTPART) == linter.m_extension)
-        {
-            commands.emplace_back(linter.m_command, linter.m_useStdin);
-            useStdin = useStdin && linter.m_useStdin;
-        }
+        apply_linters();
     }
-
-    if (commands.empty())
+    //FIXME Catch xml error with line number...
+    catch (std::exception const &e)
     {
-        return 0;
+        handle_exception(e);
     }
-
-    const std::string &text = getDocumentText();
-
-    File file(GetFilePart(NPPM_GETFILENAME), GetFilePart(NPPM_GETCURRENTDIRECTORY));
-    if (!useStdin)
-    {
-        try
-        {
-            file.write(text);
-        }
-        catch (std::exception const &e)
-        {
-            std::string const str{e.what()};
-            std::wstring const wstr{str.begin(), str.end()};
-            output_dialogue->add_system_error(wstr);
-            showTooltip(L"Linter: Temp file write error:" + wstr);
-            return 0;
-        }
-    }
-
-    for (const auto &command : commands)
-    {
-        //std::string xml = File::exec(L"C:\\Users\\deadem\\AppData\\Roaming\\npm\\jscs.cmd --reporter=checkstyle ", file);
-        try
-        {
-            nonstd::optional<std::string> str;
-            if (command.second)
-            {
-                str = text;
-            }
-            std::string xml = file.exec(command.first, str);
-            std::vector<XmlParser::Error> parseError = XmlParser::getErrors(xml);
-            errors.insert(errors.end(), parseError.begin(), parseError.end());
-            //FIXME don't add the full command line, just the command name.
-            output_dialogue->add_lint_errors(command.first, parseError);
-        }
-        catch (std::exception const &e)
-        {
-            std::string const str(e.what());
-            std::wstring const wstr{str.begin(), str.end()};
-            output_dialogue->add_system_error(wstr);
-            showTooltip(L"Linter: " + wstr);
-        }
-    }
-
     return 0;
 }
 
@@ -207,19 +222,7 @@ namespace
 
     void initLinters()
     {
-        try
-        {
-            settings = XmlParser::getLinters(getIniFileName());
-            if (settings.m_linters.empty())
-            {
-                showTooltip(L"Linter: Empty linters.xml.");
-            }
-        }
-        catch (std::exception const &e)
-        {
-            std::string str(e.what());
-            showTooltip(L"Linter: " + std::wstring(str.begin(), str.end()));
-        }
+        settings.reset(new Linter::Settings(getIniFileName()));
     }
 }    // namespace
 

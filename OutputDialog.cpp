@@ -143,14 +143,17 @@ namespace Linter
             ListView_SetItemText(list_view, lvI.iItem, COLUMN_TOOL, const_cast<wchar_t *>(strFile.c_str()));
 
             stream.str(L"");
-            stream << lint.m_line + 1;
+            stream << lint.m_line;
             std::wstring strLine = stream.str();
             ListView_SetItemText(list_view, lvI.iItem, COLUMN_LINE, const_cast<wchar_t *>(strLine.c_str()));
 
             stream.str(L"");
-            stream << lint.m_column + 1;
+            stream << lint.m_column;
             std::wstring strColumn = stream.str();
             ListView_SetItemText(list_view, lvI.iItem, COLUMN_POSITION, const_cast<wchar_t *>(strColumn.c_str()));
+
+            //Ensure the message column is as wide as the widest column.
+            ListView_SetColumnWidth(list_view, COLUMN_MESSAGE, LVSCW_AUTOSIZE);
 
             //m_fileLints[lint.GetType()].push_back(FileLint(file, lint));
         }
@@ -420,15 +423,9 @@ namespace Linter
         lvc.fmt = LVCFMT_RIGHT;
         ListView_InsertColumn(list_view, lvc.iSubItem, &lvc);
 
-        lvc.iSubItem = COLUMN_MESSAGE;
-        lvc.pszText = const_cast<wchar_t *>(L"Reason");
-        lvc.cx = 500;
-        lvc.fmt = LVCFMT_LEFT;
-        ListView_InsertColumn(list_view, lvc.iSubItem, &lvc);
-
         lvc.iSubItem = COLUMN_TOOL;
-        lvc.pszText = const_cast<wchar_t *>(L"File");
-        lvc.cx = 200;
+        lvc.pszText = const_cast<wchar_t *>(L"Tool");
+        lvc.cx = 100;
         lvc.fmt = LVCFMT_LEFT;
         ListView_InsertColumn(list_view, lvc.iSubItem, &lvc);
 
@@ -439,11 +436,16 @@ namespace Linter
         ListView_InsertColumn(list_view, lvc.iSubItem, &lvc);
 
         lvc.iSubItem = COLUMN_POSITION;
-        lvc.pszText = const_cast<wchar_t *>(L"Column");
+        lvc.pszText = const_cast<wchar_t *>(L"Col");
         lvc.cx = 50;
         lvc.fmt = LVCFMT_RIGHT;
         ListView_InsertColumn(list_view, lvc.iSubItem, &lvc);
-        ListView_SetColumnWidth(list_view, COLUMN_POSITION, LVSCW_AUTOSIZE_USEHEADER);
+
+        lvc.iSubItem = COLUMN_MESSAGE;
+        lvc.pszText = const_cast<wchar_t *>(L"Reason");
+        lvc.cx = 500;
+        lvc.fmt = LVCFMT_LEFT;
+        ListView_InsertColumn(list_view, lvc.iSubItem, &lvc);
     }
 
     void OutputDialog::resize()
