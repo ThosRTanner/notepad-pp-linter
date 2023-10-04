@@ -30,9 +30,9 @@ std::string Encoding::toUTF(const std::wstring &data)
     std::string str;
     if (!data.empty())
     {
-        int size = WideCharToMultiByte(CP_UTF8, 0, &data[0], (int)data.size(), NULL, 0, NULL, NULL);
+        int size = WideCharToMultiByte(CP_UTF8, 0, &data[0], (int)data.size(), nullptr, 0, nullptr, nullptr);
         str.resize(size);
-        WideCharToMultiByte(CP_UTF8, 0, &data[0], (int)data.size(), &str[0], size, NULL, NULL);
+        WideCharToMultiByte(CP_UTF8, 0, &data[0], (int)data.size(), &str[0], size, nullptr, nullptr);
     }
 
     return str;
@@ -43,7 +43,7 @@ std::wstring Encoding::toUnicode(const std::string &string, UINT encoding)
     std::wstring str;
     if (!string.empty())
     {
-        int i = MultiByteToWideChar(encoding, 0, string.c_str(), -1, NULL, 0);
+        int i = MultiByteToWideChar(encoding, 0, string.c_str(), -1, nullptr, 0);
         str.resize(i - 1);
         MultiByteToWideChar(encoding, 0, string.c_str(), -1, &str[0], i);
     }

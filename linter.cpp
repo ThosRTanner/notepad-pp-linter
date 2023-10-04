@@ -67,7 +67,7 @@ namespace
         const LRESULT position = SendEditor(SCI_GETCURRENTPOS);
 
         HWND main = GetParent(getScintillaWindow());
-        HWND childHandle = FindWindowEx(main, NULL, L"msctls_statusbar32", NULL);
+        HWND childHandle = FindWindowEx(main, nullptr, L"msctls_statusbar32", nullptr);
 
         auto error = errorText.find(position);
         if (error != errorText.end())
@@ -97,7 +97,7 @@ namespace
 
 unsigned int __stdcall AsyncCheck(void *)
 {
-    (void)CoInitialize(NULL);
+    (void)CoInitialize(nullptr);
 
     errors.clear();
     output_dialogue->clear_lint_info();
@@ -191,7 +191,7 @@ namespace
         if (threadHandle == 0)
         {
             unsigned threadID(0);
-            threadHandle = (HANDLE)_beginthreadex(NULL, 0, &AsyncCheck, NULL, 0, &threadID);
+            threadHandle = (HANDLE)_beginthreadex(nullptr, 0, &AsyncCheck, nullptr, 0, &threadID);
             isChanged = false;
         }
     }
@@ -200,8 +200,8 @@ namespace
     {
         if (isChanged)
         {
-            (void)DeleteTimerQueueTimer(timers, timer, NULL);
-            CreateTimerQueueTimer(&timer, timers, (WAITORTIMERCALLBACK)RunThread, NULL, 300, 0, 0);
+            (void)DeleteTimerQueueTimer(timers, timer, nullptr);
+            CreateTimerQueueTimer(&timer, timers, (WAITORTIMERCALLBACK)RunThread, nullptr, 300, 0, 0);
         }
     }
 

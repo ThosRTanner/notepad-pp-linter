@@ -67,8 +67,8 @@ namespace
 
     void commandMenuInit()
     {
-        setCommand(0, L"Edit config", editConfig, NULL, false);
-        setCommand(1, L"Show linter results", show_results, NULL, false);
+        setCommand(0, L"Edit config", editConfig, nullptr, false);
+        setCommand(1, L"Show linter results", show_results, nullptr, false);
         output_dialogue.reset(new Linter::OutputDialog(nppData, module_handle, 1));
     }
 
@@ -134,7 +134,7 @@ void initConfig()
     ::SendMessage(nppData._nppHandle, NPPM_GETPLUGINSCONFIGDIR, MAX_PATH, (LPARAM)iniFilePath);
     if (PathFileExists(iniFilePath) == FALSE)
     {
-        ::CreateDirectory(iniFilePath, NULL);
+        ::CreateDirectory(iniFilePath, nullptr);
     }
     PathAppend(iniFilePath, L"linter.xml");
 }
@@ -149,7 +149,7 @@ HWND getScintillaWindow()
     SendMessage(nppData._nppHandle, NPPM_GETCURRENTSCINTILLA, 0, (LPARAM)&which);
     if (which == -1)
     {
-        return NULL;
+        return nullptr;
     }
     return (which == 0) ? nppData._scintillaMainHandle : nppData._scintillaSecondHandle;
 }

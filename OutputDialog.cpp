@@ -54,7 +54,7 @@ namespace Linter
     OutputDialog::OutputDialog(NppData const &npp_data, HANDLE module_handle, int dlg_num)
         : DockingDlgInterface(IDD_OUTPUT), npp_data_(npp_data), tab_window_()
     {
-        std::fill_n(&list_views_[0], NUM_TABS, static_cast<HWND>(NULL));
+        std::fill_n(&list_views_[0], NUM_TABS, static_cast<HWND>(nullptr));
 
         init(static_cast<HINSTANCE>(module_handle), npp_data._nppHandle);
 
@@ -156,7 +156,7 @@ namespace Linter
         }
 
         update_displayed_counts();
-        InvalidateRect(getHSelf(), NULL, TRUE);
+        InvalidateRect(getHSelf(), nullptr, TRUE);
     }
 
     /** This is a strange function defined by windows.
@@ -309,7 +309,7 @@ namespace Linter
 
                 if (GetMenuItemCount(menu) > 0)
                 {
-                    AppendMenu(menu, MF_SEPARATOR, 0, NULL);
+                    AppendMenu(menu, MF_SEPARATOR, 0, nullptr);
                 }
 
                 if (numSelected > 0)
@@ -331,7 +331,7 @@ namespace Linter
                 }
 
                 // show context menu
-                TrackPopupMenu(menu, 0, point.x, point.y, 0, _hSelf, NULL);
+                TrackPopupMenu(menu, 0, point.x, point.y, 0, _hSelf, nullptr);
                 return TRUE;
             }
             break;
@@ -501,11 +501,11 @@ namespace Linter
         //This is almost definitely wrong.
         wcscpy_s(tip, count, szToolTip[resID /* - IDM_TB_JSLINT_CURRENT_FILE*/]);
     }
-    
+#endif
     /*
     void OutputDialog::select_next_lint()
     {
-        if (_hSelf == NULL)
+        if (_hSelf == nullptr)
         {
             return;
         }
@@ -539,7 +539,7 @@ namespace Linter
     /*
     void OutputDialog::select_previous_lint()
     {
-        if (_hSelf == NULL)
+        if (_hSelf == nullptr)
         {
             return;
         }
@@ -585,7 +585,7 @@ namespace Linter
             if (lRes)
             {
                 HWND hWndScintilla = GetCurrentScintillaWindow();
-                if (hWndScintilla != NULL)
+                if (hWndScintilla != nullptr)
                 {
                     ::SendMessage(hWndScintilla, SCI_GOTOLINE, line, 0);
                     // since there is no SCI_GOTOCOLUMN, we move to the right until ...
@@ -621,7 +621,7 @@ namespace Linter
             }
         }
 
-        InvalidateRect(getHSelf(), NULL, TRUE);
+        InvalidateRect(getHSelf(), nullptr, TRUE);
     */
     }
 
@@ -669,7 +669,7 @@ namespace Linter
                 memcpy(lpsz, str.c_str(), size);
                 GlobalUnlock(hResult);
 
-                if (SetClipboardData(CF_UNICODETEXT, hResult) == NULL)
+                if (SetClipboardData(CF_UNICODETEXT, hResult) == nullptr)
                 {
                     GlobalFree(hResult);
                     MessageBox(_hSelf, TEXT("Unable to set Clipboard data"), TEXT("JSLint"), MB_OK | MB_ICONERROR);

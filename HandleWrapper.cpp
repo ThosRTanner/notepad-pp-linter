@@ -71,7 +71,7 @@ namespace Linter
             DWORD readBytes;
             //The API suggests when the other end closes the pipe, you should get 0. What appears to happen
             //is that you get broken pipe.
-            if (!ReadFile(handle_, &buffer[0], buffer_size, &readBytes, NULL))
+            if (!ReadFile(handle_, &buffer[0], buffer_size, &readBytes, nullptr))
             {
                 DWORD err = GetLastError();
                 if (err != ERROR_BROKEN_PIPE)
