@@ -110,12 +110,12 @@ namespace Linter
     {
         std::vector<XmlParser::Error> errs;
         errs.push_back(err);
-        add_errors(0, errs);
+        add_errors(TabDefinition::SYSTEM_ERROR, errs);
     }
 
     void OutputDialog::add_lint_errors(std::vector<XmlParser::Error> const& errs)
     {
-        add_errors(1, errs);
+        add_errors(TabDefinition::LINT_ERROR, errs);
     }
 
     /** This is a strange function defined by windows.
@@ -453,7 +453,7 @@ namespace Linter
         }
     }
 
-    void OutputDialog::add_errors(int type, std::vector<XmlParser::Error> const &lints)
+    void OutputDialog::add_errors(TabDefinition::Tab type, std::vector<XmlParser::Error> const &lints)
     {
         HWND list_view = list_views_[type];
 
@@ -592,10 +592,10 @@ namespace Linter
         int line = std::max(lint_error.m_line - 1, 0);
         int column = std::max(lint_error.m_column - 1, 0);
 
-        LRESULT lRes = ::SendMessage(npp_data_._nppHandle, NPPM_SWITCHTOFILE, 0, reinterpret_cast<LPARAM>(lint_error.m_path.c_str()));
-        if (lRes == 0)
+        /* We only need to do this if we need to pop up linter.xml. The following isn't ideal */
+        if (tab == TabDefinition::SYSTEM_ERROR)
         {
-            return;
+            ::SendMessage(npp_data_._nppHandle, NPPM_DOOPEN, 0, reinterpret_cast<LPARAM>(lint_error.m_path.c_str()));
         }
 
         HWND hWndScintilla = GetCurrentScintillaWindow();

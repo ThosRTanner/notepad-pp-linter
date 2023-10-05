@@ -61,7 +61,7 @@ namespace Linter
         {
             LPCTSTR tab_name_;
             UINT list_view_id_;
-            enum
+            enum Tab
             {
                 SYSTEM_ERROR,
                 LINT_ERROR,
@@ -80,7 +80,7 @@ namespace Linter
         void selected_tab_changed();
         void update_displayed_counts();
 
-        void add_errors(int type, std::vector<XmlParser::Error> const &lints);
+        void add_errors(TabDefinition::Tab type, std::vector<XmlParser::Error> const &lints);
 
 
         //void get_name_from_cmd(UINT resID, LPTSTR tip, UINT count);
