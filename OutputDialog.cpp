@@ -42,19 +42,19 @@ namespace Linter
 
 */
     //FIXME certain amount of redefinition here wit list_views. Does this need to be static?
-    std::array<OutputDialog::TabDefinition, OutputDialog::NUM_TABS> OutputDialog::tab_definitions_ = {
-        OutputDialog::TabDefinition{L"System Errors", IDC_LIST_OUTPUT, TabDefinition::SYSTEM_ERROR},
-        OutputDialog::TabDefinition{L"Lint Errors", IDC_LIST_LINTS, TabDefinition::LINT_ERROR},
+    std::array<OutputDialog::TabDefinition, OutputDialog::Num_Tabs> const OutputDialog::tab_definitions_ = {
+        OutputDialog::TabDefinition{L"System Errors", IDC_LIST_OUTPUT},
+        OutputDialog::TabDefinition{L"Lint Errors", IDC_LIST_LINTS},
     };
 
     ////////////////////////////////////////////////////////////////////////////////
 
-    //Note: we do actually initialise tab window during the construction, but it's done
+    //Note: we do actually initialise dialogue_ during the construction, but it's done
     //in a callback from create...
     OutputDialog::OutputDialog(NppData const &npp_data, HANDLE module_handle, int dlg_num)
-        : DockingDlgInterface(IDD_OUTPUT), npp_data_(npp_data), tab_window_()
+        : DockingDlgInterface(IDD_OUTPUT), npp_data_(npp_data), dialogue_()
     {
-        std::fill_n(&list_views_[0], NUM_TABS, static_cast<HWND>(nullptr));
+        std::fill_n(&list_views_[0], Num_Tabs, static_cast<HWND>(nullptr));
 
         init(static_cast<HINSTANCE>(module_handle), npp_data._nppHandle);
 
@@ -87,7 +87,7 @@ namespace Linter
         DockingDlgInterface::display(toShow);
         if (toShow)
         {
-            ::SetFocus(tab_window_);
+            ::SetFocus(dialogue_);
         }
     }
 
@@ -110,12 +110,12 @@ namespace Linter
     {
         std::vector<XmlParser::Error> errs;
         errs.push_back(err);
-        add_errors(TabDefinition::SYSTEM_ERROR, errs);
+        add_errors(Tab::System_Error, errs);
     }
 
     void OutputDialog::add_lint_errors(std::vector<XmlParser::Error> const& errs)
     {
-        add_errors(TabDefinition::LINT_ERROR, errs);
+        add_errors(Tab::Lint_Error, errs);
     }
 
     /** This is a strange function defined by windows.
@@ -130,11 +130,11 @@ namespace Linter
         switch (message)
         {
             case WM_INITDIALOG:
-                initialise_tab();
-                //This is wrong. we need to dynamically allocate these
-                for (int tab = 0; tab < NUM_TABS; tab += 1)
+                initialise_dialogue();
+                //How can we do this without a static cast?
+                for (int tab = 0; tab < Num_Tabs; tab += 1)
                 {
-                    initialise_list_view(tab);
+                    initialise_tab(static_cast<Tab>(tab));
                 }
                 selected_tab_changed();
                 return FALSE;    //Do NOT focus onto this dialogue
@@ -151,7 +151,7 @@ namespace Linter
 
                     case ID_SHOW_LINT:
                     {
-                        int iTab = TabCtrl_GetCurSel(tab_window_);
+                        int iTab = TabCtrl_GetCurSel(dialogue_);
                         int iLint = ListView_GetNextItem(list_views_[iTab], -1, LVIS_FOCUSED | LVIS_SELECTED);
                         if (iLint != -1)
                         {
@@ -162,7 +162,7 @@ namespace Linter
 
                     case ID_ADD_PREDEFINED:
                     {
-                        int iTab = TabCtrl_GetCurSel(tab_window_);
+                        int iTab = TabCtrl_GetCurSel(dialogue_);
                         int iLint = ListView_GetNextItem(list_views_[iTab], -1, LVIS_FOCUSED | LVIS_SELECTED);
                         if (iLint != -1)
                         {
@@ -177,7 +177,7 @@ namespace Linter
                     }
 
                     case ID_SELECT_ALL:
-                        ListView_SetItemState(list_views_[TabCtrl_GetCurSel(tab_window_)], -1, LVIS_SELECTED, LVIS_SELECTED);
+                        ListView_SetItemState(list_views_[TabCtrl_GetCurSel(dialogue_)], -1, LVIS_SELECTED, LVIS_SELECTED);
                         return TRUE;
                 }
                 */
@@ -190,12 +190,12 @@ namespace Linter
                 switch (notify_header->code)
                 {
                     case LVN_KEYDOWN:
-                        if (notify_header->idFrom == tab_definitions_[TabCtrl_GetCurSel(tab_window_)].list_view_id_)
+                        if (notify_header->idFrom == tab_definitions_[TabCtrl_GetCurSel(dialogue_)].list_view_id_)
                         {
                             LPNMLVKEYDOWN pnkd = reinterpret_cast<LPNMLVKEYDOWN>(lParam);
                             if (pnkd->wVKey == 'A' && (::GetKeyState(VK_CONTROL) & 0x8000U) != 0)
                             {
-                                ListView_SetItemState(list_views_[TabCtrl_GetCurSel(tab_window_)], -1, LVIS_SELECTED, LVIS_SELECTED);
+                                ListView_SetItemState(list_views_[TabCtrl_GetCurSel(dialogue_)], -1, LVIS_SELECTED, LVIS_SELECTED);
                                 return TRUE;
                             }
                             else if (pnkd->wVKey == 'C' && (::GetKeyState(VK_CONTROL) & 0x8000U) != 0)
@@ -207,7 +207,7 @@ namespace Linter
                         break;
 
                     case NM_DBLCLK:
-                        if (notify_header->idFrom == tab_definitions_[TabCtrl_GetCurSel(tab_window_)].list_view_id_)
+                        if (notify_header->idFrom == tab_definitions_[TabCtrl_GetCurSel(dialogue_)].list_view_id_)
                         {
                             LPNMITEMACTIVATE lpnmitem = reinterpret_cast<LPNMITEMACTIVATE>(lParam);
                             int selected_item = lpnmitem->iItem;
@@ -251,11 +251,11 @@ namespace Linter
                 // build context menu
                 HMENU menu = ::CreatePopupMenu();
 
-                int const numSelected = ListView_GetSelectedCount(list_views_[TabCtrl_GetCurSel(tab_window_)]);
+                int const numSelected = ListView_GetSelectedCount(list_views_[TabCtrl_GetCurSel(dialogue_)]);
 
                 if (numSelected > 0)
                 {
-                    int iTab = TabCtrl_GetCurSel(tab_window_);
+                    int iTab = TabCtrl_GetCurSel(dialogue_);
 
                     int iFocused = ListView_GetNextItem(list_views_[iTab], -1, LVIS_FOCUSED | LVIS_SELECTED);
                     if (iFocused != -1)
@@ -293,7 +293,7 @@ namespace Linter
                 {
                     point.x = 0;
                     point.y = 0;
-                    ClientToScreen(list_views_[TabCtrl_GetCurSel(tab_window_)], &point);
+                    ClientToScreen(list_views_[TabCtrl_GetCurSel(dialogue_)], &point);
                 }
 
                 // show context menu
@@ -343,30 +343,30 @@ namespace Linter
     //{
     //}
 #endif
-    void OutputDialog::initialise_tab()
+    void OutputDialog::initialise_dialogue()
     {
         // I'd initialise this after calling create, but create calls this
         // via a callback which is - quite strange. Also, I can't help feeling
         // that this value must already be known.
-        tab_window_ = ::GetDlgItem(_hSelf, IDC_TABBAR);
+        dialogue_ = ::GetDlgItem(_hSelf, IDC_TABBAR);
 
         TCITEM tie{};
 
         tie.mask = TCIF_TEXT | TCIF_IMAGE;
         tie.iImage = -1;
 
-        for (int i = 0; i < NUM_TABS; ++i)
+        for (int i = 0; i < Num_Tabs; ++i)
         {
             //This const cast is in no way worrying.
             tie.pszText = const_cast<wchar_t *>(tab_definitions_[i].tab_name_);
-            TabCtrl_InsertItem(tab_window_, i, &tie);
+            TabCtrl_InsertItem(dialogue_, i, &tie);
         }
     }
 
-    void OutputDialog::initialise_list_view(int i)
+    void OutputDialog::initialise_tab(Tab tab)
     {
-        auto const list_view = ::GetDlgItem(_hSelf, tab_definitions_[i].list_view_id_);
-        list_views_[i] = list_view;
+        auto const list_view = ::GetDlgItem(_hSelf, tab_definitions_[tab].list_view_id_);
+        list_views_[tab] = list_view;
 
         ListView_SetExtendedListViewStyle(list_view, LVS_EX_FULLROWSELECT | LVS_EX_AUTOSIZECOLUMNS);
 
@@ -409,20 +409,20 @@ namespace Linter
         RECT rc;
         getClientRect(rc);
 
-        ::MoveWindow(tab_window_, rc.left, rc.top, rc.right - rc.left, rc.bottom - rc.top, TRUE);
+        ::MoveWindow(dialogue_, rc.left, rc.top, rc.right - rc.left, rc.bottom - rc.top, TRUE);
 
-        TabCtrl_AdjustRect(tab_window_, FALSE, &rc);
+        TabCtrl_AdjustRect(dialogue_, FALSE, &rc);
         for (auto const &list_view : list_views_)
         {
-            ::SetWindowPos(list_view, tab_window_, rc.left, rc.top, rc.right - rc.left, rc.bottom - rc.top, 0);
+            ::SetWindowPos(list_view, dialogue_, rc.left, rc.top, rc.right - rc.left, rc.bottom - rc.top, 0);
             ListView_SetColumnWidth(list_view, COLUMN_MESSAGE, LVSCW_AUTOSIZE);
         }
     }
 
     void OutputDialog::selected_tab_changed()
     {
-        int const selected = TabCtrl_GetCurSel(tab_window_);
-        for (int i = 0; i < NUM_TABS; ++i)
+        int const selected = TabCtrl_GetCurSel(dialogue_);
+        for (int i = 0; i < Num_Tabs; ++i)
         {
             ShowWindow(list_views_[i], selected == i ? SW_SHOW : SW_HIDE);
         }
@@ -431,7 +431,7 @@ namespace Linter
     void OutputDialog::update_displayed_counts()
     {
         std::wstringstream stream;
-        for (int tab = 0; tab < NUM_TABS; ++tab)
+        for (int tab = 0; tab < Num_Tabs; ++tab)
         {
             std::wstring strTabName;
             int count = ListView_GetItemCount(list_views_[tab]);
@@ -449,13 +449,13 @@ namespace Linter
             TCITEM tie;
             tie.mask = TCIF_TEXT;
             tie.pszText = const_cast<wchar_t *>(strTabName.c_str());
-            TabCtrl_SetItem(tab_window_, tab, &tie);
+            TabCtrl_SetItem(dialogue_, tab, &tie);
         }
     }
 
-    void OutputDialog::add_errors(TabDefinition::Tab type, std::vector<XmlParser::Error> const &lints)
+    void OutputDialog::add_errors(Tab tab, std::vector<XmlParser::Error> const &lints)
     {
-        HWND list_view = list_views_[type];
+        HWND list_view = list_views_[tab];
 
         std::wstringstream stream;
 
@@ -493,7 +493,7 @@ namespace Linter
             //Ensure the message column is as wide as the widest column.
             ListView_SetColumnWidth(list_view, COLUMN_MESSAGE, LVSCW_AUTOSIZE);
 
-            errors_[type].push_back(lint);
+            errors_[tab].push_back(lint);
         }
 
         update_displayed_counts();
@@ -524,15 +524,15 @@ namespace Linter
             return;
         }
 
-        int iTab = TabCtrl_GetCurSel(tab_window_);
+        int iTab = TabCtrl_GetCurSel(dialogue_);
         HWND list_view = list_views_[iTab];
 
         int count = ListView_GetItemCount(list_view);
         if (count == 0)
         {
             // no lints, set focus to editor
-            HWND hWndScintilla = GetCurrentScintillaWindow();
-            SetFocus(hWndScintilla);
+            HWND current_window = GetCurrentScintillaWindow();
+            SetFocus(current_window);
             return;
         }
 
@@ -558,15 +558,15 @@ namespace Linter
             return;
         }
 
-        int iTab = TabCtrl_GetCurSel(tab_window_);
+        int iTab = TabCtrl_GetCurSel(dialogue_);
         HWND list_view = list_views_[iTab];
 
         int count = ListView_GetItemCount(list_view);
         if (count == 0)
         {
             // no lints, set focus to editor
-            HWND hWndScintilla = GetCurrentScintillaWindow();
-            SetFocus(hWndScintilla);
+            HWND current_window = GetCurrentScintillaWindow();
+            SetFocus(current_window);
             return;
         }
 
@@ -586,45 +586,45 @@ namespace Linter
 
     void OutputDialog::show_selected_lint(int selected_item)
     {
-        int tab = TabCtrl_GetCurSel(tab_window_);
+        int tab = TabCtrl_GetCurSel(dialogue_);
         XmlParser::Error const &lint_error = errors_[tab][selected_item];
 
         int line = std::max(lint_error.m_line - 1, 0);
         int column = std::max(lint_error.m_column - 1, 0);
 
         /* We only need to do this if we need to pop up linter.xml. The following isn't ideal */
-        if (tab == TabDefinition::SYSTEM_ERROR)
+        if (tab == Tab::System_Error)
         {
             ::SendMessage(npp_data_._nppHandle, NPPM_DOOPEN, 0, reinterpret_cast<LPARAM>(lint_error.m_path.c_str()));
         }
 
-        HWND hWndScintilla = GetCurrentScintillaWindow();
-        if (hWndScintilla == nullptr)
+        HWND current_window = GetCurrentScintillaWindow();
+        if (current_window == nullptr)
         {
             return;
         }
-        ::SendMessage(hWndScintilla, SCI_GOTOLINE, line, 0);
+        ::SendMessage(current_window, SCI_GOTOLINE, line, 0);
 
         // since there is no SCI_GOTOCOLUMN, we move to the right until ...
         for (;;)
         {
-            ::SendMessage(hWndScintilla, SCI_CHARRIGHT, 0, 0);
+            ::SendMessage(current_window, SCI_CHARRIGHT, 0, 0);
 
-            int curPos = (int)::SendMessage(hWndScintilla, SCI_GETCURRENTPOS, 0, 0);
+            int curPos = (int)::SendMessage(current_window, SCI_GETCURRENTPOS, 0, 0);
 
-            int curLine = (int)::SendMessage(hWndScintilla, SCI_LINEFROMPOSITION, curPos, 0);
+            int curLine = (int)::SendMessage(current_window, SCI_LINEFROMPOSITION, curPos, 0);
             if (curLine > line)
             {
                 // ... current line is greater than desired line or ...
-                ::SendMessage(hWndScintilla, SCI_CHARLEFT, 0, 0);
+                ::SendMessage(current_window, SCI_CHARLEFT, 0, 0);
                 break;
             }
 
-            int curCol = (int)::SendMessage(hWndScintilla, SCI_GETCOLUMN, curPos, 0);
+            int curCol = (int)::SendMessage(current_window, SCI_GETCOLUMN, curPos, 0);
             if (curCol > column)
             {
                 // ... current column is greater than desired column or ...
-                ::SendMessage(hWndScintilla, SCI_CHARLEFT, 0, 0);
+                ::SendMessage(current_window, SCI_CHARLEFT, 0, 0);
                 break;
             }
 
@@ -643,7 +643,7 @@ namespace Linter
         /*
         std::basic_stringstream<TCHAR> stream;
 
-        int iTab = TabCtrl_GetCurSel(tab_window_);
+        int iTab = TabCtrl_GetCurSel(dialogue_);
 
         bool bFirst = true;
         int tab = ListView_GetNextItem(list_views_[iTab], -1, LVNI_SELECTED);
@@ -663,7 +663,7 @@ namespace Linter
             stream << TEXT("Line ") << lint_error.lint.GetLine() + 1 << TEXT(", column ") << lint_error.lint.GetCharacter() + 1 << TEXT(": ")
                    << lint_error.lint.GetReason().c_str() << TEXT("\r\n\t") << lint_error.lint.GetEvidence().c_str() << TEXT("\r\n");
 
-            tab = ListView_GetNextItem(list_views_[TabCtrl_GetCurSel(tab_window_)], tab, LVNI_SELECTED);
+            tab = ListView_GetNextItem(list_views_[TabCtrl_GetCurSel(dialogue_)], tab, LVNI_SELECTED);
         }
 
         std::wstring str = stream.str();
@@ -703,9 +703,9 @@ namespace Linter
 
     HWND OutputDialog::GetCurrentScintillaWindow() const
     {
+        //This seems oddly pessimistic
         int which = -1;
         ::SendMessage(npp_data_._nppHandle, NPPM_GETCURRENTSCINTILLA, 0, reinterpret_cast<LPARAM>(&which));
-
         return which == -1 ? nullptr : which == 0 ? npp_data_._scintillaMainHandle : npp_data_._scintillaSecondHandle;
     }
 

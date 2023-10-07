@@ -6,7 +6,6 @@
 #include <array>
 #include <string>
 #include <vector>
-#include <unordered_map>
 
 struct NppData;
 
@@ -47,44 +46,55 @@ namespace Linter
         //void OnToolbarDropDown(LPNMTOOLBAR lpnmtb);
 
       private:
-        //FIXME Why aren't tab_definitions_ and list_views_ merged?
+        enum Tab
+        {
+            System_Error,
+            Lint_Error,
+        };
+
         enum
         {
-            NUM_TABS = 2
+            Num_Tabs = 2
         };
 
         NppData const &npp_data_;
-        HWND tab_window_;
-        std::array<HWND, NUM_TABS> list_views_;
+        HWND dialogue_;
+        std::array<HWND, Num_Tabs> list_views_;
 
         struct TabDefinition
         {
-            LPCTSTR tab_name_;
+            wchar_t const *tab_name_;
             UINT list_view_id_;
-            enum Tab
-            {
-                SYSTEM_ERROR,
-                LINT_ERROR,
-            } type_;
         };
-        static std::array<TabDefinition, NUM_TABS> tab_definitions_;
+        static std::array<TabDefinition, Num_Tabs> const tab_definitions_;
 
-        std::array<std::vector<XmlParser::Error>, NUM_TABS> errors_;
-        //std::unordered_map<std::wstring, std::vector<XmlParser::Error>> errors_;
+        std::array<std::vector<XmlParser::Error>, Num_Tabs> errors_;
 
         std::wstring ini_file_;
 
-        void initialise_tab();
-        void initialise_list_view(int tab);
+        /** Initialise the output window */
+        void initialise_dialogue();
+
+        /** Initialise the specified tab */
+        void initialise_tab(Tab tab);
+
+        /** Window resize */
         void resize();
+
+        /** Selected tab has been changed. Display new one */
         void selected_tab_changed();
+
+        /** Update the counts in the tab bar */
         void update_displayed_counts();
 
-        void add_errors(TabDefinition::Tab type, std::vector<XmlParser::Error> const &lints);
-
+        /** Add list of errors to the appropriate tab */
+        void add_errors(Tab tab, std::vector<XmlParser::Error> const &lints);
 
         //void get_name_from_cmd(UINT resID, LPTSTR tip, UINT count);
+
+        /** Move to the line/column of the displayed error */
         void show_selected_lint(int selected_item);
+        //describe
         void copy_to_clipboard();
 
         /** Get the current scintilla window */
