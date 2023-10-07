@@ -17,9 +17,7 @@
 namespace
 {
 
-    bool isReady = false;
     bool isChanged = true;
-    bool isBufferChanged = false;
 
     HANDLE timer(0);
     HANDLE threadHandle(0);
@@ -37,11 +35,11 @@ namespace
 
     void InitErrors()
     {
-        //FIXME Should this all be done when we reload config.
+        //FIXME Make this configurable, because it is just strange.
         SendEditor(SCI_INDICSETSTYLE, SCE_SQUIGGLE_UNDERLINE_RED, INDIC_BOX);    // INDIC_SQUIGGLE);
-        SendEditor(SCI_INDICSETFORE, SCE_SQUIGGLE_UNDERLINE_RED, 0x0000ff);
+        SendEditor(SCI_INDICSETFORE, SCE_SQUIGGLE_UNDERLINE_RED, 0x0000ff); //Red (Reversed RGB)
 
-        if (!settings->empty() && (settings->alpha() != -1 || settings->color() != -1))
+        if (settings->alpha() != -1 || settings->color() != -1)
         {
             SendEditor(SCI_INDICSETSTYLE, SCE_SQUIGGLE_UNDERLINE_RED, INDIC_ROUNDBOX);
 
@@ -97,7 +95,7 @@ namespace
         }
     }
 
-    void handle_exception(std::exception const& exc)
+    void handle_exception(std::exception const &exc)
     {
         std::string const str(exc.what());
         std::wstring const wstr{str.begin(), str.end()};
@@ -165,25 +163,20 @@ namespace
         }
     }
 
-}    // namespace
-
-unsigned int __stdcall AsyncCheck(void *)
-{
-    (void)CoInitialize(nullptr);
-    try
+    unsigned int __stdcall AsyncCheck(void *)
     {
-        apply_linters();
+        (void)CoInitialize(nullptr);
+        try
+        {
+            apply_linters();
+        }
+        //FIXME Catch xml error with line number...
+        catch (std::exception const &e)
+        {
+            handle_exception(e);
+        }
+        return 0;
     }
-    //FIXME Catch xml error with line number...
-    catch (std::exception const &e)
-    {
-        handle_exception(e);
-    }
-    return 0;
-}
-
-namespace
-{
 
     void DrawBoxes()
     {
@@ -203,7 +196,7 @@ namespace
         }
     }
 
-    VOID CALLBACK RunThread(PVOID /*lpParam*/, BOOLEAN /*TimerOrWaitFired*/)
+    void CALLBACK RunThread(PVOID /*lpParam*/, BOOLEAN /*TimerOrWaitFired*/)
     {
         if (threadHandle == 0)
         {
@@ -218,8 +211,14 @@ namespace
         if (isChanged)
         {
             (void)DeleteTimerQueueTimer(timers, timer, nullptr);
-            CreateTimerQueueTimer(&timer, timers, (WAITORTIMERCALLBACK)RunThread, nullptr, 300, 0, 0);
+            CreateTimerQueueTimer(&timer, timers, static_cast<WAITORTIMERCALLBACK>(RunThread), nullptr, 300, 0, 0);
         }
+    }
+
+    void Changed()
+    {
+        isChanged = true;
+        Check();
     }
 
     void initLinters()
@@ -230,78 +229,47 @@ namespace
 
 extern "C" __declspec(dllexport) void beNotified(SCNotification *notifyCode)
 {
+    static bool isReady = false;
+
     if (threadHandle)
     {
-        DWORD exitCode(0);
-        if (GetExitCodeThread(threadHandle, &exitCode))
+        if (::WaitForSingleObject(threadHandle, 0) == WAIT_OBJECT_0)
         {
-            if (exitCode != STILL_ACTIVE)
-            {
-                CloseHandle(threadHandle);
-                if (isBufferChanged == false)
-                {
-                    DrawBoxes();
-                }
-                else
-                {
-                    isChanged = true;
-                }
-                threadHandle = 0;
-                isBufferChanged = false;
-                Check();
-            }
+            CloseHandle(threadHandle);
+            DrawBoxes();
+            threadHandle = 0;
+            Check();
         }
     }
 
-    switch (notifyCode->nmhdr.code)
-    {
-        case NPPN_READY:
-            initLinters();
-            InitErrors();
-
-            isReady = true;
-            isChanged = true;
-            Check();
-            break;
-
-        case NPPN_SHUTDOWN:
-            commandMenuCleanUp();
-            break;
-
-        default:
-            break;
-    }
-
-    if (!isReady)
+    //Don't do anything until notepad++ tells us it's ready.
+    if (!isReady && notifyCode->nmhdr.code != NPPN_READY)
     {
         return;
     }
 
     switch (notifyCode->nmhdr.code)
     {
+        case NPPN_READY:
+            initLinters();
+            isReady = true;
+            Changed();
+            break;
+
+        case NPPN_SHUTDOWN:
+            commandMenuCleanUp();
+            break;
+
         case NPPN_BUFFERACTIVATED:
-            isChanged = true;
-            isBufferChanged = true;
-            Check();
+            Changed();
             break;
 
         case SCN_MODIFIED:
-            if (notifyCode->modificationType & (SC_MOD_DELETETEXT | SC_MOD_INSERTTEXT))
+            if ((notifyCode->modificationType & (SC_MOD_DELETETEXT | SC_MOD_INSERTTEXT)) != 0)
             {
-                isReady = false;
-                isChanged = true;
-                Check();
-                isReady = true;
+                Changed();
             }
             break;
-
-        default:
-        {
-            //CStringW debug;
-            //debug.Format(L"code: %u\n", notifyCode->nmhdr.code);
-            //OutputDebugString(debug);
-        }
-        break;
 
         case SCN_UPDATEUI:
             showTooltip();
