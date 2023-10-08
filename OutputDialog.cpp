@@ -8,27 +8,34 @@
 #include <CommCtrl.h>
 
 #include <algorithm>
+#include <cstddef>
 #include <sstream>
 
 namespace Linter
 {
     /** Columns in the error list */
-    enum
+    enum List_Column
     {
-        COLUMN_NUMBER,
-        COLUMN_TOOL,
-        COLUMN_LINE,
-        COLUMN_POSITION,
-        COLUMN_MESSAGE
+        Column_Number,
+        Column_Tool,
+        Column_Line,
+        Column_Position,
+        Column_Message
     };
 
-    /*
+    /** Context menu items
+     * Ensure they don't clash with anything in the resource file.
+     */
+    enum Context_Menu_Entry
+    {
+        Context_Copy_Lints = 1500,
+        Context_Show_Source_Line,
+        Context_Select_All
+    };
+
+        /*
 ////////////////////////////////////////////////////////////////////////////////
 
-#define ID_COPY_LINTS 1500
-#define ID_SHOW_LINT 1501
-#define ID_ADD_PREDEFINED 1502
-#define ID_SELECT_ALL 1503
 
 #define IDM_TOOLBAR 2000
 
@@ -41,10 +48,9 @@ namespace Linter
 ////////////////////////////////////////////////////////////////////////////////
 
 */
-    //FIXME certain amount of redefinition here wit list_views. Does this need to be static?
     std::array<OutputDialog::TabDefinition, OutputDialog::Num_Tabs> const OutputDialog::tab_definitions_ = {
         OutputDialog::TabDefinition{L"System Errors", IDC_LIST_OUTPUT},
-        OutputDialog::TabDefinition{L"Lint Errors", IDC_LIST_LINTS},
+        OutputDialog::TabDefinition{L"Lint Errors",   IDC_LIST_LINTS },
     };
 
     ////////////////////////////////////////////////////////////////////////////////
@@ -73,8 +79,8 @@ namespace Linter
 
         ::SendMessage(npp_data._nppHandle, NPPM_DMMREGASDCKDLG, 0, reinterpret_cast<LPARAM>(&data));
 
-        //FIXME I'm not sure why I need this. I don't want this to open automatically unless it
-        //was open when npp was last exited, but it seems to all the time.
+        // I'm not sure why I need this. If I don't have it the dialogue opens up every time.
+        // If I do have it, the dialogue opens only if it was open when notepad++ was shut down...
         display(false);
     }
 
@@ -113,7 +119,7 @@ namespace Linter
         add_errors(Tab::System_Error, errs);
     }
 
-    void OutputDialog::add_lint_errors(std::vector<XmlParser::Error> const& errs)
+    void OutputDialog::add_lint_errors(std::vector<XmlParser::Error> const &errs)
     {
         add_errors(Tab::Lint_Error, errs);
     }
@@ -142,45 +148,27 @@ namespace Linter
             case WM_COMMAND:
             {
                 //Context menu responses
-                /*
                 switch LOWORD(wParam)
                 {
-                    case ID_COPY_LINTS:
+                    case Context_Copy_Lints:
                         copy_to_clipboard();
                         return TRUE;
 
-                    case ID_SHOW_LINT:
+                    case Context_Show_Source_Line:
                     {
-                        int iTab = TabCtrl_GetCurSel(dialogue_);
-                        int iLint = ListView_GetNextItem(list_views_[iTab], -1, LVIS_FOCUSED | LVIS_SELECTED);
-                        if (iLint != -1)
+                        int tab = TabCtrl_GetCurSel(dialogue_);
+                        int item = ListView_GetNextItem(list_views_[tab], -1, LVIS_FOCUSED | LVIS_SELECTED);
+                        if (item != -1)
                         {
-                            show_selected_lint(iLint);
+                            show_selected_lint(item);
                         }
                         return TRUE;
                     }
 
-                    case ID_ADD_PREDEFINED:
-                    {
-                        int iTab = TabCtrl_GetCurSel(dialogue_);
-                        int iLint = ListView_GetNextItem(list_views_[iTab], -1, LVIS_FOCUSED | LVIS_SELECTED);
-                        if (iLint != -1)
-                        {
-                            const FileLint &lint_error = m_fileLints[iTab][iLint];
-                            std::wstring var = lint_error.lint.GetUndefVar();
-                            if (!var.empty())
-                            {
-                                JSLintOptions::GetInstance().AppendOption(IDC_PREDEFINED, var);
-                            }
-                        }
-                        return TRUE;
-                    }
-
-                    case ID_SELECT_ALL:
+                    case Context_Select_All:
                         ListView_SetItemState(list_views_[TabCtrl_GetCurSel(dialogue_)], -1, LVIS_SELECTED, LVIS_SELECTED);
                         return TRUE;
                 }
-                */
             }
             break;
 
@@ -260,16 +248,7 @@ namespace Linter
                     int iFocused = ListView_GetNextItem(list_views_[iTab], -1, LVIS_FOCUSED | LVIS_SELECTED);
                     if (iFocused != -1)
                     {
-                        /*
-                        AppendMenu(menu, MF_ENABLED, ID_SHOW_LINT, TEXT("Show"));
-
-                        const FileLint &lint_error = m_fileLints[iTab][iFocused];
-                        bool reasonIsUndefVar = lint_error.lint.IsReasonUndefVar();
-                        if (reasonIsUndefVar)
-                        {
-                            AppendMenu(menu, MF_ENABLED, ID_ADD_PREDEFINED, TEXT("Add to the Predefined List"));
-                        }
-                        */
+                        AppendMenu(menu, MF_ENABLED, Context_Show_Source_Line, L"Show");
                     }
                 }
 
@@ -280,10 +259,10 @@ namespace Linter
 
                 if (numSelected > 0)
                 {
-                    //AppendMenu(menu, MF_ENABLED, ID_COPY_LINTS, TEXT("Copy"));
+                    AppendMenu(menu, MF_ENABLED, Context_Copy_Lints, L"Copy");
                 }
 
-                //AppendMenu(menu, MF_ENABLED, ID_SELECT_ALL, TEXT("Select All"));
+                AppendMenu(menu, MF_ENABLED, Context_Select_All, L"Select All");
 
                 // determine context menu position
                 POINT point;
@@ -307,7 +286,7 @@ namespace Linter
                 return TRUE;
         }
 
-        //Don't recognise the message. Base it to the base class
+        //Don't recognise the message. Pass it to the base class
         return DockingDlgInterface::run_dlgProc(message, wParam, lParam);
     }
 
@@ -355,11 +334,11 @@ namespace Linter
         tie.mask = TCIF_TEXT | TCIF_IMAGE;
         tie.iImage = -1;
 
-        for (int i = 0; i < Num_Tabs; ++i)
+        for (int tab = 0; tab < Num_Tabs; tab += 1)
         {
             //This const cast is in no way worrying.
-            tie.pszText = const_cast<wchar_t *>(tab_definitions_[i].tab_name_);
-            TabCtrl_InsertItem(dialogue_, i, &tie);
+            tie.pszText = const_cast<wchar_t *>(tab_definitions_[tab].tab_name_);
+            TabCtrl_InsertItem(dialogue_, tab, &tie);
         }
     }
 
@@ -373,31 +352,31 @@ namespace Linter
         LVCOLUMN lvc;
         lvc.mask = LVCF_FMT | LVCF_WIDTH | LVCF_TEXT | LVCF_SUBITEM;
 
-        lvc.iSubItem = COLUMN_NUMBER;
+        lvc.iSubItem = Column_Number;
         lvc.pszText = const_cast<wchar_t *>(L"");
         lvc.cx = 28;
         lvc.fmt = LVCFMT_RIGHT;
         ListView_InsertColumn(list_view, lvc.iSubItem, &lvc);
 
-        lvc.iSubItem = COLUMN_TOOL;
+        lvc.iSubItem = Column_Tool;
         lvc.pszText = const_cast<wchar_t *>(L"Tool");
         lvc.cx = 100;
         lvc.fmt = LVCFMT_LEFT;
         ListView_InsertColumn(list_view, lvc.iSubItem, &lvc);
 
-        lvc.iSubItem = COLUMN_LINE;
+        lvc.iSubItem = Column_Line;
         lvc.pszText = const_cast<wchar_t *>(L"Line");
         lvc.cx = 50;
         lvc.fmt = LVCFMT_RIGHT;
         ListView_InsertColumn(list_view, lvc.iSubItem, &lvc);
 
-        lvc.iSubItem = COLUMN_POSITION;
+        lvc.iSubItem = Column_Position;
         lvc.pszText = const_cast<wchar_t *>(L"Col");
         lvc.cx = 50;
         lvc.fmt = LVCFMT_RIGHT;
         ListView_InsertColumn(list_view, lvc.iSubItem, &lvc);
 
-        lvc.iSubItem = COLUMN_MESSAGE;
+        lvc.iSubItem = Column_Message;
         lvc.pszText = const_cast<wchar_t *>(L"Reason");
         lvc.cx = 500;
         lvc.fmt = LVCFMT_LEFT;
@@ -415,23 +394,23 @@ namespace Linter
         for (auto const &list_view : list_views_)
         {
             ::SetWindowPos(list_view, dialogue_, rc.left, rc.top, rc.right - rc.left, rc.bottom - rc.top, 0);
-            ListView_SetColumnWidth(list_view, COLUMN_MESSAGE, LVSCW_AUTOSIZE);
+            ListView_SetColumnWidth(list_view, Column_Message, LVSCW_AUTOSIZE);
         }
     }
 
     void OutputDialog::selected_tab_changed()
     {
         int const selected = TabCtrl_GetCurSel(dialogue_);
-        for (int i = 0; i < Num_Tabs; ++i)
+        for (int tab = 0; tab < Num_Tabs; tab += 1)
         {
-            ShowWindow(list_views_[i], selected == i ? SW_SHOW : SW_HIDE);
+            ShowWindow(list_views_[tab], selected == tab ? SW_SHOW : SW_HIDE);
         }
     }
 
     void OutputDialog::update_displayed_counts()
     {
         std::wstringstream stream;
-        for (int tab = 0; tab < Num_Tabs; ++tab)
+        for (int tab = 0; tab < Num_Tabs; tab += 1)
         {
             std::wstring strTabName;
             int count = ListView_GetItemCount(list_views_[tab]);
@@ -475,23 +454,23 @@ namespace Linter
             lvI.pszText = const_cast<wchar_t *>(strNum.c_str());
             ListView_InsertItem(list_view, &lvI);
 
-            ListView_SetItemText(list_view, lvI.iItem, COLUMN_MESSAGE, const_cast<wchar_t *>(lint.m_message.c_str()));
+            ListView_SetItemText(list_view, lvI.iItem, Column_Message, const_cast<wchar_t *>(lint.m_message.c_str()));
 
             std::wstring strFile = L"Not quite sure";    //Path::GetFileName(file);
-            ListView_SetItemText(list_view, lvI.iItem, COLUMN_TOOL, const_cast<wchar_t *>(strFile.c_str()));
+            ListView_SetItemText(list_view, lvI.iItem, Column_Tool, const_cast<wchar_t *>(strFile.c_str()));
 
             stream.str(L"");
             stream << lint.m_line;
             std::wstring strLine = stream.str();
-            ListView_SetItemText(list_view, lvI.iItem, COLUMN_LINE, const_cast<wchar_t *>(strLine.c_str()));
+            ListView_SetItemText(list_view, lvI.iItem, Column_Line, const_cast<wchar_t *>(strLine.c_str()));
 
             stream.str(L"");
             stream << lint.m_column;
             std::wstring strColumn = stream.str();
-            ListView_SetItemText(list_view, lvI.iItem, COLUMN_POSITION, const_cast<wchar_t *>(strColumn.c_str()));
+            ListView_SetItemText(list_view, lvI.iItem, Column_Position, const_cast<wchar_t *>(strColumn.c_str()));
 
             //Ensure the message column is as wide as the widest column.
-            ListView_SetColumnWidth(list_view, COLUMN_MESSAGE, LVSCW_AUTOSIZE);
+            ListView_SetColumnWidth(list_view, Column_Message, LVSCW_AUTOSIZE);
 
             errors_[tab].push_back(lint);
         }
@@ -524,8 +503,8 @@ namespace Linter
             return;
         }
 
-        int iTab = TabCtrl_GetCurSel(dialogue_);
-        HWND list_view = list_views_[iTab];
+        int tab = TabCtrl_GetCurSel(dialogue_);
+        HWND list_view = list_views_[tab];
 
         int count = ListView_GetItemCount(list_view);
         if (count == 0)
@@ -536,17 +515,17 @@ namespace Linter
             return;
         }
 
-        int tab = ListView_GetNextItem(list_view, -1, LVNI_FOCUSED | LVNI_SELECTED);
-        if (++tab == count)
+        int row = ListView_GetNextItem(list_view, -1, LVNI_FOCUSED | LVNI_SELECTED) + 1;
+        if (row == count)
         {
-            tab = 0;
+            row = 0;
         }
 
         ListView_SetItemState(list_view, -1, 0, LVIS_SELECTED | LVIS_FOCUSED);
 
-        ListView_SetItemState(list_view, tab, LVIS_SELECTED | LVIS_FOCUSED, LVIS_SELECTED | LVIS_FOCUSED);
-        ListView_EnsureVisible(list_view, tab, FALSE);
-        show_selected_lint(tab);
+        ListView_SetItemState(list_view, row, LVIS_SELECTED | LVIS_FOCUSED, LVIS_SELECTED | LVIS_FOCUSED);
+        ListView_EnsureVisible(list_view, row, FALSE);
+        show_selected_lint(row);
     }
     */
 
@@ -558,8 +537,8 @@ namespace Linter
             return;
         }
 
-        int iTab = TabCtrl_GetCurSel(dialogue_);
-        HWND list_view = list_views_[iTab];
+        int tab = TabCtrl_GetCurSel(dialogue_);
+        HWND list_view = list_views_[tab];
 
         int count = ListView_GetItemCount(list_view);
         if (count == 0)
@@ -570,27 +549,27 @@ namespace Linter
             return;
         }
 
-        int tab = ListView_GetNextItem(list_view, -1, LVNI_FOCUSED | LVNI_SELECTED);
-        if (--tab == -1)
+        int row = ListView_GetNextItem(list_view, -1, LVNI_FOCUSED | LVNI_SELECTED);
+        if (--row == -1)
         {
-            tab = count - 1;
+            row = count - 1;
         }
 
         ListView_SetItemState(list_view, -1, 0, LVIS_SELECTED | LVIS_FOCUSED);
 
-        ListView_SetItemState(list_view, tab, LVIS_SELECTED | LVIS_FOCUSED, LVIS_SELECTED | LVIS_FOCUSED);
-        ListView_EnsureVisible(list_view, tab, FALSE);
-        show_selected_lint(tab);
+        ListView_SetItemState(list_view, row, LVIS_SELECTED | LVIS_FOCUSED, LVIS_SELECTED | LVIS_FOCUSED);
+        ListView_EnsureVisible(list_view, row, FALSE);
+        show_selected_lint(row);
     }
     */
 
     void OutputDialog::show_selected_lint(int selected_item)
     {
-        int tab = TabCtrl_GetCurSel(dialogue_);
+        int const tab = TabCtrl_GetCurSel(dialogue_);
         XmlParser::Error const &lint_error = errors_[tab][selected_item];
 
-        int line = std::max(lint_error.m_line - 1, 0);
-        int column = std::max(lint_error.m_column - 1, 0);
+        int const line = std::max(lint_error.m_line - 1, 0);
+        int const column = std::max(lint_error.m_column - 1, 0);
 
         /* We only need to do this if we need to pop up linter.xml. The following isn't ideal */
         if (tab == Tab::System_Error)
@@ -598,11 +577,7 @@ namespace Linter
             ::SendMessage(npp_data_._nppHandle, NPPM_DOOPEN, 0, reinterpret_cast<LPARAM>(lint_error.m_path.c_str()));
         }
 
-        HWND current_window = GetCurrentScintillaWindow();
-        if (current_window == nullptr)
-        {
-            return;
-        }
+        HWND const current_window = GetCurrentScintillaWindow();
         ::SendMessage(current_window, SCI_GOTOLINE, line, 0);
 
         // since there is no SCI_GOTOCOLUMN, we move to the right until ...
@@ -610,9 +585,9 @@ namespace Linter
         {
             ::SendMessage(current_window, SCI_CHARRIGHT, 0, 0);
 
-            int curPos = (int)::SendMessage(current_window, SCI_GETCURRENTPOS, 0, 0);
+            LRESULT const curPos = ::SendMessage(current_window, SCI_GETCURRENTPOS, 0, 0);
 
-            int curLine = (int)::SendMessage(current_window, SCI_LINEFROMPOSITION, curPos, 0);
+            LRESULT const curLine = ::SendMessage(current_window, SCI_LINEFROMPOSITION, curPos, 0);
             if (curLine > line)
             {
                 // ... current line is greater than desired line or ...
@@ -620,7 +595,7 @@ namespace Linter
                 break;
             }
 
-            int curCol = (int)::SendMessage(current_window, SCI_GETCOLUMN, curPos, 0);
+            LRESULT const curCol = ::SendMessage(current_window, SCI_GETCOLUMN, curPos, 0);
             if (curCol > column)
             {
                 // ... current column is greater than desired column or ...
@@ -640,73 +615,92 @@ namespace Linter
 
     void OutputDialog::copy_to_clipboard()
     {
-        /*
-        std::basic_stringstream<TCHAR> stream;
+        std::wstringstream stream;
 
-        int iTab = TabCtrl_GetCurSel(dialogue_);
+        int const tab = TabCtrl_GetCurSel(dialogue_);
 
-        bool bFirst = true;
-        int tab = ListView_GetNextItem(list_views_[iTab], -1, LVNI_SELECTED);
-        while (tab != -1)
+        bool first = true;
+        int row = ListView_GetNextItem(list_views_[tab], -1, LVNI_SELECTED);
+        while (row != -1)
         {
-            const FileLint &lint_error = m_fileLints[iTab][tab];
+            auto const &lint_error = errors_[tab][row];
 
-            if (bFirst)
+            if (first)
             {
-                bFirst = false;
+                first = false;
             }
             else
             {
-                stream << TEXT("\r\n");
+                stream << L"\r\n";
             }
 
-            stream << TEXT("Line ") << lint_error.lint.GetLine() + 1 << TEXT(", column ") << lint_error.lint.GetCharacter() + 1 << TEXT(": ")
-                   << lint_error.lint.GetReason().c_str() << TEXT("\r\n\t") << lint_error.lint.GetEvidence().c_str() << TEXT("\r\n");
+            stream << L"Line " << lint_error.m_line << L", column " << lint_error.m_column << L": " << L"\r\n\t"
+                   << lint_error.m_message << L"\r\n";
 
-            tab = ListView_GetNextItem(list_views_[TabCtrl_GetCurSel(dialogue_)], tab, LVNI_SELECTED);
+            row = ListView_GetNextItem(list_views_[tab], row, LVNI_SELECTED);
         }
 
-        std::wstring str = stream.str();
+        std::wstring const str = stream.str();
         if (str.empty())
         {
             return;
         }
 
-        if (OpenClipboard(_hSelf))
+        if (!::OpenClipboard(getHSelf()))
         {
-            if (EmptyClipboard())
-            {
-                size_t size = (str.size() + 1) * sizeof(TCHAR);
-                HGLOBAL hResult = GlobalAlloc(GMEM_MOVEABLE, size);
-                LPTSTR lpsz = (LPTSTR)GlobalLock(hResult);
-                memcpy(lpsz, str.c_str(), size);
-                GlobalUnlock(hResult);
+            ::MessageBox(_hSelf, L"Cannot open the Clipboard", L"Linter", MB_OK | MB_ICONERROR);
+            return;
+        }
 
-                if (SetClipboardData(CF_UNICODETEXT, hResult) == nullptr)
-                {
-                    GlobalFree(hResult);
-                    MessageBox(_hSelf, TEXT("Unable to set Clipboard data"), TEXT("JSLint"), MB_OK | MB_ICONERROR);
-                }
-            }
-            else
-            {
-                MessageBox(_hSelf, TEXT("Cannot empty the Clipboard"), TEXT("JSLint"), MB_OK | MB_ICONERROR);
-            }
-            CloseClipboard();
-        }
-        else
+        class Clipboard_Releaser
         {
-            MessageBox(_hSelf, TEXT("Cannot open the Clipboard"), TEXT("JSLint"), MB_OK | MB_ICONERROR);
+          public:
+            Clipboard_Releaser()
+            {
+            }
+
+            ~Clipboard_Releaser()
+            {
+                ::CloseClipboard();
+            }
+        } const clipboard_releaser;
+
+        if (!::EmptyClipboard())
+        {
+            ::MessageBox(getHSelf(), L"Cannot empty the Clipboard", L"Linter", MB_OK | MB_ICONERROR);
+            return;
         }
-    */
+
+        size_t const size = (str.size() + 1) * sizeof(TCHAR);
+        HGLOBAL const mem_handle = ::GlobalAlloc(GMEM_MOVEABLE, size);
+        if (mem_handle == nullptr)
+        {
+            ::MessageBox(_hSelf, L"Cannot allocate memory for clipboard", L"Linter", MB_OK | MB_ICONERROR);
+            return;
+        }
+
+        LPVOID lpsz = ::GlobalLock(mem_handle);
+        if (lpsz == nullptr)
+        {
+            ::MessageBox(_hSelf, L"Cannot lock memory for clipboard", L"Linter", MB_OK | MB_ICONERROR);
+            ::GlobalFree(mem_handle);
+            return;
+        }
+
+        std::memcpy(lpsz, str.c_str(), size);
+        ::GlobalUnlock(mem_handle);
+
+        if (::SetClipboardData(CF_UNICODETEXT, mem_handle) == nullptr)
+        {
+            ::GlobalFree(mem_handle);
+            ::MessageBox(_hSelf, L"Unable to set Clipboard data", L"Linter", MB_OK | MB_ICONERROR);
+        }
     }
 
     HWND OutputDialog::GetCurrentScintillaWindow() const
     {
-        //This seems oddly pessimistic
-        int which = -1;
-        ::SendMessage(npp_data_._nppHandle, NPPM_GETCURRENTSCINTILLA, 0, reinterpret_cast<LPARAM>(&which));
-        return which == -1 ? nullptr : which == 0 ? npp_data_._scintillaMainHandle : npp_data_._scintillaSecondHandle;
+        LRESULT const view = ::SendMessage(npp_data_._nppHandle, NPPM_GETCURRENTVIEW, 0, 0);
+        return view == 0 ? npp_data_._scintillaMainHandle : npp_data_._scintillaSecondHandle;
     }
 
 }    // namespace Linter

@@ -15,7 +15,16 @@ using Linter::SystemError;
 std::vector<XmlParser::Error> XmlParser::getErrors(const std::string &xml, std::wstring const &path, std::wstring const &tool)
 {
     ::Linter::DomDocument XMLDocument(xml);
+    // Sample errors:
+    // 
     // <error line="12" column="19" severity="error" message="Unexpected identifier" source="jscs" />
+    // <error source = "jshint.W101" message = "Line is too long. (W101)" severity = "warning" column = "81" line = "58" />
+    // <error source = "eslint.rules.jsdoc/require-description-complete-sentence" message =
+    //        "Sentences should start with an uppercase character. (jsdoc/require-description-complete-sentence)" severity =
+    //            "warning" column = "1" line = "83" />
+    // 
+    // The 'severity' is probably a bit useless
+    // source might be useful as the tool source.
 
     std::vector<XmlParser::Error> errors;
 
@@ -47,7 +56,6 @@ std::vector<XmlParser::Error> XmlParser::getErrors(const std::string &xml, std::
         int const column = _wtoi(value.bstrVal);
 
         element->getAttribute(bstr_t(L"message"), &value);
-
 
         errors.push_back(Error{line, column, value.bstrVal, path, tool});
     }
