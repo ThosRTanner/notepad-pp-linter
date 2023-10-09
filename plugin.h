@@ -27,4 +27,15 @@ LRESULT SendApp(UINT Msg, WPARAM wParam = 0, LPARAM lParam = 0);
 std::string getDocumentText();
 std::string getLineText(int line);
 LRESULT getPositionForLine(int line);
-void ShowError(LRESULT start, LRESULT end, bool off = true);
+
+void ShowError(LRESULT start, LRESULT end, bool on);
+
+inline void ShowError(LRESULT pos)
+{
+    ShowError(pos, pos + 1, true);
+}
+
+inline void HideErrors()
+{
+    ShowError(0, SendEditor(SCI_GETLENGTH), false);
+}

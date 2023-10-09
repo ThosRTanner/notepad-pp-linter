@@ -28,8 +28,7 @@ namespace
 
     void ClearErrors()
     {
-        LRESULT length = SendEditor(SCI_GETLENGTH);
-        ShowError(0, length, false);
+        HideErrors();
         SendEditor(SCI_ANNOTATIONCLEARALL);
     }
 
@@ -77,7 +76,6 @@ namespace
         if (error != errorText.end())
         {
             SendMessage(childHandle, WM_SETTEXT, 0, reinterpret_cast<LPARAM>((std::wstring(L" - ") + error->second).c_str()));
-            //OutputDebugString(error->second.c_str());
         }
         else
         {
@@ -194,7 +192,7 @@ namespace
             auto position = getPositionForLine(error.m_line - 1);
             position += Encoding::utfOffset(getLineText(error.m_line - 1), error.m_column - 1);
             errorText[position] = error.m_message;
-            ShowError(position, position + 1);
+            ShowError(position);
         }
     }
 
@@ -203,7 +201,7 @@ namespace
         if (threadHandle == 0)
         {
             unsigned threadID(0);
-            threadHandle = (HANDLE)_beginthreadex(nullptr, 0, &AsyncCheck, nullptr, 0, &threadID);
+            threadHandle = reinterpret_cast<HANDLE>(_beginthreadex(nullptr, 0, &AsyncCheck, nullptr, 0, &threadID));
             isChanged = false;
         }
     }

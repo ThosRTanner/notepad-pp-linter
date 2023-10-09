@@ -132,7 +132,7 @@ wchar_t const *getIniFileName()
 void initConfig()
 {
     ::SendMessage(nppData._nppHandle, NPPM_GETPLUGINSCONFIGDIR, MAX_PATH, reinterpret_cast<LPARAM>(iniFilePath));
-    if (! PathFileExists(iniFilePath))
+    if (!PathFileExists(iniFilePath))
     {
         ::CreateDirectory(iniFilePath, nullptr);
     }
@@ -145,13 +145,8 @@ void commandMenuCleanUp()
 
 HWND getScintillaWindow()
 {
-    int which = -1;
-    SendMessage(nppData._nppHandle, NPPM_GETCURRENTSCINTILLA, 0, reinterpret_cast<LPARAM>(&which));
-    if (which == -1)
-    {
-        return nullptr;
-    }
-    return (which == 0) ? nppData._scintillaMainHandle : nppData._scintillaSecondHandle;
+    LRESULT which = SendMessage(nppData._nppHandle, NPPM_GETCURRENTVIEW, 0, 0);
+    return which == 0 ? nppData._scintillaMainHandle : nppData._scintillaSecondHandle;
 }
 
 LRESULT SendEditor(UINT Msg, WPARAM wParam, LPARAM lParam)
@@ -194,17 +189,10 @@ LRESULT getPositionForLine(int line)
     return SendEditor(SCI_POSITIONFROMLINE, line);
 }
 
-void ShowError(LRESULT start, LRESULT end, bool off)
+void ShowError(LRESULT start, LRESULT end, bool on)
 {
     LRESULT oldid = SendEditor(SCI_GETINDICATORCURRENT);
     SendEditor(SCI_SETINDICATORCURRENT, SCE_SQUIGGLE_UNDERLINE_RED);
-    if (off)
-    {
-        SendEditor(SCI_INDICATORFILLRANGE, start, (end - start));
-    }
-    else
-    {
-        SendEditor(SCI_INDICATORCLEARRANGE, start, (end - start));
-    }
+    SendEditor(on ? SCI_INDICATORFILLRANGE : SCI_INDICATORCLEARRANGE, start, (end - start));
     SendEditor(SCI_SETINDICATORCURRENT, oldid);
 }
