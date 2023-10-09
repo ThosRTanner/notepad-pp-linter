@@ -37,7 +37,7 @@ namespace
     {
         //FIXME Make this configurable, because it is just strange.
         SendEditor(SCI_INDICSETSTYLE, SCE_SQUIGGLE_UNDERLINE_RED, INDIC_BOX);    // INDIC_SQUIGGLE);
-        SendEditor(SCI_INDICSETFORE, SCE_SQUIGGLE_UNDERLINE_RED, 0x0000ff); //Red (Reversed RGB)
+        SendEditor(SCI_INDICSETFORE, SCE_SQUIGGLE_UNDERLINE_RED, 0x0000ff);      //Red (Reversed RGB)
 
         if (settings->alpha() != -1 || settings->color() != -1)
         {
@@ -57,11 +57,13 @@ namespace
 
     std::wstring GetFilePart(unsigned int part)
     {
-        LPTSTR buff = new TCHAR[MAX_PATH + 1];
-        SendApp(part, MAX_PATH, (LPARAM)buff);
-        std::wstring text(buff);
-        delete[] buff;
-        return text;
+#if __cplusplus >= 202002L
+        auto buff{std::make_unique_for_overwrite<wchar_t[]>(MAX_PATH + 1)};
+#else
+        std::unique_ptr<wchar_t[]> buff{new wchar_t[MAX_PATH + 1]};
+#endif
+        SendApp(part, MAX_PATH, reinterpret_cast<LPARAM>(buff.get()));
+        return buff.get();
     }
 
     void showTooltip(std::wstring message = std::wstring())

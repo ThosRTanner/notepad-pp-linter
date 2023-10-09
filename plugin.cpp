@@ -169,9 +169,9 @@ std::string getDocumentText()
 {
     LRESULT lengthDoc = SendEditor(SCI_GETLENGTH);
 #if __cplusplus >= 202002L
-    auto buff = std::make_unique_for_overwrite<char[]>(lengthDoc + 1);
+    auto buff{std::make_unique_for_overwrite<char[]>(lengthDoc + 1)};
 #else
-    auto buff = std::unique_ptr<char[]>{new char[lengthDoc + 1]};
+    std::unique_ptr<char[]> buff{new char[lengthDoc + 1]};
 #endif
     SendEditor(SCI_GETTEXT, lengthDoc, reinterpret_cast<LPARAM>(buff.get()));
     return std::string(buff.get(), lengthDoc);
@@ -181,9 +181,9 @@ std::string getLineText(int line)
 {
     LRESULT length = SendEditor(SCI_LINELENGTH, line);
 #if __cplusplus >= 202002L
-    auto buff = std::make_unique_for_overwrite<char[]>(length + 1);
+    auto buff{std::make_unique_for_overwrite<char[]>(length + 1)};
 #else
-    auto buff = std::unique_ptr < char[]>{new char[length + 1] };
+    std::unique_ptr<char[]> buff{new char[length + 1]};
 #endif
     SendEditor(SCI_GETLINE, line, reinterpret_cast<LPARAM>(buff.get()));
     return std::string(buff.get(), length);
