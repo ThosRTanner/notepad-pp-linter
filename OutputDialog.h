@@ -99,6 +99,19 @@ namespace Linter
 
         /** Get the current scintilla window */
         HWND GetCurrentScintillaWindow() const;
+
+        /** Structure needed to map from sort call parameter to C++ */
+        struct Sort_Call_Info
+        {
+            OutputDialog *dialogue;
+            Tab tab;
+        };
+
+        /** This defines the sorting for the list view */
+        int sort_selected_list(Tab tab, LPARAM row1_index, LPARAM row2_index);
+
+        /** This is what is actually called from the ListView_Sort method */
+        static int sort_call_function(LPARAM lParam1, LPARAM lParam2, LPARAM lParamSort);
     };
 
 }    // namespace Linter

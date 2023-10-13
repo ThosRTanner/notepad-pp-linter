@@ -33,7 +33,7 @@ namespace Linter
         Context_Select_All
     };
 
-        /*
+/*
 ////////////////////////////////////////////////////////////////////////////////
 
 
@@ -476,6 +476,15 @@ namespace Linter
         }
 
         update_displayed_counts();
+
+        //Not sure we should do this every time we add something, but...
+        //Also allow user to sort differently and remember?
+        Sort_Call_Info info;
+
+        info.dialogue = this;
+        info.tab = tab;
+
+        ListView_SortItemsEx(list_view, sort_call_function, reinterpret_cast<LPARAM>(&info));
         InvalidateRect(getHSelf(), nullptr, TRUE);
     }
 
@@ -701,6 +710,17 @@ namespace Linter
     {
         LRESULT const view = ::SendMessage(npp_data_._nppHandle, NPPM_GETCURRENTVIEW, 0, 0);
         return view == 0 ? npp_data_._scintillaMainHandle : npp_data_._scintillaSecondHandle;
+    }
+
+    int OutputDialog::sort_selected_list(Tab tab, LPARAM row1_index, LPARAM row2_index)
+    {
+        return errors_[tab][row1_index].m_line - errors_[tab][row2_index].m_line;
+    }
+
+    int CALLBACK OutputDialog::sort_call_function(LPARAM val1, LPARAM val2, LPARAM lParamSort)
+    {
+        auto const &info = *reinterpret_cast<Sort_Call_Info *>(lParamSort);
+        return info.dialogue->sort_selected_list(info.tab, val1, val2);
     }
 
 }    // namespace Linter
