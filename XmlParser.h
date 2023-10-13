@@ -20,5 +20,5 @@ class XmlParser
         std::wstring m_tool;
     };
 
-    static std::vector<Error> getErrors(std::string const &xml, std::wstring const &path, std::wstring const &tool);
+    static std::vector<Error> getErrors(std::string const &xml, std::wstring const &path);
 };

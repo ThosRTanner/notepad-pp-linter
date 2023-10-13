@@ -99,7 +99,7 @@ namespace
     {
         std::string const str(exc.what());
         std::wstring const wstr{str.begin(), str.end()};
-        output_dialogue->add_system_error(XmlParser::Error{0, 0, wstr, getIniFileName(), L""});
+        output_dialogue->add_system_error(XmlParser::Error{0, 0, wstr, getIniFileName(), L"linter"});
         showTooltip(L"Linter: " + wstr);
     }
 
@@ -151,9 +151,8 @@ namespace
                     str = text;
                 }
                 std::string xml = file.exec(command.first, str);
-                std::vector<XmlParser::Error> parseError = XmlParser::getErrors(xml, full_path, command.first);
+                std::vector<XmlParser::Error> parseError = XmlParser::getErrors(xml, full_path);
                 errors.insert(errors.end(), parseError.begin(), parseError.end());
-                //FIXME don't add the full command line, just the command name.
                 output_dialogue->add_lint_errors(parseError);
             }
             catch (std::exception const &e)
@@ -182,7 +181,7 @@ namespace
     {
         ClearErrors();
         errorText.clear();
-        if (!errors.empty())
+        if (! errors.empty())
         {
             InitErrors();
         }

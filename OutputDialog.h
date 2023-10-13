@@ -98,7 +98,7 @@ namespace Linter
         void copy_to_clipboard();
 
         /** Get the current scintilla window */
-        HWND OutputDialog::GetCurrentScintillaWindow() const;
+        HWND GetCurrentScintillaWindow() const;
     };
 
 }    // namespace Linter

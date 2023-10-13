@@ -7,12 +7,13 @@
 
 #include <memory>
 #include <sstream>
+#include <string>
 
 #include <msxml6.h>
 
 using Linter::SystemError;
 
-std::vector<XmlParser::Error> XmlParser::getErrors(const std::string &xml, std::wstring const &path, std::wstring const &tool)
+std::vector<XmlParser::Error> XmlParser::getErrors(const std::string &xml, std::wstring const &path)
 {
     ::Linter::DomDocument XMLDocument(xml);
     // Sample errors:
@@ -50,10 +51,18 @@ std::vector<XmlParser::Error> XmlParser::getErrors(const std::string &xml, std::
         CComVariant value;
 
         element->getAttribute(bstr_t(L"line"), &value);
-        int const line = _wtoi(value.bstrVal);
+        int const line = std::stoi(value.bstrVal);
 
         element->getAttribute(bstr_t(L"column"), &value);
-        int const column = _wtoi(value.bstrVal);
+        int const column = std::stoi(value.bstrVal);
+
+        element->getAttribute(bstr_t(L"source"), &value);
+        std::wstring tool(value.bstrVal);
+        std::size_t pos = tool.find_first_of('.');
+        if (pos != std::string::npos)
+        {
+            tool = tool.substr(0, pos);
+        }
 
         element->getAttribute(bstr_t(L"message"), &value);
 

@@ -456,7 +456,7 @@ namespace Linter
 
             ListView_SetItemText(list_view, lvI.iItem, Column_Message, const_cast<wchar_t *>(lint.m_message.c_str()));
 
-            std::wstring strFile = L"Not quite sure";    //Path::GetFileName(file);
+            std::wstring strFile = lint.m_tool;
             ListView_SetItemText(list_view, lvI.iItem, Column_Tool, const_cast<wchar_t *>(strFile.c_str()));
 
             stream.str(L"");

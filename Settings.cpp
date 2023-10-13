@@ -33,23 +33,17 @@ namespace Linter
         //This is majorly horrible as I have to open a handle to the file
         uint64_t last_write_time;
         {
-            HANDLE const handle{CreateFile(settings_xml_.c_str(),
+            HandleWrapper const handle{CreateFile(settings_xml_.c_str(),
                 0,
                 FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
                 nullptr,
                 OPEN_EXISTING,
                 FILE_ATTRIBUTE_NORMAL,
                 NULL)};
-            if (handle == INVALID_HANDLE_VALUE)
-            {
-                throw SystemError();
-            }
-            HandleWrapper h{handle};
             if (!GetFileTime(handle, nullptr, nullptr, reinterpret_cast<FILETIME *>(&last_write_time)))
             {
                 throw SystemError();
             }
-            h.close();
         }
 #endif
         if (last_write_time != last_update_time_)
@@ -134,16 +128,16 @@ namespace Linter
             {
                 CComQIPtr<IXMLDOMElement> element(node);
                 Linter linter;
-                CComVariant extension;
+                CComVariant value;
 
-                element->getAttribute(bstr_t(L"extension"), &extension);
-                linter.m_extension = extension.bstrVal;
+                element->getAttribute(bstr_t(L"extension"), &value);
+                linter.m_extension = value.bstrVal;
 
-                element->getAttribute(bstr_t(L"command"), &extension);
-                linter.m_command = extension.bstrVal;
+                element->getAttribute(bstr_t(L"command"), &value);
+                linter.m_command = value.bstrVal;
 
-                element->getAttribute(bstr_t(L"stdin"), &extension);
-                linter.m_useStdin = !!extension.boolVal;
+                element->getAttribute(bstr_t(L"stdin"), &value);
+                linter.m_useStdin = value.boolVal != 0; //Is that strictly necessary?
 
                 linters_.push_back(linter);
             }
