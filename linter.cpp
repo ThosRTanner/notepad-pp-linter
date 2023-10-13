@@ -263,6 +263,27 @@ extern "C" __declspec(dllexport) void beNotified(SCNotification *notifyCode)
             Changed();
             break;
 
+        case NPPN_FILESAVED:
+            //get which file changed
+            {
+                auto buffer = notifyCode->nmhdr.idFrom;
+                std::size_t len = SendApp(NPPM_GETFULLPATHFROMBUFFERID, buffer, reinterpret_cast<LPARAM>(nullptr));
+                if (len != -1)
+                {
+#if __cplusplus >= 202002L
+                    auto buff{std::make_unique_for_overwrite<wchar_t[]>(len + 1)};
+#else
+                    std::unique_ptr<wchar_t[]> buff{new wchar_t[len + 1]};
+#endif
+                    SendApp(NPPM_GETFULLPATHFROMBUFFERID, buffer, reinterpret_cast<LPARAM>(buff.get()));
+                    if (std::wstring(buff.get(), len) == getIniFileName())
+                    {
+                        Changed();
+                    }
+                }
+            }
+            break;
+
         case SCN_MODIFIED:
             if ((notifyCode->modificationType & (SC_MOD_DELETETEXT | SC_MOD_INSERTTEXT)) != 0)
             {
