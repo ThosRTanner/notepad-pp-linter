@@ -60,6 +60,8 @@ namespace Linter
         NppData const &npp_data_;
         HWND dialogue_;
         std::array<HWND, Num_Tabs> list_views_;
+        Tab current_tab_;
+        HWND current_list_view_;
 
         struct TabDefinition
         {
@@ -69,8 +71,6 @@ namespace Linter
         static std::array<TabDefinition, Num_Tabs> const tab_definitions_;
 
         std::array<std::vector<XmlParser::Error>, Num_Tabs> errors_;
-
-        std::wstring ini_file_;
 
         /** Initialise the output window */
         void initialise_dialogue();
@@ -96,9 +96,6 @@ namespace Linter
         void show_selected_lint(int selected_item);
         //describe
         void copy_to_clipboard();
-
-        /** Get the current scintilla window */
-        HWND GetCurrentScintillaWindow() const;
 
         /** Structure needed to map from sort call parameter to C++ */
         struct Sort_Call_Info

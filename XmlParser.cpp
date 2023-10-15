@@ -13,7 +13,7 @@
 
 using Linter::SystemError;
 
-std::vector<XmlParser::Error> XmlParser::getErrors(const std::string &xml, std::wstring const &path)
+std::vector<XmlParser::Error> XmlParser::getErrors(const std::string &xml)
 {
     ::Linter::DomDocument XMLDocument(xml);
     // Sample errors:
@@ -66,7 +66,7 @@ std::vector<XmlParser::Error> XmlParser::getErrors(const std::string &xml, std::
 
         element->getAttribute(bstr_t(L"message"), &value);
 
-        errors.push_back(Error{line, column, value.bstrVal, path, tool});
+        errors.push_back(Error{line, column, value.bstrVal, tool});
     }
 
     return errors;

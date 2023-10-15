@@ -10,6 +10,7 @@
 #include <algorithm>
 #include <cstddef>
 #include <sstream>
+#include "plugin.h"
 
 namespace Linter
 {
@@ -156,8 +157,7 @@ namespace Linter
 
                     case Context_Show_Source_Line:
                     {
-                        int tab = TabCtrl_GetCurSel(dialogue_);
-                        int item = ListView_GetNextItem(list_views_[tab], -1, LVIS_FOCUSED | LVIS_SELECTED);
+                        int item = ListView_GetNextItem(current_list_view_, -1, LVIS_FOCUSED | LVIS_SELECTED);
                         if (item != -1)
                         {
                             show_selected_lint(item);
@@ -166,7 +166,7 @@ namespace Linter
                     }
 
                     case Context_Select_All:
-                        ListView_SetItemState(list_views_[TabCtrl_GetCurSel(dialogue_)], -1, LVIS_SELECTED, LVIS_SELECTED);
+                        ListView_SetItemState(current_list_view_, -1, LVIS_SELECTED, LVIS_SELECTED);
                         return TRUE;
                 }
             }
@@ -178,12 +178,12 @@ namespace Linter
                 switch (notify_header->code)
                 {
                     case LVN_KEYDOWN:
-                        if (notify_header->idFrom == tab_definitions_[TabCtrl_GetCurSel(dialogue_)].list_view_id_)
+                        if (notify_header->idFrom == tab_definitions_[current_tab_].list_view_id_)
                         {
                             LPNMLVKEYDOWN pnkd = reinterpret_cast<LPNMLVKEYDOWN>(lParam);
                             if (pnkd->wVKey == 'A' && (::GetKeyState(VK_CONTROL) & 0x8000U) != 0)
                             {
-                                ListView_SetItemState(list_views_[TabCtrl_GetCurSel(dialogue_)], -1, LVIS_SELECTED, LVIS_SELECTED);
+                                ListView_SetItemState(current_list_view_, -1, LVIS_SELECTED, LVIS_SELECTED);
                                 return TRUE;
                             }
                             else if (pnkd->wVKey == 'C' && (::GetKeyState(VK_CONTROL) & 0x8000U) != 0)
@@ -195,7 +195,7 @@ namespace Linter
                         break;
 
                     case NM_DBLCLK:
-                        if (notify_header->idFrom == tab_definitions_[TabCtrl_GetCurSel(dialogue_)].list_view_id_)
+                        if (notify_header->idFrom == tab_definitions_[current_tab_].list_view_id_)
                         {
                             LPNMITEMACTIVATE lpnmitem = reinterpret_cast<LPNMITEMACTIVATE>(lParam);
                             int selected_item = lpnmitem->iItem;
@@ -239,13 +239,11 @@ namespace Linter
                 // build context menu
                 HMENU menu = ::CreatePopupMenu();
 
-                int const numSelected = ListView_GetSelectedCount(list_views_[TabCtrl_GetCurSel(dialogue_)]);
+                int const numSelected = ListView_GetSelectedCount(current_list_view_);
 
-                if (numSelected > 0)
+                if (numSelected >= 1)
                 {
-                    int iTab = TabCtrl_GetCurSel(dialogue_);
-
-                    int iFocused = ListView_GetNextItem(list_views_[iTab], -1, LVIS_FOCUSED | LVIS_SELECTED);
+                    int iFocused = ListView_GetNextItem(current_list_view_, -1, LVIS_FOCUSED | LVIS_SELECTED);
                     if (iFocused != -1)
                     {
                         AppendMenu(menu, MF_ENABLED, Context_Show_Source_Line, L"Show");
@@ -272,7 +270,7 @@ namespace Linter
                 {
                     point.x = 0;
                     point.y = 0;
-                    ClientToScreen(list_views_[TabCtrl_GetCurSel(dialogue_)], &point);
+                    ClientToScreen(current_list_view_, &point);
                 }
 
                 // show context menu
@@ -401,6 +399,8 @@ namespace Linter
     void OutputDialog::selected_tab_changed()
     {
         int const selected = TabCtrl_GetCurSel(dialogue_);
+        current_tab_ = static_cast<Tab>(selected);
+        current_list_view_ = list_views_[current_tab_];
         for (int tab = 0; tab < Num_Tabs; tab += 1)
         {
             ShowWindow(list_views_[tab], selected == tab ? SW_SHOW : SW_HIDE);
@@ -439,7 +439,7 @@ namespace Linter
         std::wstringstream stream;
 
         LVITEM lvI;
-        lvI.mask = LVIF_TEXT | LVIF_STATE;
+        lvI.mask = LVIF_TEXT | LVIF_STATE | LVIF_PARAM;
 
         for (auto const &lint : lints)
         {
@@ -447,6 +447,7 @@ namespace Linter
             lvI.iItem = ListView_GetItemCount(list_view);
             lvI.state = 0;
             lvI.stateMask = 0;
+            lvI.lParam = lvI.iItem;
 
             stream.str(L"");
             stream << lvI.iItem + 1;
@@ -572,43 +573,46 @@ namespace Linter
     }
     */
 
+    //FIXME We've already worked out the tab in all callers of this.
     void OutputDialog::show_selected_lint(int selected_item)
     {
-        int const tab = TabCtrl_GetCurSel(dialogue_);
-        XmlParser::Error const &lint_error = errors_[tab][selected_item];
+        LVITEM item;
+        item.iItem = selected_item;
+        item.iSubItem = 0;
+        item.mask = LVIF_PARAM;
+        ListView_GetItem(current_list_view_, &item);
+
+        XmlParser::Error const &lint_error = errors_[current_tab_][item.lParam];
 
         int const line = std::max(lint_error.m_line - 1, 0);
         int const column = std::max(lint_error.m_column - 1, 0);
 
         /* We only need to do this if we need to pop up linter.xml. The following isn't ideal */
-        if (tab == Tab::System_Error)
+        if (current_tab_ == Tab::System_Error)
         {
-            ::SendMessage(npp_data_._nppHandle, NPPM_DOOPEN, 0, reinterpret_cast<LPARAM>(lint_error.m_path.c_str()));
+            editConfig();
         }
 
-        HWND const current_window = GetCurrentScintillaWindow();
-        ::SendMessage(current_window, SCI_GOTOLINE, line, 0);
+        SendEditor(SCI_GOTOLINE, line, 0);
 
         // since there is no SCI_GOTOCOLUMN, we move to the right until ...
         for (;;)
         {
-            ::SendMessage(current_window, SCI_CHARRIGHT, 0, 0);
-
-            LRESULT const curPos = ::SendMessage(current_window, SCI_GETCURRENTPOS, 0, 0);
-
-            LRESULT const curLine = ::SendMessage(current_window, SCI_LINEFROMPOSITION, curPos, 0);
+            SendEditor(SCI_CHARRIGHT, 0, 0);
+            LRESULT const curPos = SendEditor(SCI_GETCURRENTPOS, 0, 0);
+            LRESULT const curLine = SendEditor(SCI_LINEFROMPOSITION, curPos, 0);
             if (curLine > line)
             {
                 // ... current line is greater than desired line or ...
-                ::SendMessage(current_window, SCI_CHARLEFT, 0, 0);
+                SendEditor(SCI_CHARLEFT, 0, 0);
                 break;
             }
 
-            LRESULT const curCol = ::SendMessage(current_window, SCI_GETCOLUMN, curPos, 0);
+            LRESULT const curCol = SendEditor(SCI_GETCOLUMN, curPos, 0);
             if (curCol > column)
             {
                 // ... current column is greater than desired column or ...
-                ::SendMessage(current_window, SCI_CHARLEFT, 0, 0);
+                SendEditor(SCI_CHARLEFT, 0, 0);
                 break;
             }
 
@@ -626,13 +630,18 @@ namespace Linter
     {
         std::wstringstream stream;
 
-        int const tab = TabCtrl_GetCurSel(dialogue_);
-
         bool first = true;
-        int row = ListView_GetNextItem(list_views_[tab], -1, LVNI_SELECTED);
+        int row = ListView_GetNextItem(current_list_view_, -1, LVNI_SELECTED);
         while (row != -1)
         {
-            auto const &lint_error = errors_[tab][row];
+            //Get the actual item for the row
+            LVITEM item;
+            item.iItem = row;
+            item.iSubItem = 0;
+            item.mask = LVIF_PARAM;
+            ListView_GetItem(current_list_view_, &item);
+
+            auto const &lint_error = errors_[current_tab_][item.lParam];
 
             if (first)
             {
@@ -646,7 +655,7 @@ namespace Linter
             stream << L"Line " << lint_error.m_line << L", column " << lint_error.m_column << L": " << L"\r\n\t"
                    << lint_error.m_message << L"\r\n";
 
-            row = ListView_GetNextItem(list_views_[tab], row, LVNI_SELECTED);
+            row = ListView_GetNextItem(current_list_view_, row, LVNI_SELECTED);
         }
 
         std::wstring const str = stream.str();
@@ -706,15 +715,15 @@ namespace Linter
         }
     }
 
-    HWND OutputDialog::GetCurrentScintillaWindow() const
-    {
-        LRESULT const view = ::SendMessage(npp_data_._nppHandle, NPPM_GETCURRENTVIEW, 0, 0);
-        return view == 0 ? npp_data_._scintillaMainHandle : npp_data_._scintillaSecondHandle;
-    }
-
     int OutputDialog::sort_selected_list(Tab tab, LPARAM row1_index, LPARAM row2_index)
     {
-        return errors_[tab][row1_index].m_line - errors_[tab][row2_index].m_line;
+        //Note: Is the index correct? It's not from LPNMITEMACTIVATE message
+        int res = errors_[tab][row1_index].m_line - errors_[tab][row2_index].m_line;
+        if (res == 0)
+        {
+            res = errors_[tab][row1_index].m_column - errors_[tab][row2_index].m_column;
+        }
+        return res;
     }
 
     int CALLBACK OutputDialog::sort_call_function(LPARAM val1, LPARAM val2, LPARAM lParamSort)

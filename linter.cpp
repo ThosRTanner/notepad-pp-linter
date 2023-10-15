@@ -99,7 +99,7 @@ namespace
     {
         std::string const str(exc.what());
         std::wstring const wstr{str.begin(), str.end()};
-        output_dialogue->add_system_error(XmlParser::Error{0, 0, wstr, getIniFileName(), L"linter"});
+        output_dialogue->add_system_error(XmlParser::Error{0, 0, wstr, L"linter"});
         showTooltip(L"Linter: " + wstr);
     }
 
@@ -151,7 +151,7 @@ namespace
                     str = text;
                 }
                 std::string xml = file.exec(command.first, str);
-                std::vector<XmlParser::Error> parseError = XmlParser::getErrors(xml, full_path);
+                std::vector<XmlParser::Error> parseError = XmlParser::getErrors(xml);
                 errors.insert(errors.end(), parseError.begin(), parseError.end());
                 output_dialogue->add_lint_errors(parseError);
             }

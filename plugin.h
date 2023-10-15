@@ -17,6 +17,7 @@ static const int SCE_SQUIGGLE_UNDERLINE_RED = INDIC_CONTAINER + 2;
 
 void commandMenuCleanUp();
 void initConfig();
+void editConfig();
 
 wchar_t const *getIniFileName();
 
@@ -28,14 +29,5 @@ std::string getDocumentText();
 std::string getLineText(int line);
 LRESULT getPositionForLine(int line);
 
-void ShowError(LRESULT start, LRESULT end, bool on);
-
-inline void ShowError(LRESULT pos)
-{
-    ShowError(pos, pos + 1, true);
-}
-
-inline void HideErrors()
-{
-    ShowError(0, SendEditor(SCI_GETLENGTH), false);
-}
+void ShowError(LRESULT pos);
+void HideErrors();

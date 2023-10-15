@@ -55,11 +55,6 @@ namespace
         return true;
     }
 
-    void editConfig()
-    {
-        ::SendMessage(nppData._nppHandle, NPPM_DOOPEN, 0, (LPARAM)iniFilePath);
-    }
-
     void show_results()
     {
         output_dialogue->display();
@@ -70,6 +65,14 @@ namespace
         setCommand(0, L"Edit config", editConfig, nullptr, false);
         setCommand(1, L"Show linter results", show_results, nullptr, false);
         output_dialogue.reset(new Linter::OutputDialog(nppData, module_handle, 1));
+    }
+
+    void ShowError(LRESULT start, LRESULT end, bool on)
+    {
+        LRESULT oldid = SendEditor(SCI_GETINDICATORCURRENT);
+        SendEditor(SCI_SETINDICATORCURRENT, SCE_SQUIGGLE_UNDERLINE_RED);
+        SendEditor(on ? SCI_INDICATORFILLRANGE : SCI_INDICATORCLEARRANGE, start, (end - start));
+        SendEditor(SCI_SETINDICATORCURRENT, oldid);
     }
 
 }    // namespace
@@ -124,9 +127,8 @@ extern "C" __declspec(dllexport) BOOL isUnicode()
     return TRUE;
 }
 
-wchar_t const *getIniFileName()
+void commandMenuCleanUp()
 {
-    return iniFilePath;
 }
 
 void initConfig()
@@ -139,14 +141,20 @@ void initConfig()
     PathAppend(iniFilePath, L"linter.xml");
 }
 
-void commandMenuCleanUp()
+void editConfig()
 {
+    SendApp(NPPM_DOOPEN, 0, reinterpret_cast<LPARAM>(iniFilePath));
+}
+
+wchar_t const *getIniFileName()
+{
+    return iniFilePath;
 }
 
 HWND getScintillaWindow()
 {
-    LRESULT which = SendMessage(nppData._nppHandle, NPPM_GETCURRENTVIEW, 0, 0);
-    return which == 0 ? nppData._scintillaMainHandle : nppData._scintillaSecondHandle;
+    LRESULT view = SendMessage(nppData._nppHandle, NPPM_GETCURRENTVIEW, 0, 0);
+    return view == 0 ? nppData._scintillaMainHandle : nppData._scintillaSecondHandle;
 }
 
 LRESULT SendEditor(UINT Msg, WPARAM wParam, LPARAM lParam)
@@ -189,10 +197,12 @@ LRESULT getPositionForLine(int line)
     return SendEditor(SCI_POSITIONFROMLINE, line);
 }
 
-void ShowError(LRESULT start, LRESULT end, bool on)
+void ShowError(LRESULT pos)
 {
-    LRESULT oldid = SendEditor(SCI_GETINDICATORCURRENT);
-    SendEditor(SCI_SETINDICATORCURRENT, SCE_SQUIGGLE_UNDERLINE_RED);
-    SendEditor(on ? SCI_INDICATORFILLRANGE : SCI_INDICATORCLEARRANGE, start, (end - start));
-    SendEditor(SCI_SETINDICATORCURRENT, oldid);
+    ShowError(pos, pos + 1, true);
+}
+
+void HideErrors()
+{
+    ShowError(0, SendEditor(SCI_GETLENGTH), false);
 }
