@@ -106,23 +106,19 @@ unsigned int __stdcall AsyncCheck(void *)
         }
     }
 
-    if (!commands.empty())
+    if (commands.empty())
+    {
+        return 0;
+    }
+
+    try
     {
         const std::string &text = getDocumentText();
 
         File file(GetFilePart(NPPM_GETFILENAME), GetFilePart(NPPM_GETCURRENTDIRECTORY));
         if (!useStdin)
         {
-            try
-            {
-                file.write(text);
-            }
-            catch (std::exception const &e)
-            {
-                std::string const str{e.what()};
-                showTooltip(L"Linter: Temp file write error:" + std::wstring(str.begin(), str.end()));
-                return 0;
-            }
+            file.write(text);
         }
 
         for (const auto &command : commands)
@@ -145,6 +141,11 @@ unsigned int __stdcall AsyncCheck(void *)
                 showTooltip(L"Linter: " + std::wstring(str.begin(), str.end()));
             }
         }
+    }
+    catch (std::exception const &e)
+    {
+        std::string str(e.what());
+        showTooltip(std::wstring(str.begin(), str.end()));
     }
 
     return 0;
