@@ -64,11 +64,11 @@ namespace Linter
 
         virtual char const *what() const noexcept
         {
-            return &buff_[0];
+            return &m_buff[0];
         }
 
       private:
-        char buff_[2048];
+        char m_buff[2048];
 
 #if __cplusplus >= 202002L
         void add_location_to_message(std::source_location const &location);

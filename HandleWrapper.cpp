@@ -8,7 +8,7 @@
 
 namespace Linter
 {
-    HandleWrapper::HandleWrapper(HANDLE h) : handle_(h)
+    HandleWrapper::HandleWrapper(HANDLE h) : m_handle(h)
     {
         if (h == INVALID_HANDLE_VALUE)
         {
@@ -17,15 +17,15 @@ namespace Linter
     }
 
     HandleWrapper::HandleWrapper(HandleWrapper &&other) noexcept
-        : handle_(std::exchange(other.handle_, INVALID_HANDLE_VALUE))
+        : m_handle(std::exchange(other.m_handle, INVALID_HANDLE_VALUE))
     {
     }
 
     void HandleWrapper::close()
     {
-        if (handle_ != INVALID_HANDLE_VALUE)
+        if (m_handle != INVALID_HANDLE_VALUE)
         {
-            HANDLE h{std::exchange(handle_, INVALID_HANDLE_VALUE)};
+            HANDLE h{std::exchange(m_handle, INVALID_HANDLE_VALUE)};
             if (!CloseHandle(h))
             {
                 if (std::uncaught_exceptions() == 0)
@@ -49,7 +49,7 @@ namespace Linter
         {
             DWORD to_write = static_cast<DWORD>(std::min(static_cast<std::size_t>(std::numeric_limits<DWORD>::max()), str.size()));
             DWORD written;
-            if (!WriteFile(handle_, buff, to_write, &written, nullptr))
+            if (!WriteFile(m_handle, buff, to_write, &written, nullptr))
             {
                 //Bad things happened
                 throw SystemError();
@@ -71,7 +71,7 @@ namespace Linter
             DWORD readBytes;
             //The API suggests when the other end closes the pipe, you should get 0. What appears to happen
             //is that you get broken pipe.
-            if (!ReadFile(handle_, &buffer[0], buffer_size, &readBytes, nullptr))
+            if (!ReadFile(m_handle, &buffer[0], buffer_size, &readBytes, nullptr))
             {
                 DWORD err = GetLastError();
                 if (err != ERROR_BROKEN_PIPE)

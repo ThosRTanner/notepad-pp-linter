@@ -26,7 +26,7 @@ namespace Linter
 
         operator HANDLE() const noexcept
         {
-            return handle_;
+            return m_handle;
         }
 
         /** Write a string to the handle
@@ -41,7 +41,7 @@ namespace Linter
         static std::pair<HandleWrapper, HandleWrapper> create_pipe();
 
       private:
-        HANDLE handle_;
+        HANDLE m_handle;
     };
 
 }    // namespace Linter

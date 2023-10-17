@@ -131,7 +131,14 @@ namespace
             return;
         }
 
-        std::string const &text = getDocumentText();
+    if (commands.empty())
+    {
+        return 0;
+    }
+
+    try
+    {
+        const std::string &text = getDocumentText();
 
         std::wstring const full_path{GetFilePart(NPPM_GETFULLCURRENTPATH)};
         File file{GetFilePart(NPPM_GETFILENAME), GetFilePart(NPPM_GETCURRENTDIRECTORY)};
@@ -160,6 +167,11 @@ namespace
                 handle_exception(e);
             }
         }
+    }
+    catch (std::exception const &e)
+    {
+        std::string str(e.what());
+        showTooltip(std::wstring(str.begin(), str.end()));
     }
 
     unsigned int __stdcall AsyncCheck(void *)
