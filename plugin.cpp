@@ -5,7 +5,7 @@
 #include "OutputDialog.h"
 #include "XmlParser.h"
 
-#include "notepad/Scintilla.h"
+#include "notepad/PluginInterface.h"
 
 #include <memory>
 #include <string>

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "notepad/PluginInterface.h"
+#include "notepad/Scintilla.h"
 
 #include <memory>
 #include <string>

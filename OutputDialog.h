@@ -48,8 +48,8 @@ namespace Linter
       private:
         enum Tab
         {
-            System_Error,
             Lint_Error,
+            System_Error
         };
 
         enum

@@ -50,8 +50,8 @@ namespace Linter
 
 */
     std::array<OutputDialog::TabDefinition, OutputDialog::Num_Tabs> const OutputDialog::tab_definitions_ = {
-        OutputDialog::TabDefinition{L"System Errors", IDC_LIST_OUTPUT},
         OutputDialog::TabDefinition{L"Lint Errors",   IDC_LIST_LINTS },
+        OutputDialog::TabDefinition{L"System Errors", IDC_LIST_OUTPUT}
     };
 
     ////////////////////////////////////////////////////////////////////////////////
