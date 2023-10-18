@@ -5,6 +5,7 @@
 #include "XmlParser.h"
 #include "encoding.h"
 #include "file.h"
+#include "SystemError.h"
 
 #include <CommCtrl.h>
 #include <vector>
@@ -135,15 +136,17 @@ unsigned int __stdcall AsyncCheck(void *)
                 std::vector<XmlParser::Error> parseError = XmlParser::getErrors(xml);
                 errors.insert(errors.end(), parseError.begin(), parseError.end());
             }
-            catch (std::exception const &e)
+            catch (const std::exception &e)
             {
+                //If we get an error running a command, log it, but carry on with the next command.
                 std::string str(e.what());
                 showTooltip(L"Linter: " + std::wstring(str.begin(), str.end()));
             }
         }
     }
-    catch (std::exception const &e)
+    catch (const std::exception &e)
     {
+        //It is likely we got an error writing the text file, 
         std::string str(e.what());
         showTooltip(std::wstring(str.begin(), str.end()));
     }

@@ -19,7 +19,7 @@ std::vector<XmlParser::Error> XmlParser::getErrors(const std::string &xml)
 
     std::vector<XmlParser::Error> errors;
 
-    CComPtr<IXMLDOMNodeList> XMLNodeList{XMLDocument.get_nodelist("//error")};
+    CComPtr<IXMLDOMNodeList> XMLNodeList{XMLDocument.getNodeList("//error")};
 
     //Why do we need uLength if we're using nextNode?
     LONG uLength;
@@ -42,10 +42,10 @@ std::vector<XmlParser::Error> XmlParser::getErrors(const std::string &xml)
         CComVariant value;
 
         element->getAttribute(bstr_t(L"line"), &value);
-        error.m_line = _wtoi(value.bstrVal);
+        error.m_line = std::stoi(value.bstrVal);
 
         element->getAttribute(bstr_t(L"column"), &value);
-        error.m_column = _wtoi(value.bstrVal);
+        error.m_column = std::stoi(value.bstrVal);
 
         element->getAttribute(bstr_t(L"message"), &value);
         error.m_message = value.bstrVal;
@@ -60,7 +60,7 @@ XmlParser::Settings XmlParser::getLinters(std::wstring const &file)
 {
     XmlParser::Settings settings;
     ::Linter::DomDocument XMLDocument(file);
-    CComPtr<IXMLDOMNodeList> styleNode{XMLDocument.get_nodelist("//style")};
+    CComPtr<IXMLDOMNodeList> styleNode{XMLDocument.getNodeList("//style")};
 
     //Why do we need to get the length if we're going to use nextNode?
     LONG uLength;
@@ -114,7 +114,7 @@ XmlParser::Settings XmlParser::getLinters(std::wstring const &file)
     }
 
     // <error line="12" column="19" severity="error" message="Unexpected identifier" source="jscs" />
-    CComPtr<IXMLDOMNodeList> XMLNodeList{XMLDocument.get_nodelist("//linter")};
+    CComPtr<IXMLDOMNodeList> XMLNodeList{XMLDocument.getNodeList("//linter")};
 
     //Why do we need to get the length if we're going to use nextNode?
     hr = XMLNodeList->get_length(&uLength);
