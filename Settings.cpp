@@ -17,10 +17,10 @@
 namespace Linter
 {
 
-    Settings::Settings(wchar_t const *settings_xml) : settings_xml_(settings_xml), alpha_(-1), color_(-1)
+    Settings::Settings(wchar_t const *settings_xml) : m_settings_xml(settings_xml), m_alpha(-1), m_color(-1)
 #if __cplusplus < 201703L
           ,
-          last_update_time_(0)
+          m_last_update_time(0)
 #endif
     {
     }
@@ -28,38 +28,38 @@ namespace Linter
     void Settings::refresh()
     {
 #if __cplusplus >= 201703L
-        auto const last_write_time{std::filesystem::last_write_time(settings_xml_)};
+        auto const last_write_time{std::filesystem::last_write_time(m_settings_xml)};
 #else
         //This is majorly horrible as I have to open a handle to the file
         uint64_t last_write_time;
         {
-            HandleWrapper const handle{CreateFile(settings_xml_.c_str(),
+            HandleWrapper const handle{CreateFileW(m_settings_xml.c_str(),
                 0,
                 FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
                 nullptr,
                 OPEN_EXISTING,
                 FILE_ATTRIBUTE_NORMAL,
-                NULL)};
-            if (!GetFileTime(handle, nullptr, nullptr, reinterpret_cast<FILETIME *>(&last_write_time)))
+                nullptr)};
+            if (! GetFileTime(handle, nullptr, nullptr, reinterpret_cast<FILETIME *>(&last_write_time)))
             {
                 throw SystemError();
             }
         }
 #endif
-        if (last_write_time != last_update_time_)
+        if (last_write_time != m_last_update_time)
         {
             read_settings();
-            last_update_time_ = last_write_time;
+            m_last_update_time = last_write_time;
         }
     }
 
     void Settings::read_settings()
     {
-        alpha_ = -1;
-        color_ = -1;
-        linters_.clear();
+        m_alpha = -1;
+        m_color = -1;
+        m_linters.clear();
 
-        DomDocument XMLDocument(settings_xml_);
+        DomDocument XMLDocument(m_settings_xml);
         CComPtr<IXMLDOMNodeList> styleNode{XMLDocument.getNodeList("//style")};
 
         LONG uLength;
@@ -87,7 +87,7 @@ namespace Linter
                     std::wstringstream data{std::wstring(value.bstrVal, SysStringLen(value.bstrVal))};
                     data >> alpha;
                 }
-                alpha_ = alpha;
+                m_alpha = alpha;
             }
 
             if (element->getAttribute(bstr_t(L"color"), &value) == S_OK)
@@ -100,10 +100,10 @@ namespace Linter
                 }
 
                 // reverse colors for scintilla's LE order
-                color_ = 0;
+                m_color = 0;
                 for (int i = 0; i < 3; i += 1)
                 {
-                    color_ = (color_ << 8) | (color & 0xff);
+                    m_color = (m_color << 8) | (color & 0xff);
                     color >>= 8;
                 }
             }
@@ -137,7 +137,7 @@ namespace Linter
                 element->getAttribute(bstr_t(L"stdin"), &value);
                 linter.m_useStdin = value.boolVal != 0; //Is that strictly necessary?
 
-                linters_.push_back(linter);
+                m_linters.push_back(linter);
             }
         }
     }
