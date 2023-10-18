@@ -20,9 +20,6 @@ namespace Linter
             bool m_useStdin = false;
         };
 
-        //begin function that returns const ref to first linter
-        //end function that returns const ref to last linter
-
         /** Returns the alpha mask for the 'squiggle' or -1 if not set */
         int alpha() const
         {

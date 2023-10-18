@@ -19,13 +19,12 @@ std::vector<XmlParser::Error> XmlParser::getErrors(const std::string &xml)
     // Sample errors:
     // 
     // <error line="12" column="19" severity="error" message="Unexpected identifier" source="jscs" />
-    // <error source = "jshint.W101" message = "Line is too long. (W101)" severity = "warning" column = "81" line = "58" />
-    // <error source = "eslint.rules.jsdoc/require-description-complete-sentence" message =
-    //        "Sentences should start with an uppercase character. (jsdoc/require-description-complete-sentence)" severity =
-    //            "warning" column = "1" line = "83" />
-    // 
-    // The 'severity' is probably a bit useless
-    // source might be useful as the tool source.
+    // <error source="jshint.W101" message="Line is too long. (W101)" severity="warning" column="81" line="58" />
+    // <error source="eslint.rules.jsdoc/require-description-complete-sentence"
+    //        message="Sentences should start with an uppercase character. (jsdoc/require-description-complete-sentence)"
+    //        severity="warning" column="1" line="83" />
+    //
+    // We currently ignore severity, and use the 1st word in source as the tool.
 
     std::vector<XmlParser::Error> errors;
 

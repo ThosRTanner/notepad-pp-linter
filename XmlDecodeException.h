@@ -13,7 +13,20 @@ namespace Linter
 
         ~XmlDecodeException();
 
+        /** Returns user-readable string describing error */
         char const *what() const noexcept override;
+
+        /** Line in xml file at which error occured */
+        long line() const noexcept
+        {
+            return m_line;
+        }
+
+        /** Column in line in xml file at which error occured */
+        long column() const noexcept
+        {
+            return m_column;
+        }
 
       private:
         //value of what()

@@ -6,6 +6,7 @@
 #include "plugin.h"
 #include "OutputDialog.h"
 #include "Settings.h"
+#include "XmlDecodeException.h"
 #include "XmlParser.h"
 #include "SystemError.h"
 
@@ -96,11 +97,11 @@ namespace
         }
     }
 
-    void handle_exception(std::exception const &exc)
+    void handle_exception(std::exception const &exc, int line = 0, int col = 0)
     {
         std::string const str(exc.what());
         std::wstring const wstr{str.begin(), str.end()};
-        output_dialogue->add_system_error(XmlParser::Error{0, 0, wstr, L"linter"});
+        output_dialogue->add_system_error(XmlParser::Error{line, col, wstr, L"linter"});
         showTooltip(L"Linter: " + wstr);
     }
 
@@ -170,7 +171,10 @@ namespace
         {
             apply_linters();
         }
-        //FIXME Catch xml error with line number...
+        catch (::Linter::XmlDecodeException const &e)
+        {
+            handle_exception(e, e.line(), e.column());
+        }
         catch (std::exception const &e)
         {
             handle_exception(e);
