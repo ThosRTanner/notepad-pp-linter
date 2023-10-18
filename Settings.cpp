@@ -60,9 +60,8 @@ namespace Linter
         linters_.clear();
 
         DomDocument XMLDocument(settings_xml_);
-        CComPtr<IXMLDOMNodeList> styleNode{XMLDocument.get_nodelist("//style")};
+        CComPtr<IXMLDOMNodeList> styleNode{XMLDocument.getNodeList("//style")};
 
-        //Why do we need to get the length if we're going to use nextNode?
         LONG uLength;
         HRESULT hr = styleNode->get_length(&uLength);
         if (!SUCCEEDED(hr))
@@ -111,9 +110,8 @@ namespace Linter
         }
 
         // <error line="12" column="19" severity="error" message="Unexpected identifier" source="jscs" />
-        CComPtr<IXMLDOMNodeList> XMLNodeList{XMLDocument.get_nodelist("//linter")};
+        CComPtr<IXMLDOMNodeList> XMLNodeList{XMLDocument.getNodeList("//linter")};
 
-        //Why do we need to get the length if we're going to use nextNode?
         hr = XMLNodeList->get_length(&uLength);
         if (!SUCCEEDED(hr))
         {

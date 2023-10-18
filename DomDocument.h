@@ -14,6 +14,7 @@ namespace Linter
          * The wstring constructor takes a filename.
          * The string constructor takes an xml string.
          */
+
       public:
         /** Creates an XML document from the supplied filename */
         explicit DomDocument(std::wstring const &filename);
@@ -23,17 +24,17 @@ namespace Linter
 
         ~DomDocument();
 
-        /** Get list of nodes select by an XPATH */
-        CComPtr<IXMLDOMNodeList> get_nodelist(std::string const &xpath);
+        /** Get list of nodes selected by supplied XPATH */
+        CComPtr<IXMLDOMNodeList> getNodeList(std::string const &xpath);
 
       private:
         /** Set up the dom interface */
         void init();
 
         /* Check the result of doing a load, die if it didn't complete */
-        void check_load_results(VARIANT_BOOL resultcode, HRESULT hr, std::string const & filename);
+        void checkLoadResults(VARIANT_BOOL resultcode, HRESULT hr);
 
-        CComPtr<IXMLDOMDocument2> document_;
+        CComPtr<IXMLDOMDocument2> m_document;
     };
 
 }    // namespace Linter

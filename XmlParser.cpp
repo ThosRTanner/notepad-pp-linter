@@ -29,9 +29,8 @@ std::vector<XmlParser::Error> XmlParser::getErrors(const std::string &xml)
 
     std::vector<XmlParser::Error> errors;
 
-    CComPtr<IXMLDOMNodeList> XMLNodeList{XMLDocument.get_nodelist("//error")};
+    CComPtr<IXMLDOMNodeList> XMLNodeList{XMLDocument.getNodeList("//error")};
 
-    //Why do we need uLength if we're using nextNode?
     LONG uLength;
     HRESULT hr = XMLNodeList->get_length(&uLength);
     if (!SUCCEEDED(hr))

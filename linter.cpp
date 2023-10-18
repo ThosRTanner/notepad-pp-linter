@@ -7,6 +7,7 @@
 #include "OutputDialog.h"
 #include "Settings.h"
 #include "XmlParser.h"
+#include "SystemError.h"
 
 #include <CommCtrl.h>
 
@@ -155,7 +156,7 @@ namespace
                 errors.insert(errors.end(), parseError.begin(), parseError.end());
                 output_dialogue->add_lint_errors(parseError);
             }
-            catch (std::exception const &e)
+            catch (const std::exception &e)
             {
                 handle_exception(e);
             }
