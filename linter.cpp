@@ -6,9 +6,9 @@
 #include "plugin.h"
 #include "OutputDialog.h"
 #include "Settings.h"
+#include "SystemError.h"
 #include "XmlDecodeException.h"
 #include "XmlParser.h"
-#include "SystemError.h"
 
 #include <CommCtrl.h>
 
