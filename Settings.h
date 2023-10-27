@@ -58,12 +58,12 @@ namespace Linter
 
         std::wstring m_settings_xml;
 
-        int m_alpha;
-        int m_color;
+        int m_alpha = -1;
+        int m_color = -1;
 #if __cplusplus >= 201703L
         std::filesystem::file_time_type m_last_update_time;
 #else
-        uint64_t m_last_update_time;
+        uint64_t m_last_update_time = 0;
 #endif
         std::vector<Linter> m_linters;
     };

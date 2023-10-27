@@ -15,13 +15,7 @@
 #include <sstream>
 
 Linter::Settings::Settings(wchar_t const *settings_xml)
-    : m_settings_xml(settings_xml),
-      m_alpha(-1),
-      m_color(-1)
-#if __cplusplus < 201703L
-      ,
-      m_last_update_time(0)
-#endif
+    : m_settings_xml(settings_xml)
 {
 }
 
@@ -81,30 +75,30 @@ void Linter::Settings::read_settings()
         CComVariant value;
         if (element->getAttribute(bstr_t(L"alpha"), &value) == S_OK)
         {
-            int alpha = 0;
+            int alphaVal{0};
             if (value.bstrVal)
             {
                 std::wstringstream data{std::wstring(value.bstrVal, SysStringLen(value.bstrVal))};
-                data >> alpha;
+                data >> alphaVal;
             }
-            m_alpha = alpha;
+            m_alpha = alphaVal;
         }
 
         if (element->getAttribute(bstr_t(L"color"), &value) == S_OK)
         {
-            unsigned int color(0);
+            unsigned int colorVal{0};
             if (value.bstrVal)
             {
                 std::wstringstream data{std::wstring(value.bstrVal, SysStringLen(value.bstrVal))};
-                data >> std::hex >> color;
+                data >> std::hex >> colorVal;
             }
 
             // reverse colors for scintilla's LE order
             m_color = 0;
             for (int i = 0; i < 3; i += 1)
             {
-                m_color = (m_color << 8) | (color & 0xff);
-                color >>= 8;
+                m_color = (m_color << 8) | (colorVal & 0xff);
+                colorVal >>= 8;
             }
         }
     }

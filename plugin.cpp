@@ -71,7 +71,7 @@ namespace
     {
         LRESULT oldid = SendEditor(SCI_GETINDICATORCURRENT);
         SendEditor(SCI_SETINDICATORCURRENT, SCE_SQUIGGLE_UNDERLINE_RED);
-        SendEditor(on ? SCI_INDICATORFILLRANGE : SCI_INDICATORCLEARRANGE, start, (end - start));
+        SendEditor(on ? SCI_INDICATORFILLRANGE : SCI_INDICATORCLEARRANGE, start, end - start);
         SendEditor(SCI_SETINDICATORCURRENT, oldid);
     }
 
