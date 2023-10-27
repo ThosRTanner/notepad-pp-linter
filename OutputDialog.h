@@ -72,6 +72,9 @@ namespace Linter
 
         std::array<std::vector<XmlParser::Error>, Num_Tabs> errors_;
 
+        /** Implementation of run_dlgProc but can throw */
+        INT_PTR CALLBACK run_dlgProc_impl(UINT message, WPARAM wParam, LPARAM lParam);
+
         /** Initialise the output window */
         void initialise_dialogue();
 

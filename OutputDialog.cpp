@@ -11,6 +11,7 @@
 #include <cstddef>
 #include <sstream>
 #include "plugin.h"
+#include "SystemError.h"
 
 /** Columns in the error list */
 enum List_Column
@@ -132,6 +133,20 @@ void Linter::OutputDialog::add_lint_errors(std::vector<XmlParser::Error> const &
  */
 INT_PTR CALLBACK Linter::OutputDialog::run_dlgProc(UINT message, WPARAM wParam, LPARAM lParam)
 {
+    try
+    {
+        return run_dlgProc_impl(message, wParam, lParam);
+    }
+    catch (std::exception const &e)
+    {
+        std::string const s{e.what()};
+        ::MessageBox(getHSelf(), std::wstring(s.begin(), s.end()).c_str(), L"Linter", MB_OK | MB_ICONERROR);
+        return TRUE;
+    }
+}
+
+INT_PTR CALLBACK Linter::OutputDialog::run_dlgProc_impl(UINT message, WPARAM wParam, LPARAM lParam)
+{
     switch (message)
     {
         case WM_INITDIALOG:
@@ -147,27 +162,26 @@ INT_PTR CALLBACK Linter::OutputDialog::run_dlgProc(UINT message, WPARAM wParam, 
         case WM_COMMAND:
         {
             //Context menu responses
-            switch
-                LOWORD(wParam)
+            switch LOWORD(wParam)
+            {
+                case Context_Copy_Lints:
+                    copy_to_clipboard();
+                    return TRUE;
+
+                case Context_Show_Source_Line:
                 {
-                    case Context_Copy_Lints:
-                        copy_to_clipboard();
-                        return TRUE;
-
-                    case Context_Show_Source_Line:
+                    int item = ListView_GetNextItem(current_list_view_, -1, LVIS_FOCUSED | LVIS_SELECTED);
+                    if (item != -1)
                     {
-                        int item = ListView_GetNextItem(current_list_view_, -1, LVIS_FOCUSED | LVIS_SELECTED);
-                        if (item != -1)
-                        {
-                            show_selected_lint(item);
-                        }
-                        return TRUE;
+                        show_selected_lint(item);
                     }
-
-                    case Context_Select_All:
-                        ListView_SetItemState(current_list_view_, -1, LVIS_SELECTED, LVIS_SELECTED);
-                        return TRUE;
+                    return TRUE;
                 }
+
+                case Context_Select_All:
+                    ListView_SetItemState(current_list_view_, -1, LVIS_SELECTED, LVIS_SELECTED);
+                    return TRUE;
+            }
         }
         break;
 
@@ -208,7 +222,7 @@ INT_PTR CALLBACK Linter::OutputDialog::run_dlgProc(UINT message, WPARAM wParam, 
                 case TTN_GETDISPINFO:
                 {
                     LPTOOLTIPTEXT lpttt = reinterpret_cast<LPTOOLTIPTEXT>(notify_header);
-                    lpttt->hinst = _hInst;
+                    lpttt->hinst = getHinst();
 
                     // Specify the resource identifier of the descriptive
                     // text for the given button.
@@ -663,55 +677,76 @@ void Linter::OutputDialog::copy_to_clipboard()
         return;
     }
 
-    if (!::OpenClipboard(getHSelf()))
-    {
-        ::MessageBox(_hSelf, L"Cannot open the Clipboard", L"Linter", MB_OK | MB_ICONERROR);
-        return;
-    }
-
-    class Clipboard_Releaser
+    //FIXME do i really need to recreate this every copy / paste?
+    class Clipboard
     {
       public:
-        Clipboard_Releaser()
+        explicit Clipboard(HWND self)
         {
+            if (!::OpenClipboard(self))
+            {
+                throw SystemError("Cannot open the Clipboard");
+            }
         }
 
-        ~Clipboard_Releaser()
+        Clipboard(Clipboard const &) = delete;
+
+        Clipboard operator=(Clipboard const &) = delete;
+
+        ~Clipboard()
         {
+            if (mem_handle_ != nullptr)
+            {
+                ::GlobalFree(mem_handle_);
+            }
             ::CloseClipboard();
         }
-    } const clipboard_releaser;
 
-    if (!::EmptyClipboard())
-    {
-        ::MessageBox(getHSelf(), L"Cannot empty the Clipboard", L"Linter", MB_OK | MB_ICONERROR);
-        return;
-    }
+        void empty()
+        {
+            if (!::EmptyClipboard())
+            {
+                throw SystemError("Cannot empty the Clipboard");
+            }
+        }
 
-    size_t const size = (str.size() + 1) * sizeof(TCHAR);
-    HGLOBAL const mem_handle = ::GlobalAlloc(GMEM_MOVEABLE, size);
-    if (mem_handle == nullptr)
-    {
-        ::MessageBox(_hSelf, L"Cannot allocate memory for clipboard", L"Linter", MB_OK | MB_ICONERROR);
-        return;
-    }
+        void copy(std::wstring const& str)
+        {
+            size_t const size = (str.size() + 1) * sizeof(TCHAR);
+            mem_handle_ = ::GlobalAlloc(GMEM_MOVEABLE, size);
+            if (mem_handle_ == nullptr)
+            {
+                throw SystemError("Cannot allocate memory for clipboard");
+            }
 
-    LPVOID lpsz = ::GlobalLock(mem_handle);
-    if (lpsz == nullptr)
-    {
-        ::MessageBox(_hSelf, L"Cannot lock memory for clipboard", L"Linter", MB_OK | MB_ICONERROR);
-        ::GlobalFree(mem_handle);
-        return;
-    }
+            LPVOID lpsz = ::GlobalLock(mem_handle_);
+            if (lpsz == nullptr)
+            {
+                throw SystemError("Cannot lock memory for clipboard");
+            }
 
-    std::memcpy(lpsz, str.c_str(), size);
-    ::GlobalUnlock(mem_handle);
+            std::memcpy(lpsz, str.c_str(), size);
 
-    if (::SetClipboardData(CF_UNICODETEXT, mem_handle) == nullptr)
-    {
-        ::GlobalFree(mem_handle);
-        ::MessageBox(_hSelf, L"Unable to set Clipboard data", L"Linter", MB_OK | MB_ICONERROR);
-    }
+            ::GlobalUnlock(mem_handle_);
+
+            if (::SetClipboardData(CF_UNICODETEXT, mem_handle_) == nullptr)
+            {
+                throw SystemError("Unable to set Clipboard data");
+            }
+
+            mem_handle_ = nullptr;
+        }
+
+      private:
+        HGLOBAL mem_handle_ = nullptr;
+
+    };
+
+    Clipboard clipboard{getHSelf()};
+
+    clipboard.empty();
+    clipboard.copy(str);
+
 }
 
 int Linter::OutputDialog::sort_selected_list(Tab tab, LPARAM row1_index, LPARAM row2_index)

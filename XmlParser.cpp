@@ -59,7 +59,7 @@ std::vector<XmlParser::Error> XmlParser::getErrors(const std::string &xml)
         std::size_t pos = tool.find_first_of('.');
         if (pos != std::string::npos)
         {
-            tool = tool.substr(0, pos);
+            tool.resize(pos);
         }
 
         element->getAttribute(bstr_t(L"message"), &value);
