@@ -73,7 +73,7 @@ void Linter::Settings::read_settings()
         }
         CComQIPtr<IXMLDOMElement> element(node);
         CComVariant value;
-        if (element->getAttribute(bstr_t(L"alpha"), &value) == S_OK)
+        if (element->getAttribute(L"alpha", &value) == S_OK)
         {
             int alphaVal{0};
             if (value.bstrVal)
@@ -84,7 +84,7 @@ void Linter::Settings::read_settings()
             m_alpha = alphaVal;
         }
 
-        if (element->getAttribute(bstr_t(L"color"), &value) == S_OK)
+        if (element->getAttribute(L"color", &value) == S_OK)
         {
             unsigned int colorVal{0};
             if (value.bstrVal)
@@ -122,13 +122,13 @@ void Linter::Settings::read_settings()
             Linter linter;
             CComVariant value;
 
-            element->getAttribute(bstr_t(L"extension"), &value);
+            element->getAttribute(L"extension", &value);
             linter.m_extension = value.bstrVal;
 
-            element->getAttribute(bstr_t(L"command"), &value);
+            element->getAttribute(L"command", &value);
             linter.m_command = value.bstrVal;
 
-            element->getAttribute(bstr_t(L"stdin"), &value);
+            element->getAttribute(L"stdin", &value);
             linter.m_useStdin = value.boolVal != 0;    //Is that strictly necessary?
 
             m_linters.push_back(linter);
