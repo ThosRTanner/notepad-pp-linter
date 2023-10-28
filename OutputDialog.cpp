@@ -1,7 +1,9 @@
 #include "stdafx.h"
 #include "OutputDialog.h"
 
+#include "plugin.h"
 #include "resource.h"
+#include "SystemError.h"
 
 #include "notepad/PluginInterface.h"
 
@@ -10,8 +12,6 @@
 #include <algorithm>
 #include <cstddef>
 #include <sstream>
-#include "plugin.h"
-#include "SystemError.h"
 
 /** Columns in the error list */
 enum List_Column
@@ -24,8 +24,8 @@ enum List_Column
 };
 
 /** Context menu items
-     * Ensure they don't clash with anything in the resource file.
-     */
+ * Ensure they don't clash with anything in the resource file.
+ */
 enum Context_Menu_Entry
 {
     Context_Copy_Lints = 1500,
@@ -170,7 +170,7 @@ INT_PTR CALLBACK Linter::OutputDialog::run_dlgProc_impl(UINT message, WPARAM wPa
 
                 case Context_Show_Source_Line:
                 {
-                    int item = ListView_GetNextItem(current_list_view_, -1, LVIS_FOCUSED | LVIS_SELECTED);
+                    int const item = ListView_GetNextItem(current_list_view_, -1, LVIS_FOCUSED | LVIS_SELECTED);
                     if (item != -1)
                     {
                         show_selected_lint(item);
@@ -181,6 +181,9 @@ INT_PTR CALLBACK Linter::OutputDialog::run_dlgProc_impl(UINT message, WPARAM wPa
                 case Context_Select_All:
                     ListView_SetItemState(current_list_view_, -1, LVIS_SELECTED, LVIS_SELECTED);
                     return TRUE;
+
+                default:
+                    break;
             }
         }
         break;
@@ -211,7 +214,7 @@ INT_PTR CALLBACK Linter::OutputDialog::run_dlgProc_impl(UINT message, WPARAM wPa
                     if (notify_header->idFrom == tab_definitions_[current_tab_].list_view_id_)
                     {
                         LPNMITEMACTIVATE lpnmitem = reinterpret_cast<LPNMITEMACTIVATE>(lParam);
-                        int selected_item = lpnmitem->iItem;
+                        int const selected_item = lpnmitem->iItem;
                         if (selected_item != -1)
                         {
                             show_selected_lint(selected_item);
@@ -242,6 +245,9 @@ INT_PTR CALLBACK Linter::OutputDialog::run_dlgProc_impl(UINT message, WPARAM wPa
                         return TRUE;
                     }
                     break;
+
+                default:
+                    break;
             }
         }
         break;
@@ -256,7 +262,7 @@ INT_PTR CALLBACK Linter::OutputDialog::run_dlgProc_impl(UINT message, WPARAM wPa
 
             if (numSelected >= 1)
             {
-                int iFocused = ListView_GetNextItem(current_list_view_, -1, LVIS_FOCUSED | LVIS_SELECTED);
+                int const iFocused = ListView_GetNextItem(current_list_view_, -1, LVIS_FOCUSED | LVIS_SELECTED);
                 if (iFocused != -1)
                 {
                     AppendMenu(menu, MF_ENABLED, Context_Show_Source_Line, L"Show");
@@ -295,6 +301,9 @@ INT_PTR CALLBACK Linter::OutputDialog::run_dlgProc_impl(UINT message, WPARAM wPa
         case WM_SIZE:
             resize();
             return TRUE;
+
+        default:
+            break;
     }
 
     //Don't recognise the message. Pass it to the base class
@@ -333,7 +342,7 @@ void Linter::OutputDialog::on_toolbar_cmd(UINT /* message*/)
 //{
 //}
 #endif
-void Linter::OutputDialog::initialise_dialogue()
+void Linter::OutputDialog::initialise_dialogue() noexcept
 {
     // I'd initialise this after calling create, but create calls this
     // via a callback which is - quite strange. Also, I can't help feeling
@@ -353,7 +362,7 @@ void Linter::OutputDialog::initialise_dialogue()
     }
 }
 
-void Linter::OutputDialog::initialise_tab(Tab tab)
+void Linter::OutputDialog::initialise_tab(Tab tab) noexcept
 {
     auto const list_view = ::GetDlgItem(_hSelf, tab_definitions_[tab].list_view_id_);
     list_views_[tab] = list_view;
@@ -409,7 +418,7 @@ void Linter::OutputDialog::resize()
     }
 }
 
-void Linter::OutputDialog::selected_tab_changed()
+void Linter::OutputDialog::selected_tab_changed() noexcept
 {
     int const selected = TabCtrl_GetCurSel(dialogue_);
     current_tab_ = static_cast<Tab>(selected);
@@ -426,7 +435,7 @@ void Linter::OutputDialog::update_displayed_counts()
     for (int tab = 0; tab < Num_Tabs; tab += 1)
     {
         std::wstring strTabName;
-        int count = ListView_GetItemCount(list_views_[tab]);
+        int const count = ListView_GetItemCount(list_views_[tab]);
         if (count > 0)
         {
             stream.str(L"");
@@ -690,8 +699,10 @@ void Linter::OutputDialog::copy_to_clipboard()
         }
 
         Clipboard(Clipboard const &) = delete;
+        Clipboard(Clipboard &&) = delete;
 
         Clipboard operator=(Clipboard const &) = delete;
+        Clipboard operator=(Clipboard &&) = delete;
 
         ~Clipboard()
         {
@@ -749,7 +760,7 @@ void Linter::OutputDialog::copy_to_clipboard()
 
 }
 
-int Linter::OutputDialog::sort_selected_list(Tab tab, LPARAM row1_index, LPARAM row2_index)
+int Linter::OutputDialog::sort_selected_list(Tab tab, LPARAM row1_index, LPARAM row2_index) noexcept
 {
     int res = errors_[tab][row1_index].m_line - errors_[tab][row2_index].m_line;
     if (res == 0)
@@ -759,7 +770,7 @@ int Linter::OutputDialog::sort_selected_list(Tab tab, LPARAM row1_index, LPARAM 
     return res;
 }
 
-int CALLBACK Linter::OutputDialog::sort_call_function(LPARAM val1, LPARAM val2, LPARAM lParamSort)
+int CALLBACK Linter::OutputDialog::sort_call_function(LPARAM val1, LPARAM val2, LPARAM lParamSort) noexcept
 {
     auto const &info = *reinterpret_cast<Sort_Call_Info *>(lParamSort);
     return info.dialogue->sort_selected_list(info.tab, val1, val2);

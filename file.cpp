@@ -36,7 +36,7 @@ std::string File::exec(std::wstring commandLine, const nonstd::optional<std::str
 
     PROCESS_INFORMATION procInfo = {0};
 
-    BOOL isSuccess = CreateProcess(nullptr,
+    BOOL const isSuccess = CreateProcess(nullptr,
         const_cast<wchar_t *>(commandLine.c_str()),    // command line
         nullptr,                                          // process security attributes
         nullptr,                                          // primary thread security attributes

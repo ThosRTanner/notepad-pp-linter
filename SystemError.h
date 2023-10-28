@@ -28,6 +28,11 @@ namespace Linter
         /** Creates an exception object from specified error with addition information string */
         SystemError(HRESULT err, std::string const &, const SourceLocationCurrent &location = SourceLocation::current());
 
+        SystemError(SystemError const &) = delete;
+        SystemError(SystemError &&) = default;
+        SystemError &operator=(SystemError const &) = delete;
+        SystemError &operator=(SystemError &&) = delete;
+
         ~SystemError();
 
         char const *what() const noexcept override;
@@ -35,6 +40,6 @@ namespace Linter
       private:
         char m_buff[2048];
 
-        void addLocationToMessage(const SourceLocationCurrent &location);
+        void addLocationToMessage(const SourceLocationCurrent &location) noexcept;
     };
 }    // namespace Linter

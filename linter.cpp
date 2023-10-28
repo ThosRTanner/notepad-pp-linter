@@ -28,13 +28,13 @@ namespace
     std::map<LRESULT, std::wstring> errorText;
     std::unique_ptr<Linter::Settings> settings;
 
-    void ClearErrors()
+    void ClearErrors() noexcept
     {
         HideErrors();
         SendEditor(SCI_ANNOTATIONCLEARALL);
     }
 
-    void InitErrors()
+    void InitErrors() noexcept
     {
         //FIXME Make this configurable, because it is just strange.
         SendEditor(SCI_INDICSETSTYLE, SCE_SQUIGGLE_UNDERLINE_RED, INDIC_BOX);    // INDIC_SQUIGGLE);
@@ -81,7 +81,7 @@ namespace
         }
         else
         {
-            wchar_t title[256] = {0};
+            wchar_t const title[256] = {0};
             SendMessage(childHandle, WM_GETTEXT, sizeof(title) / sizeof(title[0]) - 1, reinterpret_cast<LPARAM>(title));
 
             std::wstring str(title);
@@ -200,7 +200,7 @@ namespace
         }
     }
 
-    void CALLBACK RunThread(PVOID /*lpParam*/, BOOLEAN /*TimerOrWaitFired*/)
+    void CALLBACK RunThread(PVOID /*lpParam*/, BOOLEAN /*TimerOrWaitFired*/) noexcept
     {
         if (threadHandle == 0)
         {
@@ -210,16 +210,16 @@ namespace
         }
     }
 
-    void Check()
+    void Check() noexcept
     {
         if (isChanged)
         {
             (void)DeleteTimerQueueTimer(timers, timer, nullptr);
-            CreateTimerQueueTimer(&timer, timers, static_cast<WAITORTIMERCALLBACK>(RunThread), nullptr, 300, 0, 0);
+            CreateTimerQueueTimer(&timer, timers, RunThread, nullptr, 300, 0, 0);
         }
     }
 
-    void Changed()
+    void Changed() noexcept
     {
         isChanged = true;
         Check();
@@ -231,7 +231,7 @@ namespace
     }
 }    // namespace
 
-extern "C" __declspec(dllexport) void beNotified(SCNotification *notifyCode)
+extern "C" __declspec(dllexport) void beNotified(SCNotification const *notifyCode)
 {
     static bool isReady = false;
 
@@ -271,8 +271,8 @@ extern "C" __declspec(dllexport) void beNotified(SCNotification *notifyCode)
         case NPPN_FILESAVED:
             //get which file changed
             {
-                auto buffer = notifyCode->nmhdr.idFrom;
-                std::size_t len = SendApp(NPPM_GETFULLPATHFROMBUFFERID, buffer, reinterpret_cast<LPARAM>(nullptr));
+                auto const buffer = notifyCode->nmhdr.idFrom;
+                std::size_t const len = SendApp(NPPM_GETFULLPATHFROMBUFFERID, buffer, reinterpret_cast<LPARAM>(nullptr));
                 if (len != -1)
                 {
 #if __cplusplus >= 202002L
@@ -303,6 +303,7 @@ extern "C" __declspec(dllexport) void beNotified(SCNotification *notifyCode)
         case SCN_PAINTED:
         case SCN_FOCUSIN:
         case SCN_FOCUSOUT:
+        default:
             break;
     }
 }

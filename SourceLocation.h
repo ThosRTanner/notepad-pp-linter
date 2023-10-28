@@ -27,7 +27,7 @@ namespace Linter
                 return "";
             }
         };
-        static Location current()
+        static Location current() noexcept
         {
             return {};
         }

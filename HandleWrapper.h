@@ -14,7 +14,7 @@ namespace Linter
         HandleWrapper &operator=(HandleWrapper &&other) = delete;
         ~HandleWrapper();
 
-        void close() const;
+        void close() const noexcept;
 
         operator HANDLE() const noexcept;
 

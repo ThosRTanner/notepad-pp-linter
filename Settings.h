@@ -21,31 +21,31 @@ namespace Linter
         };
 
         /** Returns the alpha mask for the 'squiggle' or -1 if not set */
-        int alpha() const
+        int alpha() const noexcept
         {
             return m_alpha;
         }
 
         /** Returns the colour for the 'squiggle' or -1 if not set */
-        int color() const
+        int color() const noexcept
         {
             return m_color;
         }
 
         /** Return an iterator to the linters */
-        std::vector<Linter>::const_iterator begin() const
+        std::vector<Linter>::const_iterator begin() const noexcept
         {
             return m_linters.cbegin();
         }
 
         /** Returns true if there are no linters to run */
-        bool empty() const
+        bool empty() const noexcept
         {
             return m_linters.empty();
         }
 
         /** Return an iterator to the linters */
-        std::vector<Linter>::const_iterator end() const
+        std::vector<Linter>::const_iterator end() const noexcept
         {
             return m_linters.cend();
         }

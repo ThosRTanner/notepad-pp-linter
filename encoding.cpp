@@ -1,7 +1,7 @@
 #include "StdAfx.h"
 #include "encoding.h"
 
-int Encoding::utfOffset(const std::string utf8, int unicodeOffset)
+int Encoding::utfOffset(const std::string utf8, int unicodeOffset) noexcept
 {
     int result = 0;
     std::string::const_iterator i = utf8.begin(), end = utf8.end();
@@ -30,9 +30,9 @@ std::string Encoding::toUTF(const std::wstring &data)
     std::string str;
     if (!data.empty())
     {
-        int size = WideCharToMultiByte(CP_UTF8, 0, &data[0], (int)data.size(), nullptr, 0, nullptr, nullptr);
+        int const size = WideCharToMultiByte(CP_UTF8, 0, &data[0], static_cast<int>(data.size()), nullptr, 0, nullptr, nullptr);
         str.resize(size);
-        WideCharToMultiByte(CP_UTF8, 0, &data[0], (int)data.size(), &str[0], size, nullptr, nullptr);
+        WideCharToMultiByte(CP_UTF8, 0, &data[0], static_cast<int>(data.size()), &str[0], size, nullptr, nullptr);
     }
 
     return str;
@@ -43,7 +43,7 @@ std::wstring Encoding::toUnicode(const std::string &string, UINT encoding)
     std::wstring str;
     if (!string.empty())
     {
-        int i = MultiByteToWideChar(encoding, 0, string.c_str(), -1, nullptr, 0);
+        int const i = MultiByteToWideChar(encoding, 0, string.c_str(), -1, nullptr, 0);
         str.resize(i - 1);
         MultiByteToWideChar(encoding, 0, string.c_str(), -1, &str[0], i);
     }

@@ -2,6 +2,10 @@
 
 #include "notepad/Scintilla.h"
 
+//#include <minwindef.h>
+//#include <windef.h>
+#include <winnt.h>
+
 #include <memory>
 #include <string>
 
@@ -13,21 +17,21 @@ namespace Linter
 extern HANDLE timers;
 extern std::unique_ptr<Linter::OutputDialog> output_dialogue;
 
-static const int SCE_SQUIGGLE_UNDERLINE_RED = INDIC_CONTAINER + 2;
+int constexpr SCE_SQUIGGLE_UNDERLINE_RED = INDIC_CONTAINER + 2;
 
-void commandMenuCleanUp();
-void initConfig();
-void editConfig();
+void commandMenuCleanUp() noexcept;
+void initConfig() noexcept;
+void editConfig() noexcept;
 
-wchar_t const *getIniFileName();
+wchar_t const *getIniFileName() noexcept;
 
-HWND getScintillaWindow();
-LRESULT SendEditor(UINT Msg, WPARAM wParam = 0, LPARAM lParam = 0);
-LRESULT SendApp(UINT Msg, WPARAM wParam = 0, LPARAM lParam = 0);
+HWND getScintillaWindow() noexcept;
+LRESULT SendEditor(UINT Msg, WPARAM wParam = 0, LPARAM lParam = 0) noexcept;
+LRESULT SendApp(UINT Msg, WPARAM wParam = 0, LPARAM lParam = 0) noexcept;
 
 std::string getDocumentText();
 std::string getLineText(int line);
-LRESULT getPositionForLine(int line);
+LRESULT getPositionForLine(int line) noexcept;
 
-void ShowError(LRESULT pos);
-void HideErrors();
+void ShowError(LRESULT pos) noexcept;
+void HideErrors() noexcept;

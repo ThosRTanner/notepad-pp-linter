@@ -20,22 +20,22 @@ namespace
     const TCHAR PLUGIN_NAME[] = L"Linter";
     TCHAR iniFilePath[MAX_PATH];
 
-    static const int FUNCTIONS_COUNT = 2;
+    int constexpr FUNCTIONS_COUNT = 2;
     FuncItem funcItem[FUNCTIONS_COUNT];
 
     NppData nppData;
 
-    void pluginInit(HANDLE module)
+    void pluginInit(HANDLE module) noexcept
     {
         module_handle = module;
         timers = CreateTimerQueue();
     }
 
-    void pluginCleanUp()
+    void pluginCleanUp() noexcept
     {
     }
 
-    bool setCommand(size_t index, wchar_t const *cmdName, PFUNCPLUGINCMD pFunc, ShortcutKey *sk, bool checkOnInit)
+    bool setCommand(size_t index, wchar_t const *cmdName, PFUNCPLUGINCMD pFunc, ShortcutKey *sk, bool checkOnInit) noexcept
     {
         if (index >= FUNCTIONS_COUNT)
         {
@@ -67,9 +67,9 @@ namespace
         output_dialogue.reset(new Linter::OutputDialog(nppData, module_handle, 1));
     }
 
-    void ShowError(LRESULT start, LRESULT end, bool on)
+    void ShowError(LRESULT start, LRESULT end, bool on) noexcept
     {
-        LRESULT oldid = SendEditor(SCI_GETINDICATORCURRENT);
+        LRESULT const oldid = SendEditor(SCI_GETINDICATORCURRENT);
         SendEditor(SCI_SETINDICATORCURRENT, SCE_SQUIGGLE_UNDERLINE_RED);
         SendEditor(on ? SCI_INDICATORFILLRANGE : SCI_INDICATORCLEARRANGE, start, end - start);
         SendEditor(SCI_SETINDICATORCURRENT, oldid);
@@ -77,7 +77,7 @@ namespace
 
 }    // namespace
 
-BOOL APIENTRY DllMain(HANDLE hModule, DWORD reasonForCall, LPVOID /*lpReserved*/)
+BOOL APIENTRY DllMain(HANDLE hModule, DWORD reasonForCall, LPVOID /*lpReserved*/) noexcept
 {
     switch (reasonForCall)
     {
@@ -90,9 +90,8 @@ BOOL APIENTRY DllMain(HANDLE hModule, DWORD reasonForCall, LPVOID /*lpReserved*/
             break;
 
         case DLL_THREAD_ATTACH:
-            break;
-
         case DLL_THREAD_DETACH:
+        default:
             break;
     }
 
@@ -127,11 +126,11 @@ extern "C" __declspec(dllexport) BOOL isUnicode()
     return TRUE;
 }
 
-void commandMenuCleanUp()
+void commandMenuCleanUp() noexcept
 {
 }
 
-void initConfig()
+void initConfig() noexcept
 {
     ::SendMessage(nppData._nppHandle, NPPM_GETPLUGINSCONFIGDIR, MAX_PATH, reinterpret_cast<LPARAM>(iniFilePath));
     if (!PathFileExists(iniFilePath))
@@ -141,36 +140,36 @@ void initConfig()
     PathAppend(iniFilePath, L"linter.xml");
 }
 
-void editConfig()
+void editConfig() noexcept
 {
     SendApp(NPPM_DOOPEN, 0, reinterpret_cast<LPARAM>(iniFilePath));
 }
 
-wchar_t const *getIniFileName()
+wchar_t const *getIniFileName() noexcept
 {
     return iniFilePath;
 }
 
-HWND getScintillaWindow()
+HWND getScintillaWindow() noexcept
 {
-    LRESULT view = SendMessage(nppData._nppHandle, NPPM_GETCURRENTVIEW, 0, 0);
+    LRESULT const view = SendMessage(nppData._nppHandle, NPPM_GETCURRENTVIEW, 0, 0);
     return view == 0 ? nppData._scintillaMainHandle : nppData._scintillaSecondHandle;
 }
 
-LRESULT SendEditor(UINT Msg, WPARAM wParam, LPARAM lParam)
+LRESULT SendEditor(UINT Msg, WPARAM wParam, LPARAM lParam) noexcept
 {
     HWND wEditor = getScintillaWindow();
     return SendMessage(wEditor, Msg, wParam, lParam);
 }
 
-LRESULT SendApp(UINT Msg, WPARAM wParam, LPARAM lParam)
+LRESULT SendApp(UINT Msg, WPARAM wParam, LPARAM lParam) noexcept
 {
     return SendMessage(nppData._nppHandle, Msg, wParam, lParam);
 }
 
 std::string getDocumentText()
 {
-    LRESULT lengthDoc = SendEditor(SCI_GETLENGTH);
+    LRESULT const lengthDoc = SendEditor(SCI_GETLENGTH);
 #if __cplusplus >= 202002L
     auto buff{std::make_unique_for_overwrite<char[]>(lengthDoc + 1)};
 #else
@@ -182,7 +181,7 @@ std::string getDocumentText()
 
 std::string getLineText(int line)
 {
-    LRESULT length = SendEditor(SCI_LINELENGTH, line);
+    LRESULT const length = SendEditor(SCI_LINELENGTH, line);
 #if __cplusplus >= 202002L
     auto buff{std::make_unique_for_overwrite<char[]>(length + 1)};
 #else
@@ -192,17 +191,17 @@ std::string getLineText(int line)
     return std::string(buff.get(), length);
 }
 
-LRESULT getPositionForLine(int line)
+LRESULT getPositionForLine(int line) noexcept
 {
     return SendEditor(SCI_POSITIONFROMLINE, line);
 }
 
-void ShowError(LRESULT pos)
+void ShowError(LRESULT pos) noexcept
 {
     ShowError(pos, pos + 1, true);
 }
 
-void HideErrors()
+void HideErrors() noexcept
 {
     ShowError(0, SendEditor(SCI_GETLENGTH), false);
 }

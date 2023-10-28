@@ -6,6 +6,12 @@ class File
 {
   public:
     File(const std::wstring &fileName, const std::wstring &directory);
+
+    File(File const &) = delete;
+    File(File &&) = delete;
+    File &operator=(File const &) = delete;
+    File &operator=(File &&) = delete;
+
     ~File();
     std::string exec(std::wstring commandLine, const nonstd::optional<std::string> &str);
     void write(const std::string &data);

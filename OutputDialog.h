@@ -21,6 +21,12 @@ namespace Linter
     {
       public:
         OutputDialog(NppData const &, HANDLE module, int dlg_num);
+
+        OutputDialog(OutputDialog const &) = delete;
+        OutputDialog(OutputDialog &&) = delete;
+        OutputDialog &operator=(OutputDialog const &) = delete;
+        OutputDialog &operator=(OutputDialog &&) = delete;
+
         ~OutputDialog();
 
         void display(bool toShow = true) const override;
@@ -76,16 +82,16 @@ namespace Linter
         INT_PTR CALLBACK run_dlgProc_impl(UINT message, WPARAM wParam, LPARAM lParam);
 
         /** Initialise the output window */
-        void initialise_dialogue();
+        void initialise_dialogue() noexcept;
 
         /** Initialise the specified tab */
-        void initialise_tab(Tab tab);
+        void initialise_tab(Tab tab) noexcept;
 
         /** Window resize */
         void resize();
 
         /** Selected tab has been changed. Display new one */
-        void selected_tab_changed();
+        void selected_tab_changed() noexcept;
 
         /** Update the counts in the tab bar */
         void update_displayed_counts();
@@ -108,10 +114,10 @@ namespace Linter
         };
 
         /** This defines the sorting for the list view */
-        int sort_selected_list(Tab tab, LPARAM row1_index, LPARAM row2_index);
+        int sort_selected_list(Tab tab, LPARAM row1_index, LPARAM row2_index) noexcept;
 
         /** This is what is actually called from the ListView_Sort method */
-        static int sort_call_function(LPARAM lParam1, LPARAM lParam2, LPARAM lParamSort);
+        static int sort_call_function(LPARAM lParam1, LPARAM lParam2, LPARAM lParamSort) noexcept;
     };
 
 }    // namespace Linter

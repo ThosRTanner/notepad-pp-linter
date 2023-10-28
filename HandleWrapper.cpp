@@ -17,7 +17,7 @@ HandleWrapper::HandleWrapper(HandleWrapper &&other) noexcept : m_handle(std::exc
 {
 }
 
-void HandleWrapper::close() const
+void HandleWrapper::close() const noexcept
 {
     if (m_handle != INVALID_HANDLE_VALUE)
     {
@@ -69,7 +69,7 @@ std::string HandleWrapper::readFile() const
         //is that you get broken pipe.
         if (!ReadFile(m_handle, &buffer[0], static_cast<DWORD>(buffer.size()), &readBytes, nullptr))
         {
-            DWORD err = GetLastError();
+            DWORD const err = GetLastError();
             if (err != ERROR_BROKEN_PIPE)
             {
                 throw SystemError(err);

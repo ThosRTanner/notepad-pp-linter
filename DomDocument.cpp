@@ -18,7 +18,7 @@ Linter::DomDocument::DomDocument(std::wstring const &filename)
     CComVariant value(bstrValue);
 
     VARIANT_BOOL resultCode = FALSE;
-    HRESULT hr = m_document->load(value, &resultCode);
+    HRESULT const hr = m_document->load(value, &resultCode);
 
     checkLoadResults(resultCode, hr);
 }
