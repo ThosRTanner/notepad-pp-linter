@@ -23,8 +23,8 @@ namespace Linter
         explicit DomDocument(std::string const &xml);
 
         DomDocument(DomDocument const &) = delete;
-        DomDocument &operator=(DomDocument const &) = delete;
         DomDocument(DomDocument &&) = delete;
+        DomDocument &operator=(DomDocument const &) = delete;
         DomDocument &operator=(DomDocument &&) = delete;
 
         ~DomDocument();
