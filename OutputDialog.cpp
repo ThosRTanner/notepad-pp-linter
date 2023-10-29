@@ -196,7 +196,7 @@ INT_PTR CALLBACK Linter::OutputDialog::run_dlgProc_impl(UINT message, WPARAM wPa
                 case LVN_KEYDOWN:
                     if (notify_header->idFrom == tab_definitions_[current_tab_].list_view_id_)
                     {
-                        LPNMLVKEYDOWN pnkd = reinterpret_cast<LPNMLVKEYDOWN>(lParam);
+                        NMLVKEYDOWN const *pnkd = reinterpret_cast<LPNMLVKEYDOWN>(lParam);
                         if (pnkd->wVKey == 'A' && (::GetKeyState(VK_CONTROL) & 0x8000U) != 0)
                         {
                             ListView_SetItemState(current_list_view_, -1, LVIS_SELECTED, LVIS_SELECTED);
@@ -213,7 +213,7 @@ INT_PTR CALLBACK Linter::OutputDialog::run_dlgProc_impl(UINT message, WPARAM wPa
                 case NM_DBLCLK:
                     if (notify_header->idFrom == tab_definitions_[current_tab_].list_view_id_)
                     {
-                        LPNMITEMACTIVATE lpnmitem = reinterpret_cast<LPNMITEMACTIVATE>(lParam);
+                        NMITEMACTIVATE const *lpnmitem = reinterpret_cast<LPNMITEMACTIVATE>(lParam);
                         int const selected_item = lpnmitem->iItem;
                         if (selected_item != -1)
                         {

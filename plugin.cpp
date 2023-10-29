@@ -64,7 +64,7 @@ namespace
     {
         setCommand(0, L"Edit config", editConfig, nullptr, false);
         setCommand(1, L"Show linter results", show_results, nullptr, false);
-        output_dialogue.reset(new Linter::OutputDialog(nppData, module_handle, 1));
+        output_dialogue = std::make_unique<Linter::OutputDialog>(nppData, module_handle, 1);
     }
 
     void ShowError(LRESULT start, LRESULT end, bool on) noexcept
@@ -107,13 +107,13 @@ extern "C" __declspec(dllexport) void setInfo(NppData notpadPlusData)
 
 extern "C" __declspec(dllexport) const TCHAR *getName()
 {
-    return PLUGIN_NAME;
+    return &PLUGIN_NAME[0];
 }
 
 extern "C" __declspec(dllexport) FuncItem *getFuncsArray(int *nbF)
 {
     *nbF = FUNCTIONS_COUNT;
-    return funcItem;
+    return &funcItem[0];
 }
 
 extern "C" __declspec(dllexport) LRESULT messageProc(UINT /*Message*/, WPARAM /*wParam*/, LPARAM /*lParam*/)
@@ -132,22 +132,22 @@ void commandMenuCleanUp() noexcept
 
 void initConfig() noexcept
 {
-    ::SendMessage(nppData._nppHandle, NPPM_GETPLUGINSCONFIGDIR, MAX_PATH, reinterpret_cast<LPARAM>(iniFilePath));
-    if (!PathFileExists(iniFilePath))
+    ::SendMessage(nppData._nppHandle, NPPM_GETPLUGINSCONFIGDIR, MAX_PATH, reinterpret_cast<LPARAM>(&iniFilePath[0]));
+    if (!PathFileExists(&iniFilePath[0]))
     {
-        ::CreateDirectory(iniFilePath, nullptr);
+        ::CreateDirectory(&iniFilePath[0], nullptr);
     }
-    PathAppend(iniFilePath, L"linter.xml");
+    PathAppend(&iniFilePath[0], L"linter.xml");
 }
 
 void editConfig() noexcept
 {
-    SendApp(NPPM_DOOPEN, 0, reinterpret_cast<LPARAM>(iniFilePath));
+    SendApp(NPPM_DOOPEN, 0, reinterpret_cast<LPARAM>(&iniFilePath[0]));
 }
 
 wchar_t const *getIniFileName() noexcept
 {
-    return iniFilePath;
+    return &iniFilePath[0];
 }
 
 HWND getScintillaWindow() noexcept

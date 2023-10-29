@@ -12,7 +12,7 @@
 
 using namespace Linter;
 
-SystemError::SystemError(const SourceLocationCurrent &location) : SystemError(GetLastError(), location)
+SystemError::SystemError(const SourceLocationCurrent &location) noexcept : SystemError(GetLastError(), location)
 {
 }
 
@@ -20,17 +20,24 @@ SystemError::SystemError(std::string const &info, const SourceLocationCurrent &l
 {
 }
 
-SystemError::SystemError(DWORD err, const SourceLocationCurrent &location)
+SystemError::SystemError(DWORD err, const SourceLocationCurrent &location) noexcept
 {
     // Note: Technically, the message function could fail.
-    std::snprintf(m_buff, sizeof(m_buff), "%s", std::system_category().message(err).c_str());
+    try
+    {
+        std::snprintf(&m_buff[0], sizeof(m_buff), "%s", std::system_category().message(err).c_str());
+    }
+    catch (std::exception const &)
+    {
+        std::snprintf(&m_buff[0], sizeof(m_buff), "Error code %08x", err);
+    }
     addLocationToMessage(location);
 }
 
 SystemError::SystemError(DWORD err, std::string const &info, const SourceLocationCurrent &location)
 {
     // Note: Technically, the message function could fail.
-    std::snprintf(m_buff, sizeof(m_buff), "%s - %s", info.c_str(), std::system_category().message(err).c_str());
+    std::snprintf(&m_buff[0], sizeof(m_buff), "%s - %s", info.c_str(), std::system_category().message(err).c_str());
     addLocationToMessage(location);
 }
 
@@ -39,7 +46,7 @@ SystemError::SystemError(HRESULT err, const SourceLocationCurrent &location)
     IErrorInfo *err_info{nullptr};
     (void)GetErrorInfo(0, &err_info);
     _com_error error{err, err_info};
-    std::snprintf(m_buff, sizeof(m_buff), "%s", Encoding::toUTF(std::wstring(error.ErrorMessage())).c_str());
+    std::snprintf(&m_buff[0], sizeof(m_buff), "%s", Encoding::toUTF(std::wstring(error.ErrorMessage())).c_str());
     addLocationToMessage(location);
 }
 
@@ -48,9 +55,11 @@ SystemError::SystemError(HRESULT err, std::string const &info, const SourceLocat
     IErrorInfo *err_info{nullptr};
     (void)GetErrorInfo(0, &err_info);
     _com_error error{err, err_info};
-    std::snprintf(m_buff, sizeof(m_buff), "%s - %s", info.c_str(), Encoding::toUTF(std::wstring(error.ErrorMessage())).c_str());
+    std::snprintf(&m_buff[0], sizeof(m_buff), "%s - %s", info.c_str(), Encoding::toUTF(std::wstring(error.ErrorMessage())).c_str());
     addLocationToMessage(location);
 }
+
+Linter::SystemError::SystemError(SystemError &&) noexcept = default;
 
 SystemError::~SystemError() = default;
 
@@ -68,8 +77,8 @@ void SystemError::addLocationToMessage(const SourceLocationCurrent &location) no
     }
 
     const char *fileName = std::strrchr(fullPath, '\\');
-    const std::size_t used{std::strlen(m_buff)};
-    std::snprintf(m_buff + used,
+    const std::size_t used{std::strlen(&m_buff[0])};
+    std::snprintf(&m_buff[used],
         sizeof(m_buff) - used,
         " at %s:%ud %s",
         (fileName ? fileName + 1 : fullPath),
