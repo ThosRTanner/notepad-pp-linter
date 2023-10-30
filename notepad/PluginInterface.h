@@ -20,7 +20,7 @@
 #include "Scintilla.h"
 #include "Notepad_plus_msgs.h"
 
-const int nbChar = 64;
+constexpr int nbChar = 64;
 
 typedef const TCHAR * (__cdecl * PFUNCGETNAME)();
 

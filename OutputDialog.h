@@ -29,7 +29,7 @@ namespace Linter
 
         ~OutputDialog();
 
-        void display(bool toShow = true) const override;
+        void display(bool toShow = true) const noexcept override;
 
         /** Clears all linting information */
         void clear_lint_info();
@@ -46,7 +46,7 @@ namespace Linter
         *.
         */
       protected:
-        INT_PTR CALLBACK run_dlgProc(UINT message, WPARAM wParam, LPARAM lParam) override;
+        INT_PTR CALLBACK run_dlgProc(UINT message, WPARAM wParam, LPARAM lParam) noexcept override;
 
         void on_toolbar_cmd(UINT message); //If we actually implement any...
         //void OnToolbarDropDown(LPNMTOOLBAR lpnmtb);
@@ -88,7 +88,7 @@ namespace Linter
         void initialise_tab(Tab tab) noexcept;
 
         /** Window resize */
-        void resize();
+        void resize() noexcept;
 
         /** Selected tab has been changed. Display new one */
         void selected_tab_changed() noexcept;
@@ -102,8 +102,9 @@ namespace Linter
         //void get_name_from_cmd(UINT resID, LPTSTR tip, UINT count);
 
         /** Move to the line/column of the displayed error */
-        void show_selected_lint(int selected_item);
-        //describe
+        void show_selected_lint(int selected_item) noexcept;
+
+        /** Copy selected messages to clipboard */
         void copy_to_clipboard();
 
         /** Structure needed to map from sort call parameter to C++ */

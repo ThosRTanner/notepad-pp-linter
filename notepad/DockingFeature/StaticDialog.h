@@ -43,35 +43,35 @@ public :
 
 	virtual void create(int dialogID, bool isRTL = false, bool msgDestParent = true);
 
-    virtual bool isCreated() const {
+    virtual bool isCreated() const noexcept {
 		return (_hSelf != NULL);
 	}
 
-	void goToCenter();
+	void goToCenter() noexcept;
 
-	void display(bool toShow = true, bool enhancedPositioningCheckWhenShowing = false) const;
+	void display(bool toShow = true, bool enhancedPositioningCheckWhenShowing = false) const noexcept;
 
-	RECT getViewablePositionRect(RECT testRc) const;
+	RECT getViewablePositionRect(RECT testRc) const noexcept;
 
-	POINT getTopPoint(HWND hwnd, bool isLeft = true) const;
+	POINT getTopPoint(HWND hwnd, bool isLeft = true) const noexcept;
 
-	bool isCheckedOrNot(int checkControlID) const
+	bool isCheckedOrNot(int checkControlID) const noexcept
 	{
 		return (BST_CHECKED == ::SendMessage(::GetDlgItem(_hSelf, checkControlID), BM_GETCHECK, 0, 0));
 	}
 
-	void setChecked(int checkControlID, bool checkOrNot = true) const
+	void setChecked(int checkControlID, bool checkOrNot = true) const noexcept
 	{
 		::SendDlgItemMessage(_hSelf, checkControlID, BM_SETCHECK, checkOrNot ? BST_CHECKED : BST_UNCHECKED, 0);
 	}
 
-    virtual void destroy() override;
+    void destroy() noexcept override;
 
 protected:
 	RECT _rc;
 	static INT_PTR CALLBACK dlgProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam);
 	virtual INT_PTR CALLBACK run_dlgProc(UINT message, WPARAM wParam, LPARAM lParam) = 0;
 
-    void alignWith(HWND handle, HWND handle2Align, PosAlign pos, POINT & point);
-	HGLOBAL makeRTLResource(int dialogID, DLGTEMPLATE **ppMyDlgTemplate);
+    void alignWith(HWND handle, HWND handle2Align, PosAlign pos, POINT &point) noexcept;
+    HGLOBAL makeRTLResource(int dialogID, DLGTEMPLATE **ppMyDlgTemplate) noexcept;
 };

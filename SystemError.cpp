@@ -16,46 +16,80 @@ SystemError::SystemError(const SourceLocationCurrent &location) noexcept : Syste
 {
 }
 
-SystemError::SystemError(std::string const &info, const SourceLocationCurrent &location) : SystemError(GetLastError(), info, location)
+SystemError::SystemError(std::string const &info, const SourceLocationCurrent &location) noexcept
+    : SystemError(GetLastError(), info, location)
 {
 }
 
 SystemError::SystemError(DWORD err, const SourceLocationCurrent &location) noexcept
 {
-    // Note: Technically, the message function could fail.
     try
     {
         std::snprintf(&m_buff[0], sizeof(m_buff), "%s", std::system_category().message(err).c_str());
     }
-    catch (std::exception const &)
+    catch (std::exception const &e)
     {
-        std::snprintf(&m_buff[0], sizeof(m_buff), "Error code %08x", err);
+#pragma warning(push)
+#pragma warning(disable : 26447)
+        std::snprintf(&m_buff[0], sizeof(m_buff), "Error code %08x then got %s", err, e.what());
+#pragma warning(pop)
     }
     addLocationToMessage(location);
 }
 
-SystemError::SystemError(DWORD err, std::string const &info, const SourceLocationCurrent &location)
+SystemError::SystemError(DWORD err, std::string const &info, const SourceLocationCurrent &location) noexcept
 {
-    // Note: Technically, the message function could fail.
-    std::snprintf(&m_buff[0], sizeof(m_buff), "%s - %s", info.c_str(), std::system_category().message(err).c_str());
+    try
+    {
+        std::snprintf(&m_buff[0], sizeof(m_buff), "%s - %s", info.c_str(), std::system_category().message(err).c_str());
+    }
+    catch (std::exception const &e)
+    {
+#pragma warning(push)
+#pragma warning(disable : 26447)
+        std::snprintf(&m_buff[0], sizeof(m_buff), "%s - Error code %08x then got %s", info.c_str(), err, e.what());
+#pragma warning(pop)
+    }
     addLocationToMessage(location);
 }
 
-SystemError::SystemError(HRESULT err, const SourceLocationCurrent &location)
+SystemError::SystemError(HRESULT err, const SourceLocationCurrent &location) noexcept
 {
     IErrorInfo *err_info{nullptr};
     (void)GetErrorInfo(0, &err_info);
     _com_error error{err, err_info};
-    std::snprintf(&m_buff[0], sizeof(m_buff), "%s", Encoding::toUTF(std::wstring(error.ErrorMessage())).c_str());
+    try
+    {
+        _bstr_t const msg{error.ErrorMessage()};
+        std::snprintf(&m_buff[0], sizeof(m_buff), "%s", static_cast<char *>(msg));
+    }
+    catch (std::exception const& e)
+    {
+#pragma warning(push)
+#pragma warning(disable : 26447)
+        std::snprintf(&m_buff[0], sizeof(m_buff), "Got error %08x but couldn't decode becuase %s", err, e.what());
+#pragma warning(pop)
+    }
     addLocationToMessage(location);
 }
 
-SystemError::SystemError(HRESULT err, std::string const &info, const SourceLocationCurrent &location)
+SystemError::SystemError(HRESULT err, std::string const &info, const SourceLocationCurrent &location) noexcept
 {
     IErrorInfo *err_info{nullptr};
     (void)GetErrorInfo(0, &err_info);
     _com_error error{err, err_info};
-    std::snprintf(&m_buff[0], sizeof(m_buff), "%s - %s", info.c_str(), Encoding::toUTF(std::wstring(error.ErrorMessage())).c_str());
+    try
+    {
+        _bstr_t const msg{error.ErrorMessage()};
+        std::snprintf(&m_buff[0], sizeof(m_buff), "%s - %s", info.c_str(), static_cast<char *>(msg));
+    }
+    catch (std::exception const &e)
+    {
+#pragma warning(push)
+#pragma warning(disable : 26447)
+        std::snprintf(&m_buff[0], sizeof(m_buff), "%s - Got error %08x but couldn't decode becuase %s", info.c_str(), err, e.what());
+#pragma warning(pop)
+    }
     addLocationToMessage(location);
 }
 

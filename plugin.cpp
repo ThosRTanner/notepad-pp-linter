@@ -55,7 +55,7 @@ namespace
         return true;
     }
 
-    void show_results()
+    void show_results() noexcept
     {
         output_dialogue->display();
     }

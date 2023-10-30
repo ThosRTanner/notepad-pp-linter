@@ -14,19 +14,19 @@ namespace Linter
         explicit SystemError(const SourceLocationCurrent &location = SourceLocation::current()) noexcept;
 
         /** Creates an exception object from the current system error, appends string */
-        explicit SystemError(std::string const &, const SourceLocationCurrent &location = SourceLocation::current());
+        explicit SystemError(std::string const &, const SourceLocationCurrent &location = SourceLocation::current()) noexcept;
 
         /** Creates an exception object given a system error number */
         explicit SystemError(DWORD err, const SourceLocationCurrent &location = SourceLocation::current()) noexcept;
 
         /** Creates an exception object from specified error with addition information string */
-        SystemError(DWORD err, std::string const &, const SourceLocationCurrent &location = SourceLocation::current());
+        SystemError(DWORD err, std::string const &, const SourceLocationCurrent &location = SourceLocation::current()) noexcept;
 
         /** Creates an exception object given an HRESULT */
-        explicit SystemError(HRESULT err, const SourceLocationCurrent &location = SourceLocation::current());
+        explicit SystemError(HRESULT err, const SourceLocationCurrent &location = SourceLocation::current()) noexcept;
 
         /** Creates an exception object from specified error with addition information string */
-        SystemError(HRESULT err, std::string const &, const SourceLocationCurrent &location = SourceLocation::current());
+        SystemError(HRESULT err, std::string const &, const SourceLocationCurrent &location = SourceLocation::current()) noexcept;
 
         SystemError(SystemError const &) = delete;
         SystemError(SystemError &&) noexcept;

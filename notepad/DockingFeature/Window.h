@@ -25,11 +25,12 @@ public:
 	//@{
 	Window() = default;
 	Window(const Window&) = delete;
-	virtual ~Window() = default;
+    Window(Window &&) = delete;
+    virtual ~Window() = default;
 	//@}
 
 
-	virtual void init(HINSTANCE hInst, HWND parent)
+	virtual void init(HINSTANCE hInst, HWND parent) noexcept
 	{
 		_hInst = hInst;
 		_hParent = parent;
@@ -37,27 +38,27 @@ public:
 
 	virtual void destroy() = 0;
 
-	virtual void display(bool toShow = true) const
+	virtual void display(bool toShow = true) const noexcept
 	{
 		::ShowWindow(_hSelf, toShow ? SW_SHOW : SW_HIDE);
 	}
 
 
-	virtual void reSizeTo(RECT & rc) // should NEVER be const !!!
+	virtual void reSizeTo(RECT &rc) noexcept    // should NEVER be const !!!
 	{
 		::MoveWindow(_hSelf, rc.left, rc.top, rc.right, rc.bottom, TRUE);
 		redraw();
 	}
 
 
-	virtual void reSizeToWH(RECT& rc) // should NEVER be const !!!
+	virtual void reSizeToWH(RECT &rc) noexcept    // should NEVER be const !!!
 	{
 		::MoveWindow(_hSelf, rc.left, rc.top, rc.right - rc.left, rc.bottom - rc.top, TRUE);
 		redraw();
 	}
 
 
-	virtual void redraw(bool forceUpdate = false) const
+	virtual void redraw(bool forceUpdate = false) const noexcept
 	{
 		::InvalidateRect(_hSelf, nullptr, TRUE);
 		if (forceUpdate)
@@ -65,24 +66,24 @@ public:
 	}
 
 
-    virtual void getClientRect(RECT & rc) const
+    virtual void getClientRect(RECT &rc) const noexcept
 	{
 		::GetClientRect(_hSelf, &rc);
 	}
 
-	virtual void getWindowRect(RECT & rc) const
+	virtual void getWindowRect(RECT &rc) const noexcept
 	{
 		::GetWindowRect(_hSelf, &rc);
 	}
 
-	virtual int getWidth() const
+	virtual int getWidth() const noexcept
 	{
 		RECT rc;
 		::GetClientRect(_hSelf, &rc);
 		return (rc.right - rc.left);
 	}
 
-	virtual int getHeight() const
+	virtual int getHeight() const noexcept
 	{
 		RECT rc;
 		::GetClientRect(_hSelf, &rc);
@@ -91,25 +92,25 @@ public:
 		return 0;
 	}
 
-	virtual bool isVisible() const
+	virtual bool isVisible() const noexcept
 	{
     	return (::IsWindowVisible(_hSelf)?true:false);
 	}
 
-	HWND getHSelf() const
+	HWND getHSelf() const noexcept
 	{
 		return _hSelf;
 	}
 
-	HWND getHParent() const {
+	HWND getHParent() const noexcept {
 		return _hParent;
 	}
 
-	void getFocus() const {
+	void getFocus() const noexcept {
 		::SetFocus(_hSelf);
 	}
 
-    HINSTANCE getHinst() const
+    HINSTANCE getHinst() const noexcept
 	{
 		//assert(_hInst != 0);
 		return _hInst;
@@ -117,6 +118,7 @@ public:
 
 
 	Window& operator = (const Window&) = delete;
+    Window &operator=(Window &&) = delete;
 
 
 protected:

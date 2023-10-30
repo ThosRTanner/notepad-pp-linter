@@ -31,9 +31,10 @@ class DockingDlgInterface : public StaticDialog
 {
 public:
 	DockingDlgInterface() = default;
-	explicit DockingDlgInterface(int dlgID): _dlgID(dlgID) {}
+	explicit DockingDlgInterface(int dlgID) noexcept : _dlgID(dlgID) {}
 
-	virtual void init(HINSTANCE hInst, HWND parent) {
+	void init(HINSTANCE hInst, HWND parent) noexcept override
+    {
 		StaticDialog::init(hInst, parent);
 		TCHAR temp[MAX_PATH];
 		::GetModuleFileName(reinterpret_cast<HMODULE>(hInst), temp, MAX_PATH);
@@ -58,28 +59,28 @@ public:
 		data->pszAddInfo = NULL;
 	}
 
-	virtual void updateDockingDlg() {
+	virtual void updateDockingDlg() noexcept {
 		::SendMessage(_hParent, NPPM_DMMUPDATEDISPINFO, 0, reinterpret_cast<LPARAM>(_hSelf));
 	}
 
-    virtual void destroy() {}
+    void destroy() noexcept override {}
 
-	virtual void setBackgroundColor(COLORREF) {}
-	virtual void setForegroundColor(COLORREF) {}
+	virtual void setBackgroundColor(COLORREF) noexcept {}
+	virtual void setForegroundColor(COLORREF) noexcept {}
 
-	virtual void display(bool toShow = true) const {
+	void display(bool toShow = true) const noexcept override {
 		::SendMessage(_hParent, toShow ? NPPM_DMMSHOW : NPPM_DMMHIDE, 0, reinterpret_cast<LPARAM>(_hSelf));
 	}
 
-	bool isClosed() const {
+	bool isClosed() const noexcept {
 		return _isClosed;
 	}
 
-	void setClosed(bool toClose) {
+	void setClosed(bool toClose) noexcept {
 		_isClosed = toClose;
 	}
 
-	const TCHAR * getPluginFileName() const {
+	const TCHAR * getPluginFileName() const noexcept {
 		return _moduleName.c_str();
 	}
 
@@ -91,12 +92,12 @@ protected :
 	std::wstring _pluginName;
 	bool _isClosed = false;
 
-	virtual INT_PTR CALLBACK run_dlgProc(UINT message, WPARAM, LPARAM lParam) {
+	INT_PTR CALLBACK run_dlgProc(UINT message, WPARAM, LPARAM lParam) noexcept override {
 		switch (message)
 		{
 			case WM_NOTIFY: 
 			{
-				LPNMHDR	pnmh = reinterpret_cast<LPNMHDR>(lParam);
+				NMHDR const *pnmh = reinterpret_cast<LPNMHDR>(lParam);
 
 				if (pnmh->hwndFrom == _hParent)
 				{

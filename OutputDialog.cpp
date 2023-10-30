@@ -88,7 +88,7 @@ Linter::OutputDialog::~OutputDialog()
 {
 }
 
-void Linter::OutputDialog::display(bool toShow) const
+void Linter::OutputDialog::display(bool toShow) const noexcept
 {
     DockingDlgInterface::display(toShow);
     if (toShow)
@@ -131,7 +131,7 @@ void Linter::OutputDialog::add_lint_errors(std::vector<XmlParser::Error> const &
  *
  * Some messages have special returns though.
  */
-INT_PTR CALLBACK Linter::OutputDialog::run_dlgProc(UINT message, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK Linter::OutputDialog::run_dlgProc(UINT message, WPARAM wParam, LPARAM lParam) noexcept
 {
     try
     {
@@ -139,8 +139,15 @@ INT_PTR CALLBACK Linter::OutputDialog::run_dlgProc(UINT message, WPARAM wParam, 
     }
     catch (std::exception const &e)
     {
-        std::string const s{e.what()};
-        ::MessageBox(getHSelf(), std::wstring(s.begin(), s.end()).c_str(), L"Linter", MB_OK | MB_ICONERROR);
+        try
+        {
+            std::string const s{e.what()};
+            ::MessageBox(getHSelf(), std::wstring(s.begin(), s.end()).c_str(), L"Linter", MB_OK | MB_ICONERROR);
+        }
+        catch (std::exception const &)
+        {
+            ::MessageBox(getHSelf(), L"Something terrible has gone wrong but I can't tell you what", L"Linter", MB_OK | MB_ICONERROR);
+        }
         return TRUE;
     }
 }
@@ -162,29 +169,30 @@ INT_PTR CALLBACK Linter::OutputDialog::run_dlgProc_impl(UINT message, WPARAM wPa
         case WM_COMMAND:
         {
             //Context menu responses
-            switch LOWORD(wParam)
-            {
-                case Context_Copy_Lints:
-                    copy_to_clipboard();
-                    return TRUE;
-
-                case Context_Show_Source_Line:
+            switch
+                LOWORD(wParam)
                 {
-                    int const item = ListView_GetNextItem(current_list_view_, -1, LVIS_FOCUSED | LVIS_SELECTED);
-                    if (item != -1)
+                    case Context_Copy_Lints:
+                        copy_to_clipboard();
+                        return TRUE;
+
+                    case Context_Show_Source_Line:
                     {
-                        show_selected_lint(item);
+                        int const item = ListView_GetNextItem(current_list_view_, -1, LVIS_FOCUSED | LVIS_SELECTED);
+                        if (item != -1)
+                        {
+                            show_selected_lint(item);
+                        }
+                        return TRUE;
                     }
-                    return TRUE;
+
+                    case Context_Select_All:
+                        ListView_SetItemState(current_list_view_, -1, LVIS_SELECTED, LVIS_SELECTED);
+                        return TRUE;
+
+                    default:
+                        break;
                 }
-
-                case Context_Select_All:
-                    ListView_SetItemState(current_list_view_, -1, LVIS_SELECTED, LVIS_SELECTED);
-                    return TRUE;
-
-                default:
-                    break;
-            }
         }
         break;
 
@@ -403,7 +411,7 @@ void Linter::OutputDialog::initialise_tab(Tab tab) noexcept
     ListView_InsertColumn(list_view, lvc.iSubItem, &lvc);
 }
 
-void Linter::OutputDialog::resize()
+void Linter::OutputDialog::resize() noexcept
 {
     RECT rc;
     getClientRect(rc);
@@ -596,7 +604,7 @@ void Linter::OutputDialog::select_previous_lint()
 */
 
 //FIXME We've already worked out the tab in all callers of this.
-void Linter::OutputDialog::show_selected_lint(int selected_item)
+void Linter::OutputDialog::show_selected_lint(int selected_item) noexcept
 {
     LVITEM item;
     item.iItem = selected_item;
@@ -721,7 +729,7 @@ void Linter::OutputDialog::copy_to_clipboard()
             }
         }
 
-        void copy(std::wstring const& str)
+        void copy(std::wstring const &str)
         {
             size_t const size = (str.size() + 1) * sizeof(TCHAR);
             mem_handle_ = ::GlobalAlloc(GMEM_MOVEABLE, size);
@@ -750,14 +758,12 @@ void Linter::OutputDialog::copy_to_clipboard()
 
       private:
         HGLOBAL mem_handle_ = nullptr;
-
     };
 
     Clipboard clipboard{getHSelf()};
 
     clipboard.empty();
     clipboard.copy(str);
-
 }
 
 int Linter::OutputDialog::sort_selected_list(Tab tab, LPARAM row1_index, LPARAM row2_index) noexcept

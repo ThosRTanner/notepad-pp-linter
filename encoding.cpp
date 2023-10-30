@@ -25,19 +25,6 @@ int Encoding::utfOffset(const std::string utf8, int unicodeOffset) noexcept
     return result;
 }
 
-std::string Encoding::toUTF(const std::wstring &data)
-{
-    std::string str;
-    if (!data.empty())
-    {
-        int const size = WideCharToMultiByte(CP_UTF8, 0, &data[0], static_cast<int>(data.size()), nullptr, 0, nullptr, nullptr);
-        str.resize(size);
-        WideCharToMultiByte(CP_UTF8, 0, &data[0], static_cast<int>(data.size()), &str[0], size, nullptr, nullptr);
-    }
-
-    return str;
-}
-
 std::wstring Encoding::toUnicode(const std::string &string, UINT encoding)
 {
     std::wstring str;
