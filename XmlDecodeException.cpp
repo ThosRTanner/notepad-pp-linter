@@ -28,7 +28,7 @@ Linter::XmlDecodeException::XmlDecodeException(IXMLDOMParseError *error)
     error->get_srcText(&text);
     if (text != nullptr)
     {
-        pos += std::snprintf(&m_buff[pos], sizeof(m_buff) - pos, " (near %s)", static_cast<char *>(static_cast<_bstr_t>(text)));
+        pos += static_cast<std::size_t>(std::snprintf(&m_buff[pos], sizeof(m_buff) - pos, " (near %s)", static_cast<char *>(static_cast<_bstr_t>(text))));
     }
 
     long code;

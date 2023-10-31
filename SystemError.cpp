@@ -4,6 +4,10 @@
 
 #include "encoding.h"
 
+#if __cplusplus >= 202002L
+#include <cstring>
+#endif
+
 #include <cstdio>
 #include <system_error>
 
@@ -63,7 +67,7 @@ SystemError::SystemError(HRESULT err, const SourceLocationCurrent &location) noe
         _bstr_t const msg{error.ErrorMessage()};
         std::snprintf(&m_buff[0], sizeof(m_buff), "%s", static_cast<char *>(msg));
     }
-    catch (std::exception const& e)
+    catch (std::exception const &e)
     {
 #pragma warning(push)
 #pragma warning(disable : 26447)
@@ -104,18 +108,17 @@ char const *Linter::SystemError::what() const noexcept
 
 void SystemError::addLocationToMessage(const SourceLocationCurrent &location) noexcept
 {
-    const char *fullPath = location.file_name();
-    if (fullPath == nullptr || fullPath[0] == 0)
-    {
-        return;
-    }
-
-    const char *fileName = std::strrchr(fullPath, '\\');
+#if __cplusplus >= 202002L
+    const char *const fullPath = location.file_name();
+    const char *const fileName = std::strrchr(fullPath, '\\');
     const std::size_t used{std::strlen(&m_buff[0])};
     std::snprintf(&m_buff[used],
         sizeof(m_buff) - used,
         " at %s:%ud %s",
-        (fileName ? fileName + 1 : fullPath),
+        (fileName == nullptr ? fullPath : &fileName[1]),
         location.line(),
         location.function_name());
+#else
+    (void)location;
+#endif
 }

@@ -48,13 +48,13 @@ std::vector<XmlParser::Error> XmlParser::getErrors(const std::string &xml)
         CComQIPtr<IXMLDOMElement> element(node);
         CComVariant value;
 
-        element->getAttribute(L"line", &value);
+        element->getAttribute(static_cast<bstr_t>(L"line"), &value);
         int const line = std::stoi(value.bstrVal);
 
-        element->getAttribute(L"column", &value);
+        element->getAttribute(static_cast<bstr_t>(L"column"), &value);
         int const column = std::stoi(value.bstrVal);
 
-        element->getAttribute(L"source", &value);
+        element->getAttribute(static_cast<bstr_t>(L"source"), &value);
         std::wstring tool(value.bstrVal);
         std::size_t const pos = tool.find_first_of('.');
         if (pos != std::string::npos)
@@ -62,7 +62,7 @@ std::vector<XmlParser::Error> XmlParser::getErrors(const std::string &xml)
             tool.resize(pos);
         }
 
-        element->getAttribute(L"message", &value);
+        element->getAttribute(static_cast<bstr_t>(L"message"), &value);
 
         errors.push_back(Error{line, column, value.bstrVal, tool});
     }

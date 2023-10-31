@@ -2,6 +2,8 @@
 
 #if __cplusplus >= 201703L
 #include <filesystem>
+#else
+#include <minwindef.h>
 #endif
 #include <string>
 #include <vector>
@@ -63,7 +65,7 @@ namespace Linter
 #if __cplusplus >= 201703L
         std::filesystem::file_time_type m_last_update_time;
 #else
-        uint64_t m_last_update_time = 0;
+        FILETIME m_last_update_time = {0, 0};
 #endif
         std::vector<Linter> m_linters;
     };

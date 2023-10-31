@@ -24,15 +24,3 @@ int Encoding::utfOffset(const std::string utf8, int unicodeOffset) noexcept
 
     return result;
 }
-
-std::wstring Encoding::toUnicode(const std::string &string, UINT encoding)
-{
-    std::wstring str;
-    if (!string.empty())
-    {
-        int const i = MultiByteToWideChar(encoding, 0, string.c_str(), -1, nullptr, 0);
-        str.resize(i - 1);
-        MultiByteToWideChar(encoding, 0, string.c_str(), -1, &str[0], i);
-    }
-    return str;
-}

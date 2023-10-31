@@ -4,8 +4,6 @@
 #include "FilePipe.h"
 #include "SystemError.h"
 
-#include <codecvt>
-
 using namespace Linter;
 
 std::string File::exec(std::wstring commandLine, const nonstd::optional<std::string> &str)
@@ -50,8 +48,8 @@ std::string File::exec(std::wstring commandLine, const nonstd::optional<std::str
     if (!isSuccess)
     {
         DWORD const error{GetLastError()};
-        std::string command{std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>>().to_bytes(commandLine)};
-        throw SystemError(error, "Can't execute command: " + command);
+        bstr_t const cmd{commandLine.c_str()};
+        throw SystemError(error, "Can't execute command: " + static_cast<std::string>(cmd));
     }
 
     if (str.has_value())

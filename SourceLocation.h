@@ -3,6 +3,8 @@
 
 #if __cplusplus >= 202002L
 #include <source_location>
+#else
+#include <cstdint>
 #endif
 
 namespace Linter
@@ -14,19 +16,22 @@ namespace Linter
     {
         struct Location
         {
-            unsigned int line() const noexcept
+            constexpr std::uint_least32_t line() const noexcept
             {
                 return 0;
             }
+
             const char *file_name() const noexcept
             {
                 return "";
             }
-            const char *function_name() const noexcept
+
+            constexpr const char *function_name() const noexcept
             {
                 return "";
             }
         };
+
         static Location current() noexcept
         {
             return {};
