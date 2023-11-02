@@ -33,7 +33,7 @@ public:
 	DockingDlgInterface() = default;
 	explicit DockingDlgInterface(int dlgID) noexcept : _dlgID(dlgID) {}
 
-	void init(HINSTANCE hInst, HWND parent) noexcept override
+	void init(HINSTANCE hInst, HWND parent) override
     {
 		StaticDialog::init(hInst, parent);
 		TCHAR temp[MAX_PATH];

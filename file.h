@@ -1,6 +1,5 @@
 #pragma once
 #include <string>
-#include "optional.hpp"
 
 class File
 {
@@ -13,7 +12,7 @@ class File
     File &operator=(File &&) = delete;
 
     ~File();
-    std::string exec(std::wstring commandLine, const nonstd::optional<std::string> &str);
+    std::string exec(std::wstring commandLine, std::string const *str);
     void write(const std::string &data);
 
   private:

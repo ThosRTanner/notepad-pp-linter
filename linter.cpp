@@ -14,6 +14,7 @@
 
 #include <map>
 #include <memory>
+#include <stdexcept>
 #include <vector>
 
 namespace
@@ -133,7 +134,7 @@ namespace
             return;
         }
 
-        std::string const &text = getDocumentText();
+        std::string const text = getDocumentText();
 
         std::wstring const full_path{GetFilePart(NPPM_GETFULLCURRENTPATH)};
         File file{GetFilePart(NPPM_GETFILENAME), GetFilePart(NPPM_GETCURRENTDIRECTORY)};
@@ -147,12 +148,7 @@ namespace
             //std::string xml = File::exec(L"C:\\Users\\deadem\\AppData\\Roaming\\npm\\jscs.cmd --reporter=checkstyle ", file);
             try
             {
-                nonstd::optional<std::string> str;
-                if (command.second)
-                {
-                    str = text;
-                }
-                std::string xml = file.exec(command.first, str);
+                std::string xml = file.exec(command.first, command.second ? &text : nullptr);
                 std::vector<XmlParser::Error> parseError = XmlParser::getErrors(xml);
                 errors.insert(errors.end(), parseError.begin(), parseError.end());
                 output_dialogue->add_lint_errors(parseError);

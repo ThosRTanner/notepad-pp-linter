@@ -30,7 +30,7 @@ public:
 	//@}
 
 
-	virtual void init(HINSTANCE hInst, HWND parent) noexcept
+	virtual void init(HINSTANCE hInst, HWND parent)
 	{
 		_hInst = hInst;
 		_hParent = parent;

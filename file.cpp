@@ -6,7 +6,7 @@
 
 using namespace Linter;
 
-std::string File::exec(std::wstring commandLine, const nonstd::optional<std::string> &str)
+std::string File::exec(std::wstring commandLine, std::string const *text)
 {
     if (!m_file.empty())
     {
@@ -36,11 +36,11 @@ std::string File::exec(std::wstring commandLine, const nonstd::optional<std::str
 
     BOOL const isSuccess = CreateProcess(nullptr,
         const_cast<wchar_t *>(commandLine.c_str()),    // command line
-        nullptr,                                          // process security attributes
-        nullptr,                                          // primary thread security attributes
+        nullptr,                                       // process security attributes
+        nullptr,                                       // primary thread security attributes
         TRUE,                                          // handles are inherited
         CREATE_NO_WINDOW,                              // creation flags
-        nullptr,                                          // use parent's environment
+        nullptr,                                       // use parent's environment
         m_directory.c_str(),                           // use parent's current directory
         &startInfo,                                    // STARTUPINFO pointer
         &procInfo);                                    // receives PROCESS_INFORMATION
@@ -52,9 +52,9 @@ std::string File::exec(std::wstring commandLine, const nonstd::optional<std::str
         throw SystemError(error, "Can't execute command: " + static_cast<std::string>(cmd));
     }
 
-    if (str.has_value())
+    if (text != nullptr)
     {
-        stdinpipe.m_writer.writeFile(str.value());
+        stdinpipe.m_writer.writeFile(*text);
     }
 
     //We need to close all the handles for this end otherwise strange things happen.
