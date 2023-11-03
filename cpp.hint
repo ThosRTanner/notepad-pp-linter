@@ -1,0 +1,4 @@
+// Hint files help the Visual Studio IDE interpret Visual C++ identifiers
+// such as names of functions and macros.
+// For more information see https://go.microsoft.com/fwlink/?linkid=865984
+#define ListView_SetItemText(hwndLV, i, iSubItem_, pszText_) { LV_ITEM _macro_lvi; _macro_lvi.iSubItem = (iSubItem_); _macro_lvi.pszText = (pszText_); SNDMSG((hwndLV), LVM_SETITEMTEXT, (WPARAM)(i), (LPARAM)(LV_ITEM *)&_macro_lvi);}

@@ -16,10 +16,9 @@
 /** Columns in the error list */
 enum List_Column
 {
-    Column_Number,
-    Column_Tool,
     Column_Line,
     Column_Position,
+    Column_Tool,
     Column_Message
 };
 
@@ -380,12 +379,6 @@ void Linter::OutputDialog::initialise_tab(Tab tab) noexcept
     LVCOLUMN lvc;
     lvc.mask = LVCF_FMT | LVCF_WIDTH | LVCF_TEXT | LVCF_SUBITEM;
 
-    lvc.iSubItem = Column_Number;
-    lvc.pszText = const_cast<wchar_t *>(L"");
-    lvc.cx = 28;
-    lvc.fmt = LVCFMT_RIGHT;
-    ListView_InsertColumn(list_view, lvc.iSubItem, &lvc);
-
     lvc.iSubItem = Column_Tool;
     lvc.pszText = const_cast<wchar_t *>(L"Tool");
     lvc.cx = 100;
@@ -478,11 +471,7 @@ void Linter::OutputDialog::add_errors(Tab tab, std::vector<XmlParser::Error> con
         lvI.state = 0;
         lvI.stateMask = 0;
         lvI.lParam = lvI.iItem;
-
-        stream.str(L"");
-        stream << lvI.iItem + 1;
-        std::wstring strNum = stream.str();
-        lvI.pszText = const_cast<wchar_t *>(strNum.c_str());
+        lvI.pszText = const_cast<wchar_t *>(L"");
         ListView_InsertItem(list_view, &lvI);
 
         ListView_SetItemText(list_view, lvI.iItem, Column_Message, const_cast<wchar_t *>(lint.m_message.c_str()));
