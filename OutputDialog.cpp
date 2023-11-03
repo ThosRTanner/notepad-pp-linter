@@ -309,6 +309,10 @@ INT_PTR CALLBACK Linter::OutputDialog::run_dlgProc_impl(UINT message, WPARAM wPa
             resize();
             return TRUE;
 
+        case WM_PAINT:
+            ::RedrawWindow(getHSelf(), nullptr, nullptr, RDW_INVALIDATE);
+            break;
+
         default:
             break;
     }
@@ -490,7 +494,7 @@ void Linter::OutputDialog::add_errors(Tab tab, std::vector<XmlParser::Error> con
         ListView_SetItemText(list_view, lvI.iItem, Column_Position, const_cast<wchar_t *>(strColumn.c_str()));
 
         //Ensure the message column is as wide as the widest column.
-        ListView_SetColumnWidth(list_view, Column_Message, LVSCW_AUTOSIZE);
+        ListView_SetColumnWidth(list_view, Column_Message, LVSCW_AUTOSIZE_USEHEADER);
 
         errors_[tab].push_back(lint);
     }
