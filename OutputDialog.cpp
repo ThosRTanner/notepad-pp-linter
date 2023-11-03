@@ -59,7 +59,7 @@ std::array<Linter::OutputDialog::TabDefinition, Linter::OutputDialog::Num_Tabs> 
 Linter::OutputDialog::OutputDialog(NppData const &npp_data, HANDLE module_handle, int dlg_num)
     : DockingDlgInterface(IDD_OUTPUT), npp_data_(npp_data), dialogue_()
 {
-    std::fill_n(&list_views_[0], Num_Tabs, static_cast<HWND>(nullptr));
+    list_views_.fill(static_cast<HWND>(nullptr));
 
     init(static_cast<HINSTANCE>(module_handle), npp_data._nppHandle);
 
@@ -761,10 +761,11 @@ void Linter::OutputDialog::copy_to_clipboard()
 
 int Linter::OutputDialog::sort_selected_list(Tab tab, LPARAM row1_index, LPARAM row2_index) noexcept
 {
-    int res = errors_[tab][row1_index].m_line - errors_[tab][row2_index].m_line;
+    auto const &errs = errors_[tab];
+    int res = errs[row1_index].m_line - errs[row2_index].m_line;
     if (res == 0)
     {
-        res = errors_[tab][row1_index].m_column - errors_[tab][row2_index].m_column;
+        res = errs[row1_index].m_column - errs[row2_index].m_column;
     }
     return res;
 }
