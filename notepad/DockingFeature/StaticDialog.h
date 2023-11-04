@@ -38,8 +38,15 @@ struct DLGTEMPLATEEX
 
 class StaticDialog : public Window
 {
-public :
-	virtual ~StaticDialog();
+  public :
+    StaticDialog() noexcept;
+
+    virtual ~StaticDialog();
+
+	StaticDialog(StaticDialog const &) = delete;
+    StaticDialog(StaticDialog &&) = delete;
+    StaticDialog &operator=(StaticDialog const &) = delete;
+    StaticDialog &operator=(StaticDialog &&) = delete;
 
 	virtual void create(int dialogID, bool isRTL = false, bool msgDestParent = true);
 

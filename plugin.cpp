@@ -14,14 +14,17 @@ HANDLE timers(0);
 
 std::unique_ptr<Linter::OutputDialog> output_dialogue;
 
+enum
+{
+    MENU_ENTRY_EDIT_CONFIG,
+    MENU_ENTRY_SHOW_RESULTS
+};
+
 namespace
 {
     HANDLE module_handle;
     const TCHAR PLUGIN_NAME[] = L"Linter";
     TCHAR iniFilePath[MAX_PATH];
-
-    int constexpr FUNCTIONS_COUNT = 2;
-    FuncItem funcItem[FUNCTIONS_COUNT];
 
     NppData nppData;
 
@@ -35,26 +38,6 @@ namespace
     {
     }
 
-    bool setCommand(size_t index, wchar_t const *cmdName, PFUNCPLUGINCMD pFunc, ShortcutKey *sk, bool checkOnInit) noexcept
-    {
-        if (index >= FUNCTIONS_COUNT)
-        {
-            return false;
-        }
-
-        if (!pFunc)
-        {
-            return false;
-        }
-
-        lstrcpy(funcItem[index]._itemName, cmdName);
-        funcItem[index]._pFunc = pFunc;
-        funcItem[index]._init2Check = checkOnInit;
-        funcItem[index]._pShKey = sk;
-
-        return true;
-    }
-
     void show_results() noexcept
     {
         output_dialogue->display();
@@ -62,9 +45,7 @@ namespace
 
     void commandMenuInit()
     {
-        setCommand(0, L"Edit config", editConfig, nullptr, false);
-        setCommand(1, L"Show linter results", show_results, nullptr, false);
-        output_dialogue = std::make_unique<Linter::OutputDialog>(nppData, module_handle, 1);
+        output_dialogue = std::make_unique<Linter::OutputDialog>(nppData, module_handle, MENU_ENTRY_SHOW_RESULTS);
     }
 
     void ShowError(LRESULT start, LRESULT end, bool on) noexcept
@@ -112,6 +93,12 @@ extern "C" __declspec(dllexport) const TCHAR *getName()
 
 extern "C" __declspec(dllexport) FuncItem *getFuncsArray(int *nbF)
 {
+    int constexpr FUNCTIONS_COUNT = 2;
+    static FuncItem funcItem[FUNCTIONS_COUNT] = {
+        {L"Edit config",         editConfig,   MENU_ENTRY_EDIT_CONFIG },
+        {L"Show linter results", show_results, MENU_ENTRY_SHOW_RESULTS}
+    };
+
     *nbF = FUNCTIONS_COUNT;
     return &funcItem[0];
 }

@@ -44,14 +44,14 @@ public:
 	}
 
 
-	virtual void reSizeTo(RECT &rc) noexcept    // should NEVER be const !!!
+	virtual void reSizeTo(RECT &rc) const noexcept    // should NEVER be const !!!
 	{
 		::MoveWindow(_hSelf, rc.left, rc.top, rc.right, rc.bottom, TRUE);
 		redraw();
 	}
 
 
-	virtual void reSizeToWH(RECT &rc) noexcept    // should NEVER be const !!!
+	virtual void reSizeToWH(RECT &rc) const noexcept    // should NEVER be const !!!
 	{
 		::MoveWindow(_hSelf, rc.left, rc.top, rc.right - rc.left, rc.bottom - rc.top, TRUE);
 		redraw();
@@ -106,7 +106,7 @@ public:
 		return _hParent;
 	}
 
-	void getFocus() const noexcept {
+	void setFocus() const noexcept {
 		::SetFocus(_hSelf);
 	}
 

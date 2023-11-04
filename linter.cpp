@@ -85,7 +85,7 @@ namespace
             wchar_t const title[256] = {0};
             SendMessage(childHandle, WM_GETTEXT, sizeof(title) / sizeof(title[0]) - 1, reinterpret_cast<LPARAM>(title));
 
-            std::wstring str(title);
+            std::wstring str(&title[0]);
             if (message.empty() && str.find(L" - ") == 0)
             {
                 message = L" - ";

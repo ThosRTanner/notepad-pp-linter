@@ -19,11 +19,10 @@
 
 #include "dockingResource.h"
 #include "Docking.h"
+#include "StaticDialog.h"
 
-#include <assert.h>
 #include <shlwapi.h>
 #include <string>
-#include "StaticDialog.h"
 
 
 
@@ -37,16 +36,16 @@ public:
     {
 		StaticDialog::init(hInst, parent);
 		TCHAR temp[MAX_PATH];
-		::GetModuleFileName(reinterpret_cast<HMODULE>(hInst), temp, MAX_PATH);
-		_moduleName = ::PathFindFileName(temp);
+        ::GetModuleFileName(static_cast<HMODULE>(hInst), &temp[0], MAX_PATH);
+        _moduleName = ::PathFindFileName(&temp[0]);
 	}
 
     void create(tTbData* data, bool isRTL = false) {
 		assert(data != nullptr);
 		StaticDialog::create(_dlgID, isRTL);
 		TCHAR temp[MAX_PATH];
-		::GetWindowText(_hSelf, temp, MAX_PATH);
-		_pluginName = temp;
+        ::GetWindowText(_hSelf, &temp[0], MAX_PATH);
+		_pluginName = &temp[0];
 
         // user information
 		data->hClient = _hSelf;
