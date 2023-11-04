@@ -63,7 +63,6 @@ namespace Linter
             Num_Tabs = 2
         };
 
-        NppData const &npp_data_;
         HWND dialogue_;
         std::array<HWND, Num_Tabs> list_views_;
         Tab current_tab_;
@@ -82,16 +81,16 @@ namespace Linter
         INT_PTR CALLBACK run_dlgProc_impl(UINT message, WPARAM wParam, LPARAM lParam);
 
         /** Initialise the output window */
-        void initialise_dialogue() noexcept;
+        void initialise_dialogue();
 
         /** Initialise the specified tab */
-        void initialise_tab(Tab tab) noexcept;
+        void initialise_tab(Tab tab);
 
         /** Window resize */
         void resize() noexcept;
 
         /** Selected tab has been changed. Display new one */
-        void selected_tab_changed() noexcept;
+        void selected_tab_changed();
 
         /** Update the counts in the tab bar */
         void update_displayed_counts();
@@ -102,7 +101,7 @@ namespace Linter
         //void get_name_from_cmd(UINT resID, LPTSTR tip, UINT count);
 
         /** Move to the line/column of the displayed error */
-        void show_selected_lint(int selected_item) noexcept;
+        void show_selected_lint(int selected_item);
 
         /** Copy selected messages to clipboard */
         void copy_to_clipboard();

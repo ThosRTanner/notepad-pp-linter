@@ -57,7 +57,7 @@ std::array<Linter::OutputDialog::TabDefinition, Linter::OutputDialog::Num_Tabs> 
 //Note: we do actually initialise dialogue_ during the construction, but it's done
 //in a callback from create...
 Linter::OutputDialog::OutputDialog(NppData const &npp_data, HANDLE module_handle, int dlg_num)
-    : DockingDlgInterface(IDD_OUTPUT), npp_data_(npp_data), dialogue_()
+    : DockingDlgInterface(IDD_OUTPUT), dialogue_()
 {
     list_views_.fill(static_cast<HWND>(nullptr));
 
@@ -76,7 +76,7 @@ Linter::OutputDialog::OutputDialog(NppData const &npp_data, HANDLE module_handle
     //The dialogue ID is the function that caused this dialogue to be displayed.
     data.dlgID = dlg_num;
 
-    ::SendMessage(npp_data._nppHandle, NPPM_DMMREGASDCKDLG, 0, reinterpret_cast<LPARAM>(&data));
+    SendApp(NPPM_DMMREGASDCKDLG, 0, reinterpret_cast<LPARAM>(&data));
 
     // I'm not sure why I need this. If I don't have it the dialogue opens up every time.
     // If I do have it, the dialogue opens only if it was open when notepad++ was shut down...
@@ -168,30 +168,29 @@ INT_PTR CALLBACK Linter::OutputDialog::run_dlgProc_impl(UINT message, WPARAM wPa
         case WM_COMMAND:
         {
             //Context menu responses
-            switch
-                LOWORD(wParam)
+            switch (LOWORD(wParam))
+            {
+                case Context_Copy_Lints:
+                    copy_to_clipboard();
+                    return TRUE;
+
+                case Context_Show_Source_Line:
                 {
-                    case Context_Copy_Lints:
-                        copy_to_clipboard();
-                        return TRUE;
-
-                    case Context_Show_Source_Line:
+                    int const item = ListView_GetNextItem(current_list_view_, -1, LVIS_FOCUSED | LVIS_SELECTED);
+                    if (item != -1)
                     {
-                        int const item = ListView_GetNextItem(current_list_view_, -1, LVIS_FOCUSED | LVIS_SELECTED);
-                        if (item != -1)
-                        {
-                            show_selected_lint(item);
-                        }
-                        return TRUE;
+                        show_selected_lint(item);
                     }
-
-                    case Context_Select_All:
-                        ListView_SetItemState(current_list_view_, -1, LVIS_SELECTED, LVIS_SELECTED);
-                        return TRUE;
-
-                    default:
-                        break;
+                    return TRUE;
                 }
+
+                case Context_Select_All:
+                    ListView_SetItemState(current_list_view_, -1, LVIS_SELECTED, LVIS_SELECTED);
+                    return TRUE;
+
+                default:
+                    break;
+            }
         }
         break;
 
@@ -201,7 +200,7 @@ INT_PTR CALLBACK Linter::OutputDialog::run_dlgProc_impl(UINT message, WPARAM wPa
             switch (notify_header->code)
             {
                 case LVN_KEYDOWN:
-                    if (notify_header->idFrom == tab_definitions_[current_tab_].list_view_id_)
+                    if (notify_header->idFrom == tab_definitions_.at(current_tab_).list_view_id_)
                     {
                         NMLVKEYDOWN const *pnkd = reinterpret_cast<LPNMLVKEYDOWN>(lParam);
                         if (pnkd->wVKey == 'A' && (::GetKeyState(VK_CONTROL) & 0x8000U) != 0)
@@ -218,7 +217,7 @@ INT_PTR CALLBACK Linter::OutputDialog::run_dlgProc_impl(UINT message, WPARAM wPa
                     break;
 
                 case NM_DBLCLK:
-                    if (notify_header->idFrom == tab_definitions_[current_tab_].list_view_id_)
+                    if (notify_header->idFrom == tab_definitions_.at(current_tab_).list_view_id_)
                     {
                         NMITEMACTIVATE const *lpnmitem = reinterpret_cast<LPNMITEMACTIVATE>(lParam);
                         int const selected_item = lpnmitem->iItem;
@@ -353,7 +352,7 @@ void Linter::OutputDialog::on_toolbar_cmd(UINT /* message*/)
 //{
 //}
 #endif
-void Linter::OutputDialog::initialise_dialogue() noexcept
+void Linter::OutputDialog::initialise_dialogue()
 {
     // I'd initialise this after calling create, but create calls this
     // via a callback which is - quite strange. Also, I can't help feeling
@@ -368,15 +367,15 @@ void Linter::OutputDialog::initialise_dialogue() noexcept
     for (int tab = 0; tab < Num_Tabs; tab += 1)
     {
         //This const cast is in no way worrying.
-        tie.pszText = const_cast<wchar_t *>(tab_definitions_[tab].tab_name_);
+        tie.pszText = const_cast<wchar_t *>(tab_definitions_.at(tab).tab_name_);
         TabCtrl_InsertItem(dialogue_, tab, &tie);
     }
 }
 
-void Linter::OutputDialog::initialise_tab(Tab tab) noexcept
+void Linter::OutputDialog::initialise_tab(Tab tab)
 {
-    auto const list_view = ::GetDlgItem(_hSelf, tab_definitions_[tab].list_view_id_);
-    list_views_[tab] = list_view;
+    auto const list_view = ::GetDlgItem(_hSelf, tab_definitions_.at(tab).list_view_id_);
+    list_views_.at(tab) = list_view;
 
     ListView_SetExtendedListViewStyle(list_view, LVS_EX_FULLROWSELECT | LVS_EX_AUTOSIZECOLUMNS);
 
@@ -423,14 +422,14 @@ void Linter::OutputDialog::resize() noexcept
     }
 }
 
-void Linter::OutputDialog::selected_tab_changed() noexcept
+void Linter::OutputDialog::selected_tab_changed()
 {
     int const selected = TabCtrl_GetCurSel(dialogue_);
     current_tab_ = static_cast<Tab>(selected);
-    current_list_view_ = list_views_[current_tab_];
+    current_list_view_ = list_views_.at(current_tab_);
     for (int tab = 0; tab < Num_Tabs; tab += 1)
     {
-        ShowWindow(list_views_[tab], selected == tab ? SW_SHOW : SW_HIDE);
+        ShowWindow(list_views_.at(tab), selected == tab ? SW_SHOW : SW_HIDE);
     }
 }
 
@@ -440,16 +439,16 @@ void Linter::OutputDialog::update_displayed_counts()
     for (int tab = 0; tab < Num_Tabs; tab += 1)
     {
         std::wstring strTabName;
-        int const count = ListView_GetItemCount(list_views_[tab]);
+        int const count = ListView_GetItemCount(list_views_.at(tab));
         if (count > 0)
         {
             stream.str(L"");
-            stream << tab_definitions_[tab].tab_name_ << L" (" << count << L")";
+            stream << tab_definitions_.at(tab).tab_name_ << L" (" << count << L")";
             strTabName = stream.str();
         }
         else
         {
-            strTabName = tab_definitions_[tab].tab_name_;
+            strTabName = tab_definitions_.at(tab).tab_name_;
         }
 
         TCITEM tie;
@@ -461,7 +460,7 @@ void Linter::OutputDialog::update_displayed_counts()
 
 void Linter::OutputDialog::add_errors(Tab tab, std::vector<XmlParser::Error> const &lints)
 {
-    HWND list_view = list_views_[tab];
+    HWND list_view = list_views_.at(tab);
 
     std::wstringstream stream;
 
@@ -496,7 +495,7 @@ void Linter::OutputDialog::add_errors(Tab tab, std::vector<XmlParser::Error> con
         //Ensure the message column is as wide as the widest column.
         ListView_SetColumnWidth(list_view, Column_Message, LVSCW_AUTOSIZE_USEHEADER);
 
-        errors_[tab].push_back(lint);
+        errors_.at(tab).push_back(lint);
     }
 
     update_displayed_counts();
@@ -597,7 +596,7 @@ void Linter::OutputDialog::select_previous_lint()
 */
 
 //FIXME We've already worked out the tab in all callers of this.
-void Linter::OutputDialog::show_selected_lint(int selected_item) noexcept
+void Linter::OutputDialog::show_selected_lint(int selected_item)
 {
     LVITEM item;
     item.iItem = selected_item;
@@ -605,7 +604,7 @@ void Linter::OutputDialog::show_selected_lint(int selected_item) noexcept
     item.mask = LVIF_PARAM;
     ListView_GetItem(current_list_view_, &item);
 
-    XmlParser::Error const &lint_error = errors_[current_tab_][item.lParam];
+    XmlParser::Error const &lint_error = errors_.at(current_tab_).at(item.lParam);
 
     int const line = std::max(lint_error.m_line - 1, 0);
     int const column = std::max(lint_error.m_column - 1, 0);
@@ -664,7 +663,7 @@ void Linter::OutputDialog::copy_to_clipboard()
         item.mask = LVIF_PARAM;
         ListView_GetItem(current_list_view_, &item);
 
-        auto const &lint_error = errors_[current_tab_][item.lParam];
+        auto const &lint_error = errors_.at(current_tab_).at(item.lParam);
 
         if (first)
         {
