@@ -2,6 +2,7 @@
 #include "HandleWrapper.h"
 
 #include "SystemError.h"
+#include <vector>
 
 using namespace Linter;
 
@@ -40,13 +41,13 @@ void HandleWrapper::writeFile(std::string const &str) const
 {
     static_assert(sizeof(str[0]) == 1, "Invalid byte size");
 
-    char const *start = str.c_str();
-    char const *end = start + str.size();
+    auto start = str.begin();
+    auto const end = str.end();
     while (start != end)
     {
         const auto toWrite = static_cast<DWORD>(end - start);
         DWORD written;
-        if (!WriteFile(m_handle, start, toWrite, &written, nullptr))
+        if (!WriteFile(m_handle, &*start, toWrite, &written, nullptr))
         {
             const DWORD err = GetLastError();
             throw SystemError(err);
@@ -59,15 +60,17 @@ std::string HandleWrapper::readFile() const
 {
     std::string result;
 
-    std::string buffer;
-    buffer.resize(0x4000);
+    constexpr DWORD BUFFSIZE = 0x4000;
+    std::vector<char> buffer;
+    buffer.resize(BUFFSIZE);
+    auto const buff{&*buffer.begin()};
 
     for (;;)
     {
         DWORD readBytes;
         //The API suggests when the other end closes the pipe, you should get 0. What appears to happen
         //is that you get broken pipe.
-        if (!ReadFile(m_handle, &buffer[0], static_cast<DWORD>(buffer.size()), &readBytes, nullptr))
+        if (!ReadFile(m_handle, buff, BUFFSIZE, &readBytes, nullptr))
         {
             DWORD const err = GetLastError();
             if (err != ERROR_BROKEN_PIPE)
@@ -81,7 +84,7 @@ std::string HandleWrapper::readFile() const
             break;
         }
 
-        result += std::string(&buffer[0], readBytes);
+        result.append(buff, readBytes);
     }
 
     return result;

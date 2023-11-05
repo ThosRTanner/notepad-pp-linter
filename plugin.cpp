@@ -160,6 +160,7 @@ std::string getDocumentText()
 #if __cplusplus >= 202002L
     auto buff{std::make_unique_for_overwrite<char[]>(lengthDoc + 1)};
 #else
+#pragma warning(suppress : 26409 26414)
     std::unique_ptr<char[]> buff{new char[lengthDoc + 1]};
 #endif
     SendEditor(SCI_GETTEXT, lengthDoc, reinterpret_cast<LPARAM>(buff.get()));
@@ -172,6 +173,7 @@ std::string getLineText(int line)
 #if __cplusplus >= 202002L
     auto buff{std::make_unique_for_overwrite<char[]>(length + 1)};
 #else
+#pragma warning(suppress : 26409 26414)
     std::unique_ptr<char[]> buff{new char[length + 1]};
 #endif
     SendEditor(SCI_GETLINE, line, reinterpret_cast<LPARAM>(buff.get()));

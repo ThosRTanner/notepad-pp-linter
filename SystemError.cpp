@@ -33,10 +33,8 @@ SystemError::SystemError(DWORD err, const SourceLocationCurrent &location) noexc
     }
     catch (std::exception const &e)
     {
-#pragma warning(push)
-#pragma warning(disable : 26447)
+#pragma warning(suppress : 26447)    //MS Bug with e.what() decl
         std::snprintf(&m_buff[0], sizeof(m_buff), "Error code %08x then got %s", err, e.what());
-#pragma warning(pop)
     }
     addLocationToMessage(location);
 }
@@ -49,10 +47,8 @@ SystemError::SystemError(DWORD err, std::string const &info, const SourceLocatio
     }
     catch (std::exception const &e)
     {
-#pragma warning(push)
-#pragma warning(disable : 26447)
+#pragma warning(suppress : 26447)    //MS Bug with e.what() decl
         std::snprintf(&m_buff[0], sizeof(m_buff), "%s - Error code %08x then got %s", info.c_str(), err, e.what());
-#pragma warning(pop)
     }
     addLocationToMessage(location);
 }
@@ -69,10 +65,8 @@ SystemError::SystemError(HRESULT err, const SourceLocationCurrent &location) noe
     }
     catch (std::exception const &e)
     {
-#pragma warning(push)
-#pragma warning(disable : 26447)
-        std::snprintf(&m_buff[0], sizeof(m_buff), "Got error %08x but couldn't decode becuase %s", err, e.what());
-#pragma warning(pop)
+#pragma warning(suppress : 26447)    //MS Bug with e.what() decl
+        std::snprintf(&m_buff[0], sizeof(m_buff), "Got error %08x but couldn't decode because %s", err, e.what());
     }
     addLocationToMessage(location);
 }
@@ -89,10 +83,8 @@ SystemError::SystemError(HRESULT err, std::string const &info, const SourceLocat
     }
     catch (std::exception const &e)
     {
-#pragma warning(push)
-#pragma warning(disable : 26447)
-        std::snprintf(&m_buff[0], sizeof(m_buff), "%s - Got error %08x but couldn't decode becuase %s", info.c_str(), err, e.what());
-#pragma warning(pop)
+#pragma warning(suppress : 26447)    //MS Bug with e.what() decl
+        std::snprintf(&m_buff[0], sizeof(m_buff), "%s - Got error %08x but couldn't decode because %s", info.c_str(), err, e.what());
     }
     addLocationToMessage(location);
 }

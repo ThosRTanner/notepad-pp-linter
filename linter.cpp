@@ -62,6 +62,7 @@ namespace
 #if __cplusplus >= 202002L
         auto buff{std::make_unique_for_overwrite<wchar_t[]>(MAX_PATH + 1)};
 #else
+#pragma warning(suppress: 26409 26414)
         std::unique_ptr<wchar_t[]> buff{new wchar_t[MAX_PATH + 1]};
 #endif
         SendApp(part, MAX_PATH, reinterpret_cast<LPARAM>(buff.get()));
@@ -223,7 +224,7 @@ namespace
 
     void initLinters()
     {
-        settings.reset(new Linter::Settings(getIniFileName()));
+        settings = std::make_unique<Linter::Settings>(getIniFileName());
     }
 }    // namespace
 
@@ -274,6 +275,7 @@ extern "C" __declspec(dllexport) void beNotified(SCNotification const *notifyCod
 #if __cplusplus >= 202002L
                     auto buff{std::make_unique_for_overwrite<wchar_t[]>(len + 1)};
 #else
+#pragma warning(suppress : 26409 26414)
                     std::unique_ptr<wchar_t[]> buff{new wchar_t[len + 1]};
 #endif
                     SendApp(NPPM_GETFULLPATHFROMBUFFERID, buffer, reinterpret_cast<LPARAM>(buff.get()));
