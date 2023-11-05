@@ -81,16 +81,16 @@ namespace Linter
         INT_PTR CALLBACK run_dlgProc_impl(UINT message, WPARAM wParam, LPARAM lParam);
 
         /** Initialise the output window */
-        void initialise_dialogue();
+        void initialise_dialogue() noexcept;
 
         /** Initialise the specified tab */
-        void initialise_tab(Tab tab);
+        void initialise_tab(Tab tab) noexcept;
 
         /** Window resize */
         void resize() noexcept;
 
         /** Selected tab has been changed. Display new one */
-        void selected_tab_changed();
+        void selected_tab_changed() noexcept;
 
         /** Update the counts in the tab bar */
         void update_displayed_counts();
@@ -101,7 +101,7 @@ namespace Linter
         //void get_name_from_cmd(UINT resID, LPTSTR tip, UINT count);
 
         /** Move to the line/column of the displayed error */
-        void show_selected_lint(int selected_item);
+        void show_selected_lint(int selected_item) noexcept;
 
         /** Copy selected messages to clipboard */
         void copy_to_clipboard();
