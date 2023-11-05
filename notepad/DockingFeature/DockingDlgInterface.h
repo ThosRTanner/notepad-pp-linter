@@ -16,7 +16,7 @@
 
 #pragma once
 
-#include "Docking.h" //For tTbData. should we fwd declare this?
+#include "Docking.h"    //For tTbData. should we fwd declare this?
 #include "StaticDialog.h"
 
 //#include <shlwapi.h>
@@ -25,24 +25,13 @@
 class DockingDlgInterface : public StaticDialog
 {
   public:
-    DockingDlgInterface();
-
-    explicit DockingDlgInterface(int dlgID) noexcept;
-
-    void init(HINSTANCE hInst, HWND parent) override;
+    explicit DockingDlgInterface(int dlgID, HINSTANCE hInst, HWND parent);
 
     void create(tTbData *data, bool isRTL = false);
 
     virtual void updateDockingDlg() noexcept;
 
     void destroy() noexcept override
-    {
-    }
-
-    virtual void setBackgroundColor(COLORREF) noexcept
-    {
-    }
-    virtual void setForegroundColor(COLORREF) noexcept
     {
     }
 
@@ -64,12 +53,13 @@ class DockingDlgInterface : public StaticDialog
     }
 
   protected:
+    INT_PTR CALLBACK run_dlgProc(UINT message, WPARAM, LPARAM lParam) override;
+
+  private:
     int _dlgID = -1;
     bool _isFloating = true;
     int _iDockedPos = 0;
     std::wstring _moduleName;
     std::wstring _pluginName;
     bool _isClosed = false;
-
-    INT_PTR CALLBACK run_dlgProc(UINT message, WPARAM, LPARAM lParam) noexcept override;
 };

@@ -3,15 +3,11 @@
 
 #include "dockingResource.h"
 
-DockingDlgInterface::DockingDlgInterface() = default;
+#include <Shlwapi.h>
+#include <cassert>
 
-DockingDlgInterface::DockingDlgInterface(int dlgID) noexcept : _dlgID(dlgID)
+DockingDlgInterface::DockingDlgInterface(int dlgID, HINSTANCE hInst, HWND parent) : _dlgID(dlgID), StaticDialog(hInst, parent)
 {
-}
-
-void DockingDlgInterface::init(HINSTANCE hInst, HWND parent)
-{
-    StaticDialog::init(hInst, parent);
     TCHAR temp[MAX_PATH];
     ::GetModuleFileName(static_cast<HMODULE>(hInst), &temp[0], MAX_PATH);
     _moduleName = ::PathFindFileName(&temp[0]);
@@ -46,7 +42,7 @@ void DockingDlgInterface::display(bool toShow) const noexcept
     ::SendMessage(_hParent, toShow ? NPPM_DMMSHOW : NPPM_DMMHIDE, 0, reinterpret_cast<LPARAM>(_hSelf));
 }
 
-INT_PTR DockingDlgInterface::run_dlgProc(UINT message, WPARAM, LPARAM lParam) noexcept
+INT_PTR DockingDlgInterface::run_dlgProc(UINT message, WPARAM, LPARAM lParam)
 {
     switch (message)
     {
@@ -58,27 +54,22 @@ INT_PTR DockingDlgInterface::run_dlgProc(UINT message, WPARAM, LPARAM lParam) no
             {
                 switch (LOWORD(pnmh->code))
                 {
-                    case DMN_CLOSE:
-                    {
-                        break;
-                    }
                     case DMN_FLOAT:
-                    {
                         _isFloating = true;
                         break;
-                    }
+
                     case DMN_DOCK:
-                    {
                         _iDockedPos = HIWORD(pnmh->code);
                         _isFloating = false;
                         break;
-                    }
+
                     default:
                         break;
                 }
             }
             break;
         }
+
         default:
             break;
     }

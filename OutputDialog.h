@@ -46,7 +46,7 @@ namespace Linter
         *.
         */
       protected:
-        INT_PTR CALLBACK run_dlgProc(UINT message, WPARAM wParam, LPARAM lParam) noexcept override;
+        INT_PTR CALLBACK run_dlgProc(UINT message, WPARAM wParam, LPARAM lParam) override;
 
         void on_toolbar_cmd(UINT message); //If we actually implement any...
         //void OnToolbarDropDown(LPNMTOOLBAR lpnmtb);
@@ -76,9 +76,6 @@ namespace Linter
         static std::array<TabDefinition, Num_Tabs> const tab_definitions_;
 
         std::array<std::vector<XmlParser::Error>, Num_Tabs> errors_;
-
-        /** Implementation of run_dlgProc but can throw */
-        INT_PTR CALLBACK run_dlgProc_impl(UINT message, WPARAM wParam, LPARAM lParam);
 
         /** Initialise the output window */
         void initialise_dialogue() noexcept;

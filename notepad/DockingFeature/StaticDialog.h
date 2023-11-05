@@ -17,68 +17,52 @@
 #include "..\Notepad_plus_msgs.h"
 #include "Window.h"
 
-typedef HRESULT (WINAPI * ETDTProc) (HWND, DWORD);
-
-enum class PosAlign { left, right, top, bottom };
-
 struct DLGTEMPLATEEX
 {
-      WORD   dlgVer;
-      WORD   signature;
-      DWORD  helpID;
-      DWORD  exStyle;
-      DWORD  style;
-      WORD   cDlgItems;
-      short  x;
-      short  y;
-      short  cx;
-      short  cy;
-      // The structure has more fields but are variable length
+    WORD dlgVer;
+    WORD signature;
+    DWORD helpID;
+    DWORD exStyle;
+    DWORD style;
+    WORD cDlgItems;
+    short x;
+    short y;
+    short cx;
+    short cy;
+    // The structure has more fields but are variable length
 };
 
 class StaticDialog : public Window
 {
-  public :
-    StaticDialog() noexcept;
+  public:
+    StaticDialog(HINSTANCE hInst, HWND paren) noexcept;
 
     virtual ~StaticDialog();
 
-	StaticDialog(StaticDialog const &) = delete;
+    StaticDialog(StaticDialog const &) = delete;
     StaticDialog(StaticDialog &&) = delete;
     StaticDialog &operator=(StaticDialog const &) = delete;
     StaticDialog &operator=(StaticDialog &&) = delete;
 
-	virtual void create(int dialogID, bool isRTL = false, bool msgDestParent = true);
+    virtual void create(int dialogID, bool isRTL = false, bool msgDestParent = true);
 
-    virtual bool isCreated() const noexcept {
-		return (_hSelf != NULL);
-	}
+    virtual bool isCreated() const noexcept
+    {
+        return _hSelf != NULL;
+    }
 
-	void goToCenter() noexcept;
-
-	void display(bool toShow = true, bool enhancedPositioningCheckWhenShowing = false) const noexcept;
-
-	RECT getViewablePositionRect(RECT testRc) const noexcept;
-
-	POINT getTopPoint(HWND hwnd, bool isLeft = true) const noexcept;
-
-	bool isCheckedOrNot(int checkControlID) const noexcept
-	{
-		return (BST_CHECKED == ::SendMessage(::GetDlgItem(_hSelf, checkControlID), BM_GETCHECK, 0, 0));
-	}
-
-	void setChecked(int checkControlID, bool checkOrNot = true) const noexcept
-	{
-		::SendDlgItemMessage(_hSelf, checkControlID, BM_SETCHECK, checkOrNot ? BST_CHECKED : BST_UNCHECKED, 0);
-	}
+    void display(bool toShow = true, bool enhancedPositioningCheckWhenShowing = false) const noexcept;
 
     void destroy() noexcept override;
 
-protected:
-	RECT _rc;
-	static INT_PTR CALLBACK dlgProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam);
-	virtual INT_PTR CALLBACK run_dlgProc(UINT message, WPARAM wParam, LPARAM lParam) = 0;
+  protected:
+    virtual INT_PTR CALLBACK run_dlgProc(UINT message, WPARAM wParam, LPARAM lParam) = 0;
 
-    void alignWith(HWND handle, HWND handle2Align, PosAlign pos, POINT &point) noexcept;
+  private:
+    RECT _rc;
+    static INT_PTR CALLBACK dlgProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam) noexcept;
+
+    RECT getViewablePositionRect(RECT testRc) const noexcept;
+
     HGLOBAL makeRTLResource(int dialogID, DLGTEMPLATE **ppMyDlgTemplate) noexcept;
 };

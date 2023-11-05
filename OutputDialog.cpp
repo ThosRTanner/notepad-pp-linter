@@ -57,11 +57,9 @@ std::array<Linter::OutputDialog::TabDefinition, Linter::OutputDialog::Num_Tabs> 
 //Note: we do actually initialise dialogue_ during the construction, but it's done
 //in a callback from create...
 Linter::OutputDialog::OutputDialog(NppData const &npp_data, HANDLE module_handle, int dlg_num)
-    : DockingDlgInterface(IDD_OUTPUT), dialogue_()
+    : DockingDlgInterface(IDD_OUTPUT, static_cast<HINSTANCE>(module_handle), npp_data._nppHandle), dialogue_()
 {
     list_views_.fill(static_cast<HWND>(nullptr));
-
-    init(static_cast<HINSTANCE>(module_handle), npp_data._nppHandle);
 
     tTbData data{};
 
@@ -130,28 +128,8 @@ void Linter::OutputDialog::add_lint_errors(std::vector<XmlParser::Error> const &
  *
  * Some messages have special returns though.
  */
-INT_PTR CALLBACK Linter::OutputDialog::run_dlgProc(UINT message, WPARAM wParam, LPARAM lParam) noexcept
-{
-    try
-    {
-        return run_dlgProc_impl(message, wParam, lParam);
-    }
-    catch (std::exception const &e)
-    {
-        try
-        {
-            std::string const s{e.what()};
-            ::MessageBox(getHSelf(), std::wstring(s.begin(), s.end()).c_str(), L"Linter", MB_OK | MB_ICONERROR);
-        }
-        catch (std::exception const &)
-        {
-            ::MessageBox(getHSelf(), L"Something terrible has gone wrong but I can't tell you what", L"Linter", MB_OK | MB_ICONERROR);
-        }
-        return TRUE;
-    }
-}
 
-INT_PTR CALLBACK Linter::OutputDialog::run_dlgProc_impl(UINT message, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK Linter::OutputDialog::run_dlgProc(UINT message, WPARAM wParam, LPARAM lParam)
 {
     switch (message)
     {

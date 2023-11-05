@@ -14,115 +14,65 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-
 #pragma once
 #include <windows.h>
 
 class Window
 {
-public:
-	//! \name Constructors & Destructor
-	//@{
-	Window() = default;
-	Window(const Window&) = delete;
+  public:
+    Window(HINSTANCE hInst, HWND parent) noexcept;
+
+    Window(const Window &) = delete;
     Window(Window &&) = delete;
-    virtual ~Window() = default;
-	//@}
 
+    virtual ~Window();
 
-	virtual void init(HINSTANCE hInst, HWND parent)
-	{
-		_hInst = hInst;
-		_hParent = parent;
-	}
+    virtual void destroy() = 0;
 
-	virtual void destroy() = 0;
+    virtual void display(bool toShow = true) const noexcept;
 
-	virtual void display(bool toShow = true) const noexcept
-	{
-		::ShowWindow(_hSelf, toShow ? SW_SHOW : SW_HIDE);
-	}
+    void reSizeTo(RECT const &rc) const noexcept;
 
+    void reSizeToWH(RECT const &rc) const noexcept;
 
-	virtual void reSizeTo(RECT &rc) const noexcept    // should NEVER be const !!!
-	{
-		::MoveWindow(_hSelf, rc.left, rc.top, rc.right, rc.bottom, TRUE);
-		redraw();
-	}
+    virtual void redraw(bool forceUpdate = false) const noexcept;
 
+    void getClientRect(RECT &rc) const noexcept;
 
-	virtual void reSizeToWH(RECT &rc) const noexcept    // should NEVER be const !!!
-	{
-		::MoveWindow(_hSelf, rc.left, rc.top, rc.right - rc.left, rc.bottom - rc.top, TRUE);
-		redraw();
-	}
+    void getWindowRect(RECT &rc) const noexcept;
 
+    int getWidth() const noexcept;
 
-	virtual void redraw(bool forceUpdate = false) const noexcept
-	{
-		::InvalidateRect(_hSelf, nullptr, TRUE);
-		if (forceUpdate)
-			::UpdateWindow(_hSelf);
-	}
+    int getHeight() const noexcept;
 
+    bool isVisible() const noexcept;
 
-    virtual void getClientRect(RECT &rc) const noexcept
-	{
-		::GetClientRect(_hSelf, &rc);
-	}
+    HWND getHSelf() const noexcept
+    {
+        return _hSelf;
+    }
 
-	virtual void getWindowRect(RECT &rc) const noexcept
-	{
-		::GetWindowRect(_hSelf, &rc);
-	}
+    HWND getHParent() const noexcept
+    {
+        return _hParent;
+    }
 
-	virtual int getWidth() const noexcept
-	{
-		RECT rc;
-		::GetClientRect(_hSelf, &rc);
-		return (rc.right - rc.left);
-	}
-
-	virtual int getHeight() const noexcept
-	{
-		RECT rc;
-		::GetClientRect(_hSelf, &rc);
-		if (::IsWindowVisible(_hSelf) == TRUE)
-			return (rc.bottom - rc.top);
-		return 0;
-	}
-
-	virtual bool isVisible() const noexcept
-	{
-    	return (::IsWindowVisible(_hSelf)?true:false);
-	}
-
-	HWND getHSelf() const noexcept
-	{
-		return _hSelf;
-	}
-
-	HWND getHParent() const noexcept {
-		return _hParent;
-	}
-
-	void setFocus() const noexcept {
-		::SetFocus(_hSelf);
-	}
+    void setFocus() const noexcept
+    {
+        ::SetFocus(_hSelf);
+    }
 
     HINSTANCE getHinst() const noexcept
-	{
-		//assert(_hInst != 0);
-		return _hInst;
-	}
+    {
+        return _hInst;
+    }
 
-
-	Window& operator = (const Window&) = delete;
+    Window &operator=(const Window &) = delete;
     Window &operator=(Window &&) = delete;
 
 
-protected:
-	HINSTANCE _hInst = NULL;
-	HWND _hParent = NULL;
-	HWND _hSelf = NULL;
+  protected:
+    HINSTANCE _hInst = NULL;
+    HWND _hParent = NULL;
+    HWND _hSelf = NULL;
 };
