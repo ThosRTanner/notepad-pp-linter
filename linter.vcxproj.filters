@@ -59,6 +59,9 @@
     <ClCompile Include="Settings.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="notepad\DockingFeature\DockingDlgInterface.cpp">
+      <Filter>Source Files\notepad\DockingFeature</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="notepad\menuCmdID.h">

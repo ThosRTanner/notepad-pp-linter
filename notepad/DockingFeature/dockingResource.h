@@ -64,4 +64,3 @@
 	//nmhdr.code = DWORD(DMN_XXX, 0);
 	//nmhdr.hwndFrom = DockingCont::_hself;
 	//nmhdr.idFrom = 0;
-
