@@ -16,7 +16,7 @@
 
 #pragma once
 
-#include "Docking.h"    //For tTbData. should we fwd declare this?
+#include "notepad/DockingFeature/Docking.h"    //For tTbData. should we fwd declare this?
 #include "StaticDialog.h"
 
 //#include <shlwapi.h>
@@ -27,7 +27,7 @@ class DockingDlgInterface : public StaticDialog
   public:
     explicit DockingDlgInterface(int dlgID, HINSTANCE hInst, HWND parent);
 
-    void create(tTbData *data, bool isRTL = false);
+    void create(tTbData *data);
 
     virtual void updateDockingDlg() noexcept;
 

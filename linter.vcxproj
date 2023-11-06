@@ -171,23 +171,17 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="DockingDlgInterface.cpp" />
     <ClCompile Include="DomDocument.cpp" />
     <ClCompile Include="encoding.cpp" />
     <ClCompile Include="file.cpp" />
     <ClCompile Include="FilePipe.cpp" />
     <ClCompile Include="HandleWrapper.cpp" />
     <ClCompile Include="linter.cpp" />
-    <ClCompile Include="notepad\DockingFeature\DockingDlgInterface.cpp" />
-    <ClCompile Include="notepad\DockingFeature\StaticDialog.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
-    </ClCompile>
-    <ClCompile Include="notepad\DockingFeature\Window.cpp" />
     <ClCompile Include="OutputDialog.cpp" />
     <ClCompile Include="plugin.cpp" />
     <ClCompile Include="Settings.cpp" />
+    <ClCompile Include="StaticDialog.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
@@ -195,10 +189,12 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="SystemError.cpp" />
+    <ClCompile Include="Window.cpp" />
     <ClCompile Include="XmlDecodeException.cpp" />
     <ClCompile Include="XmlParser.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="DockingDlgInterface.h" />
     <ClInclude Include="DomDocument.h" />
     <ClInclude Include="encoding.h" />
     <ClInclude Include="file.h" />
@@ -206,10 +202,7 @@
     <ClInclude Include="HandleWrapper.h" />
     <ClInclude Include="linter.h" />
     <ClInclude Include="notepad\DockingFeature\Docking.h" />
-    <ClInclude Include="notepad\DockingFeature\DockingDlgInterface.h" />
     <ClInclude Include="notepad\DockingFeature\dockingResource.h" />
-    <ClInclude Include="notepad\DockingFeature\StaticDialog.h" />
-    <ClInclude Include="notepad\DockingFeature\Window.h" />
     <ClInclude Include="notepad\menuCmdID.h" />
     <ClInclude Include="notepad\Notepad_plus_msgs.h" />
     <ClInclude Include="notepad\PluginInterface.h" />
@@ -220,9 +213,11 @@
     <ClInclude Include="resource.h" />
     <ClInclude Include="Settings.h" />
     <ClInclude Include="SourceLocation.h" />
+    <ClInclude Include="StaticDialog.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="SystemError.h" />
     <ClInclude Include="targetver.h" />
+    <ClInclude Include="Window.h" />
     <ClInclude Include="XmlDecodeException.h" />
     <ClInclude Include="XmlParser.h" />
   </ItemGroup>

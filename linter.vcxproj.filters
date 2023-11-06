@@ -53,16 +53,16 @@
     <ClCompile Include="OutputDialog.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="notepad\DockingFeature\StaticDialog.cpp">
-      <Filter>Source Files\notepad\DockingFeature</Filter>
-    </ClCompile>
     <ClCompile Include="Settings.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="notepad\DockingFeature\DockingDlgInterface.cpp">
-      <Filter>Source Files\notepad\DockingFeature</Filter>
+    <ClCompile Include="DockingDlgInterface.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="notepad\DockingFeature\Window.cpp">
+    <ClCompile Include="StaticDialog.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Window.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -127,12 +127,6 @@
     <ClInclude Include="OutputDialog.h">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="notepad\DockingFeature\StaticDialog.h">
-      <Filter>Source Files\notepad\DockingFeature</Filter>
-    </ClInclude>
-    <ClInclude Include="notepad\DockingFeature\DockingDlgInterface.h">
-      <Filter>Source Files\notepad\DockingFeature</Filter>
-    </ClInclude>
     <ClInclude Include="Settings.h">
       <Filter>Source Files</Filter>
     </ClInclude>
@@ -142,11 +136,17 @@
     <ClInclude Include="notepad\DockingFeature\dockingResource.h">
       <Filter>Source Files\notepad\DockingFeature</Filter>
     </ClInclude>
-    <ClInclude Include="notepad\DockingFeature\Window.h">
-      <Filter>Source Files\notepad\DockingFeature</Filter>
-    </ClInclude>
     <ClInclude Include="notepad\DockingFeature\Docking.h">
       <Filter>Source Files\notepad\DockingFeature</Filter>
+    </ClInclude>
+    <ClInclude Include="DockingDlgInterface.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="StaticDialog.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Window.h">
+      <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

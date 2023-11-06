@@ -14,7 +14,9 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+#include "stdafx.h"
 #include "StaticDialog.h"
+#include "SystemError.h"
 
 #include <string>
 #include <windows.h>
@@ -66,8 +68,8 @@ void StaticDialog::display(bool toShow, bool enhancedPositioningCheckWhenShowing
             // If the user has switched from a dual monitor to a single monitor since we last
             // displayed the dialog, then ensure that it's still visible on the single monitor.
             RECT workAreaRect = {0};
-            RECT rc = {0};
             ::SystemParametersInfo(SPI_GETWORKAREA, 0, &workAreaRect, 0);
+            RECT rc = {0};
             ::GetWindowRect(_hSelf, &rc);
             int newLeft = rc.left;
             int newTop = rc.top;
@@ -164,47 +166,6 @@ RECT StaticDialog::getViewablePositionRect(RECT testPositionRc) const noexcept
     return returnRc;
 }
 
-HGLOBAL StaticDialog::makeRTLResource(int dialogID, DLGTEMPLATE **ppMyDlgTemplate) noexcept
-{
-    // Get Dlg Template resource
-    HRSRC hDialogRC = ::FindResource(_hInst, MAKEINTRESOURCE(dialogID), RT_DIALOG);
-    if (!hDialogRC)
-    {
-        return NULL;
-    }
-
-    HGLOBAL hDlgTemplate = ::LoadResource(_hInst, hDialogRC);
-    if (!hDlgTemplate)
-    {
-        return NULL;
-    }
-
-    DLGTEMPLATE const *pDlgTemplate = static_cast<DLGTEMPLATE *>(::LockResource(hDlgTemplate));
-    if (!pDlgTemplate)
-    {
-        return NULL;
-    }
-
-    // Duplicate Dlg Template resource
-    unsigned long const sizeDlg = ::SizeofResource(_hInst, hDialogRC);
-    HGLOBAL hMyDlgTemplate = ::GlobalAlloc(GPTR, sizeDlg);
-    *ppMyDlgTemplate = static_cast<DLGTEMPLATE *>(::GlobalLock(hMyDlgTemplate));
-
-    ::memcpy(*ppMyDlgTemplate, pDlgTemplate, sizeDlg);
-
-    DLGTEMPLATEEX *pMyDlgTemplateEx = reinterpret_cast<DLGTEMPLATEEX *>(*ppMyDlgTemplate);
-    if (pMyDlgTemplateEx->signature == 0xFFFF)
-    {
-        pMyDlgTemplateEx->exStyle |= WS_EX_LAYOUTRTL;
-    }
-    else
-    {
-        (*ppMyDlgTemplate)->dwExtendedStyle |= WS_EX_LAYOUTRTL;
-    }
-
-    return hMyDlgTemplate;
-}
-
 std::wstring GetLastErrorAsString(DWORD errorCode)
 {
     std::wstring errorMsg(_T(""));
@@ -236,31 +197,17 @@ std::wstring GetLastErrorAsString(DWORD errorCode)
     return errorMsg;
 }
 
-void StaticDialog::create(int dialogID, bool isRTL, bool msgDestParent)
+void StaticDialog::create(int dialogID)
 {
-    if (isRTL)
-    {
-        DLGTEMPLATE *pMyDlgTemplate = NULL;
-        HGLOBAL hMyDlgTemplate = makeRTLResource(dialogID, &pMyDlgTemplate);
-        _hSelf = ::CreateDialogIndirectParam(_hInst, pMyDlgTemplate, _hParent, dlgProc, reinterpret_cast<LPARAM>(this));
-        ::GlobalFree(hMyDlgTemplate);
-    }
-    else
-    {
-        _hSelf = ::CreateDialogParam(_hInst, MAKEINTRESOURCE(dialogID), _hParent, dlgProc, reinterpret_cast<LPARAM>(this));
-    }
+    _hSelf = ::CreateDialogParam(_hInst, MAKEINTRESOURCE(dialogID), _hParent, dlgProc, reinterpret_cast<LPARAM>(this));
 
     if (!_hSelf)
     {
-        std::wstring errMsg = TEXT("CreateDialogParam() return NULL.\rGetLastError(): ");
-        errMsg += GetLastErrorAsString(0);
-        ::MessageBox(NULL, errMsg.c_str(), TEXT("In StaticDialog::create()"), MB_OK);
-        return;
+        throw Linter::SystemError("Could not create dialogue");
     }
 
     // if the destination of message NPPM_MODELESSDIALOG is not its parent, then it's the grand-parent
-    ::SendMessage(
-        msgDestParent ? _hParent : (::GetParent(_hParent)), NPPM_MODELESSDIALOG, MODELESSDIALOGADD, reinterpret_cast<WPARAM>(_hSelf));
+    ::SendMessage(_hParent, NPPM_MODELESSDIALOG, MODELESSDIALOGADD, reinterpret_cast<WPARAM>(_hSelf));
 }
 
 INT_PTR CALLBACK StaticDialog::dlgProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam) noexcept

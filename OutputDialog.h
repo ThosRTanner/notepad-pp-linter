@@ -1,7 +1,7 @@
 #pragma once
 
+#include "DockingDlgInterface.h"
 #include "XmlParser.h"
-#include "Notepad/DockingFeature/DockingDlgInterface.h"
 
 #include <array>
 #include <string>

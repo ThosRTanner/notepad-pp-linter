@@ -40,7 +40,14 @@ namespace
 
     void show_results() noexcept
     {
-        output_dialogue->display();
+        if (output_dialogue)
+        {
+            output_dialogue->display();
+        }
+        else
+        {
+            ::MessageBox(nppData._nppHandle, L"Unable to show lint errors due to startup issue", L"Linter", MB_OK | MB_ICONERROR);
+        }
     }
 
     void commandMenuInit()
@@ -79,19 +86,35 @@ BOOL APIENTRY DllMain(HANDLE hModule, DWORD reasonForCall, LPVOID /*lpReserved*/
     return TRUE;
 }
 
-extern "C" __declspec(dllexport) void setInfo(NppData notpadPlusData)
+extern "C" __declspec(dllexport) void setInfo(NppData notpadPlusData) noexcept
 {
-    nppData = notpadPlusData;
-    initConfig();
-    commandMenuInit();
+    try
+    {
+        nppData = notpadPlusData;
+        initConfig();
+        commandMenuInit();
+    }
+    catch (std::exception const &e)
+    {
+        try
+        {
+            std::string const s{e.what()};
+            ::MessageBox(notpadPlusData._nppHandle, std::wstring(s.begin(), s.end()).c_str(), L"Linter", MB_OK | MB_ICONERROR);
+        }
+        catch (std::exception const &)
+        {
+            ::MessageBox(
+                notpadPlusData._nppHandle, L"Something terrible has gone wrong but I can't tell you what", L"Linter", MB_OK | MB_ICONERROR);
+        }
+    }
 }
 
-extern "C" __declspec(dllexport) const TCHAR *getName()
+extern "C" __declspec(dllexport) const TCHAR *getName() noexcept
 {
     return &PLUGIN_NAME[0];
 }
 
-extern "C" __declspec(dllexport) FuncItem *getFuncsArray(int *nbF)
+extern "C" __declspec(dllexport) FuncItem *getFuncsArray(int *nbF) noexcept
 {
     int constexpr FUNCTIONS_COUNT = 2;
     static FuncItem funcItem[FUNCTIONS_COUNT] = {
@@ -103,12 +126,12 @@ extern "C" __declspec(dllexport) FuncItem *getFuncsArray(int *nbF)
     return &funcItem[0];
 }
 
-extern "C" __declspec(dllexport) LRESULT messageProc(UINT /*Message*/, WPARAM /*wParam*/, LPARAM /*lParam*/)
+extern "C" __declspec(dllexport) LRESULT messageProc(UINT /*Message*/, WPARAM /*wParam*/, LPARAM /*lParam*/) noexcept
 {
     return TRUE;
 }
 
-extern "C" __declspec(dllexport) BOOL isUnicode()
+extern "C" __declspec(dllexport) BOOL isUnicode() noexcept
 {
     return TRUE;
 }

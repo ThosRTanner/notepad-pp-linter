@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "DockingDlgInterface.h"
 
-#include "dockingResource.h"
+#include "notepad/DockingFeature/dockingResource.h"
 
 #include <Shlwapi.h>
 #include <cassert>
@@ -13,10 +13,10 @@ DockingDlgInterface::DockingDlgInterface(int dlgID, HINSTANCE hInst, HWND parent
     _moduleName = ::PathFindFileName(&temp[0]);
 }
 
-void DockingDlgInterface::create(tTbData *data, bool isRTL)
+void DockingDlgInterface::create(tTbData *data)
 {
     assert(data != nullptr);
-    StaticDialog::create(_dlgID, isRTL);
+    StaticDialog::create(_dlgID);
     TCHAR temp[MAX_PATH];
     ::GetWindowText(_hSelf, &temp[0], MAX_PATH);
     _pluginName = &temp[0];

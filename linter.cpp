@@ -103,14 +103,20 @@ namespace
     {
         std::string const str(exc.what());
         std::wstring const wstr{str.begin(), str.end()};
-        output_dialogue->add_system_error(XmlParser::Error{line, col, wstr, L"linter"});
+        if (output_dialogue)
+        {
+            output_dialogue->add_system_error(XmlParser::Error{line, col, wstr, L"linter"});
+        }
         showTooltip(L"Linter: " + wstr);
     }
 
     void apply_linters()
     {
         errors.clear();
-        output_dialogue->clear_lint_info();
+        if (output_dialogue)
+        {
+            output_dialogue->clear_lint_info();
+        }
 
         settings->refresh();
         if (settings->empty())
@@ -152,7 +158,10 @@ namespace
                 std::string xml = file.exec(command.first, command.second ? &text : nullptr);
                 std::vector<XmlParser::Error> parseError = XmlParser::getErrors(xml);
                 errors.insert(errors.end(), parseError.begin(), parseError.end());
-                output_dialogue->add_lint_errors(parseError);
+                if (output_dialogue)
+                {
+                    output_dialogue->add_lint_errors(parseError);
+                }
             }
             catch (const std::exception &e)
             {

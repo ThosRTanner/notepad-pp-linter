@@ -14,7 +14,7 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #pragma once
-#include "..\Notepad_plus_msgs.h"
+#include "notepad/Notepad_plus_msgs.h"
 #include "Window.h"
 
 struct DLGTEMPLATEEX
@@ -44,7 +44,7 @@ class StaticDialog : public Window
     StaticDialog &operator=(StaticDialog const &) = delete;
     StaticDialog &operator=(StaticDialog &&) = delete;
 
-    virtual void create(int dialogID, bool isRTL = false, bool msgDestParent = true);
+    virtual void create(int dialogID);
 
     virtual bool isCreated() const noexcept
     {
@@ -63,6 +63,4 @@ class StaticDialog : public Window
     static INT_PTR CALLBACK dlgProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam) noexcept;
 
     RECT getViewablePositionRect(RECT testRc) const noexcept;
-
-    HGLOBAL makeRTLResource(int dialogID, DLGTEMPLATE **ppMyDlgTemplate) noexcept;
 };

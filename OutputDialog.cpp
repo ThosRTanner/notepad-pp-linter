@@ -61,6 +61,7 @@ Linter::OutputDialog::OutputDialog(NppData const &npp_data, HANDLE module_handle
 {
     list_views_.fill(static_cast<HWND>(nullptr));
 
+    //FIXME This exposes stuff in the wrong place.
     tTbData data{};
 
     create(&data);
@@ -75,6 +76,7 @@ Linter::OutputDialog::OutputDialog(NppData const &npp_data, HANDLE module_handle
     data.dlgID = dlg_num;
 
     SendApp(NPPM_DMMREGASDCKDLG, 0, reinterpret_cast<LPARAM>(&data));
+    //To here.
 
     // I'm not sure why I need this. If I don't have it the dialogue opens up every time.
     // If I do have it, the dialogue opens only if it was open when notepad++ was shut down...
