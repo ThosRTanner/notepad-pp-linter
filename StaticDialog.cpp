@@ -1,19 +1,3 @@
-// This file is part of Notepad++ project
-// Copyright (C)2022 Don HO <don.h@free.fr>
-
-// This program is free software: you can redistribute it and/or modify
-// it under the terms of the GNU General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// at your option any later version.
-//
-// This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-// GNU General Public License for more details.
-//
-// You should have received a copy of the GNU General Public License
-// along with this program.  If not, see <https://www.gnu.org/licenses/>.
-
 #include "stdafx.h"
 #include "StaticDialog.h"
 #include "SystemError.h"
@@ -21,22 +5,25 @@
 #include <string>
 #include <windows.h>
 
-StaticDialog::StaticDialog(HINSTANCE hInst, HWND parent) noexcept : Window(hInst, parent)
+StaticDialog::StaticDialog(HINSTANCE hInst, HWND parent, int dialogID) : Window(hInst, parent)
 {
+    _hSelf = ::CreateDialogParam(_hInst, MAKEINTRESOURCE(dialogID), _hParent, dlgProc, reinterpret_cast<LPARAM>(this));
+    if (!_hSelf)
+    {
+        throw Linter::SystemError("Could not create dialogue");
+    }
+
+    ::SetWindowLongPtr(_hSelf, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(this));
+    //::GetWindowRect(_hSelf, &_rc);
+
+    // if the destination of message NPPM_MODELESSDIALOG is not its parent, then it's the grand-parent
+    ::SendMessage(_hParent, NPPM_MODELESSDIALOG, MODELESSDIALOGADD, reinterpret_cast<WPARAM>(_hSelf));
 }
 
 StaticDialog::~StaticDialog()
 {
-    if (isCreated())
-    {
-        // Prevent run_dlgProc from doing anything, since its virtual
-        ::SetWindowLongPtr(_hSelf, GWLP_USERDATA, NULL);
-        destroy();
-    }
-}
-
-void StaticDialog::destroy() noexcept
-{
+    // Prevent run_dlgProc from doing anything, since its virtual
+    ::SetWindowLongPtr(_hSelf, GWLP_USERDATA, NULL);
     ::SendMessage(_hParent, NPPM_MODELESSDIALOG, MODELESSDIALOGREMOVE, reinterpret_cast<WPARAM>(_hSelf));
     ::DestroyWindow(_hSelf);
 }
@@ -197,54 +184,23 @@ std::wstring GetLastErrorAsString(DWORD errorCode)
     return errorMsg;
 }
 
-void StaticDialog::create(int dialogID)
-{
-    _hSelf = ::CreateDialogParam(_hInst, MAKEINTRESOURCE(dialogID), _hParent, dlgProc, reinterpret_cast<LPARAM>(this));
-
-    if (!_hSelf)
-    {
-        throw Linter::SystemError("Could not create dialogue");
-    }
-
-    // if the destination of message NPPM_MODELESSDIALOG is not its parent, then it's the grand-parent
-    ::SendMessage(_hParent, NPPM_MODELESSDIALOG, MODELESSDIALOGADD, reinterpret_cast<WPARAM>(_hSelf));
-}
-
 INT_PTR CALLBACK StaticDialog::dlgProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam) noexcept
 {
-    //This is exceptionally klunky
-    StaticDialog *pStaticDlg;
-    if (message == WM_INITDIALOG)
-    {
-        pStaticDlg = reinterpret_cast<StaticDialog *>(lParam);
-        pStaticDlg->_hSelf = hwnd;
-        ::SetWindowLongPtr(hwnd, GWLP_USERDATA, static_cast<LONG_PTR>(lParam));
-        ::GetWindowRect(hwnd, &(pStaticDlg->_rc));
-    }
-    else
-    {
-        pStaticDlg = reinterpret_cast<StaticDialog *>(::GetWindowLongPtr(hwnd, GWLP_USERDATA));
-        if (pStaticDlg == nullptr)
-        {
-            return FALSE;
-        }
-    }
-
     try
     {
-        return pStaticDlg->run_dlgProc(message, wParam, lParam);
+        StaticDialog *pStaticDlg = reinterpret_cast<StaticDialog *>(::GetWindowLongPtr(hwnd, GWLP_USERDATA));
+        return pStaticDlg == nullptr ? FALSE : pStaticDlg->run_dlgProc(message, wParam, lParam);
     }
     catch (std::exception const &e)
     {
         try
         {
             std::string const s{e.what()};
-            ::MessageBox(pStaticDlg->_hSelf, std::wstring(s.begin(), s.end()).c_str(), L"Linter", MB_OK | MB_ICONERROR);
+            ::MessageBox(hwnd, std::wstring(s.begin(), s.end()).c_str(), L"Linter", MB_OK | MB_ICONERROR);
         }
         catch (std::exception const &)
         {
-            ::MessageBox(
-                pStaticDlg->_hSelf, L"Something terrible has gone wrong but I can't tell you what", L"Linter", MB_OK | MB_ICONERROR);
+            ::MessageBox(hwnd, L"Something terrible has gone wrong but I can't tell you what", L"Linter", MB_OK | MB_ICONERROR);
         }
         return TRUE;
     }

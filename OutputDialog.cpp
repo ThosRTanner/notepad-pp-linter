@@ -56,28 +56,19 @@ std::array<Linter::OutputDialog::TabDefinition, Linter::OutputDialog::Num_Tabs> 
 
 //Note: we do actually initialise dialogue_ during the construction, but it's done
 //in a callback from create...
-Linter::OutputDialog::OutputDialog(NppData const &npp_data, HANDLE module_handle, int dlg_num)
-    : DockingDlgInterface(IDD_OUTPUT, static_cast<HINSTANCE>(module_handle), npp_data._nppHandle), dialogue_()
+Linter::OutputDialog::OutputDialog(HANDLE module_handle, HWND npp_win, int dlg_num)
+    : DockingDlgInterface(IDD_OUTPUT, static_cast<HINSTANCE>(module_handle), npp_win, dlg_num), dialogue_()
 {
     list_views_.fill(static_cast<HWND>(nullptr));
 
-    //FIXME This exposes stuff in the wrong place.
-    tTbData data{};
-
-    create(&data);
-    // define the default docking behaviour
-    data.uMask = DWS_DF_CONT_BOTTOM | DWS_ICONTAB;
-    data.pszModuleName = getPluginFileName();
-
-    //Add an icon - I don't have one
-    //data.hIconTab = GetTabIcon();
-
-    //The dialogue ID is the function that caused this dialogue to be displayed.
-    data.dlgID = dlg_num;
-
-    SendApp(NPPM_DMMREGASDCKDLG, 0, reinterpret_cast<LPARAM>(&data));
-    //To here.
-
+    initialise_dialogue();
+    //How can we do this without a static cast?
+    //ANS: merge lost_view_ and tab_definitions_
+    for (int tab = 0; tab < Num_Tabs; tab += 1)
+    {
+        initialise_tab(static_cast<Tab>(tab));
+    }
+    selected_tab_changed();
     // I'm not sure why I need this. If I don't have it the dialogue opens up every time.
     // If I do have it, the dialogue opens only if it was open when notepad++ was shut down...
     display(false);
@@ -135,16 +126,6 @@ INT_PTR CALLBACK Linter::OutputDialog::run_dlgProc(UINT message, WPARAM wParam, 
 {
     switch (message)
     {
-        case WM_INITDIALOG:
-            initialise_dialogue();
-            //How can we do this without a static cast?
-            for (int tab = 0; tab < Num_Tabs; tab += 1)
-            {
-                initialise_tab(static_cast<Tab>(tab));
-            }
-            selected_tab_changed();
-            return FALSE;    //Do NOT focus onto this dialogue
-
         case WM_COMMAND:
         {
             //Context menu responses
@@ -288,10 +269,6 @@ INT_PTR CALLBACK Linter::OutputDialog::run_dlgProc(UINT message, WPARAM wParam, 
             resize();
             return TRUE;
 
-        case WM_PAINT:
-            ::RedrawWindow(getHSelf(), nullptr, nullptr, RDW_INVALIDATE);
-            break;
-
         default:
             break;
     }
@@ -334,9 +311,6 @@ void Linter::OutputDialog::on_toolbar_cmd(UINT /* message*/)
 #endif
 void Linter::OutputDialog::initialise_dialogue() noexcept
 {
-    // I'd initialise this after calling create, but create calls this
-    // via a callback which is - quite strange. Also, I can't help feeling
-    // that this value must already be known.
     dialogue_ = ::GetDlgItem(getHSelf(), IDC_TABBAR);
 
     TCITEM tie{};
@@ -488,7 +462,7 @@ void Linter::OutputDialog::add_errors(Tab tab, std::vector<XmlParser::Error> con
     info.tab = tab;
 
     ListView_SortItemsEx(list_view, sort_call_function, reinterpret_cast<LPARAM>(&info));
-    InvalidateRect(getHSelf(), nullptr, TRUE);
+    request_redraw();
 }
 
 #if 0
@@ -625,7 +599,7 @@ void Linter::OutputDialog::show_selected_lint(int selected_item) noexcept
         }
     }
 
-    InvalidateRect(getHSelf(), nullptr, TRUE);
+    request_redraw();
 }
 
 void Linter::OutputDialog::copy_to_clipboard()

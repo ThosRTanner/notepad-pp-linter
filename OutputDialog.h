@@ -20,7 +20,7 @@ namespace Linter
     class OutputDialog : public DockingDlgInterface
     {
       public:
-        OutputDialog(NppData const &, HANDLE module, int dlg_num);
+        OutputDialog(HANDLE module, HWND npp, int dlg_num);
 
         OutputDialog(OutputDialog const &) = delete;
         OutputDialog(OutputDialog &&) = delete;

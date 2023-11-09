@@ -27,25 +27,13 @@ class Window
 
     virtual ~Window();
 
-    virtual void destroy() = 0;
-
     virtual void display(bool toShow = true) const noexcept;
 
-    void reSizeTo(RECT const &rc) const noexcept;
-
-    void reSizeToWH(RECT const &rc) const noexcept;
-
-    virtual void redraw(bool forceUpdate = false) const noexcept;
+    virtual void request_redraw(bool forceUpdate = false) const noexcept;
 
     void getClientRect(RECT &rc) const noexcept;
 
     void getWindowRect(RECT &rc) const noexcept;
-
-    int getWidth() const noexcept;
-
-    int getHeight() const noexcept;
-
-    bool isVisible() const noexcept;
 
     HWND getHSelf() const noexcept
     {
@@ -66,6 +54,8 @@ class Window
     {
         return _hInst;
     }
+
+    void paint() const noexcept;
 
     Window &operator=(const Window &) = delete;
     Window &operator=(Window &&) = delete;

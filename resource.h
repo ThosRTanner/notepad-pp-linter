@@ -2,7 +2,7 @@
 // Microsoft Visual C++ generated include file.
 // Used by Resource.rc
 //
-#define IDD_OUTPUT                      1
+#define IDD_OUTPUT                      100
 #define IDC_TABBAR                      1001
 #define IDC_LIST_OUTPUT                 1002
 #define IDC_LIST_LINTS                  1003

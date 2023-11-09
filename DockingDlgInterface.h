@@ -16,7 +16,6 @@
 
 #pragma once
 
-#include "notepad/DockingFeature/Docking.h"    //For tTbData. should we fwd declare this?
 #include "StaticDialog.h"
 
 //#include <shlwapi.h>
@@ -25,15 +24,14 @@
 class DockingDlgInterface : public StaticDialog
 {
   public:
-    explicit DockingDlgInterface(int dlgID, HINSTANCE hInst, HWND parent);
-
-    void create(tTbData *data);
+    /** Create a docking dialogue.
+     * 
+     * dialogID is the resource number of the dialogue
+     * dlg_num is the ID used to communicate with notepad++ (i.e. the menu entry)
+     */
+    DockingDlgInterface(int dialogID, HINSTANCE hInst, HWND npp_win, int dlg_num);
 
     virtual void updateDockingDlg() noexcept;
-
-    void destroy() noexcept override
-    {
-    }
 
     void display(bool toShow = true) const noexcept override;
 
@@ -56,7 +54,6 @@ class DockingDlgInterface : public StaticDialog
     INT_PTR CALLBACK run_dlgProc(UINT message, WPARAM, LPARAM lParam) override;
 
   private:
-    int _dlgID = -1;
     bool _isFloating = true;
     int _iDockedPos = 0;
     std::wstring _moduleName;

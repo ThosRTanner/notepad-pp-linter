@@ -52,7 +52,7 @@ namespace
 
     void commandMenuInit()
     {
-        output_dialogue = std::make_unique<Linter::OutputDialog>(nppData, module_handle, MENU_ENTRY_SHOW_RESULTS);
+        output_dialogue = std::make_unique<Linter::OutputDialog>(module_handle, nppData._nppHandle, MENU_ENTRY_SHOW_RESULTS);
     }
 
     void ShowError(LRESULT start, LRESULT end, bool on) noexcept

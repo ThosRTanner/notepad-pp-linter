@@ -2,34 +2,44 @@
 #include "DockingDlgInterface.h"
 
 #include "notepad/DockingFeature/dockingResource.h"
+#include "notepad/DockingFeature/Docking.h"
 
 #include <Shlwapi.h>
 #include <cassert>
 
-DockingDlgInterface::DockingDlgInterface(int dlgID, HINSTANCE hInst, HWND parent) : _dlgID(dlgID), StaticDialog(hInst, parent)
+DockingDlgInterface::DockingDlgInterface(int dialogID, HINSTANCE hInst, HWND parent, int dlg_num) : StaticDialog(hInst, parent, dialogID)
 {
     TCHAR temp[MAX_PATH];
     ::GetModuleFileName(static_cast<HMODULE>(hInst), &temp[0], MAX_PATH);
     _moduleName = ::PathFindFileName(&temp[0]);
-}
 
-void DockingDlgInterface::create(tTbData *data)
-{
-    assert(data != nullptr);
-    StaticDialog::create(_dlgID);
-    TCHAR temp[MAX_PATH];
     ::GetWindowText(_hSelf, &temp[0], MAX_PATH);
     _pluginName = &temp[0];
 
+    tTbData data{};
+
     // user information
-    data->hClient = _hSelf;
-    data->pszName = _pluginName.c_str();
+    data.hClient = _hSelf;
+    data.pszName = _pluginName.c_str();
 
     // supported features by plugin
-    data->uMask = 0;
+    data.uMask = 0;
 
     // additional info
-    data->pszAddInfo = NULL;
+    data.pszAddInfo = NULL;
+
+    // define the default docking behaviour
+    //**FIXME Pass in as mask and icon which if not null sets icontab
+    data.uMask = DWS_DF_CONT_BOTTOM | DWS_ICONTAB;
+    data.pszModuleName = getPluginFileName();
+
+    //Add an icon - I don't have one
+    //data.hIconTab = (HICON)GetTabIcon();
+
+    //The dialogue num is the function that caused this dialogue to be displayed.
+    data.dlgID = dlg_num;
+
+    ::SendMessage(_hParent, NPPM_DMMREGASDCKDLG, 0, reinterpret_cast<LPARAM>(&data));
 }
 
 void DockingDlgInterface::updateDockingDlg() noexcept
@@ -42,6 +52,10 @@ void DockingDlgInterface::display(bool toShow) const noexcept
     ::SendMessage(_hParent, toShow ? NPPM_DMMSHOW : NPPM_DMMHIDE, 0, reinterpret_cast<LPARAM>(_hSelf));
 }
 
+
+//We can't make this noexcept as it'd mean child classes would unnecessarily need to be noexcept.
+//The caller will handle exceptions correctly.
+#pragma warning(suppress : 26440)
 INT_PTR DockingDlgInterface::run_dlgProc(UINT message, WPARAM, LPARAM lParam)
 {
     switch (message)
@@ -69,6 +83,10 @@ INT_PTR DockingDlgInterface::run_dlgProc(UINT message, WPARAM, LPARAM lParam)
             }
             break;
         }
+
+        case WM_PAINT:
+            paint();
+            break;
 
         default:
             break;
