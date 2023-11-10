@@ -31,7 +31,7 @@ DockingDlgInterface::DockingDlgInterface(int dialogID, HINSTANCE hInst, HWND par
     // define the default docking behaviour
     //**FIXME Pass in as mask and icon which if not null sets icontab
     data.uMask = DWS_DF_CONT_BOTTOM | DWS_ICONTAB;
-    data.pszModuleName = getPluginFileName();
+    data.pszModuleName = _moduleName.c_str();
 
     //Add an icon - I don't have one
     //data.hIconTab = (HICON)GetTabIcon();
@@ -47,11 +47,17 @@ void DockingDlgInterface::updateDockingDlg() noexcept
     ::SendMessage(_hParent, NPPM_DMMUPDATEDISPINFO, 0, reinterpret_cast<LPARAM>(_hSelf));
 }
 
-void DockingDlgInterface::display(bool toShow) const noexcept
+void DockingDlgInterface::display() noexcept
 {
-    ::SendMessage(_hParent, toShow ? NPPM_DMMSHOW : NPPM_DMMHIDE, 0, reinterpret_cast<LPARAM>(_hSelf));
+    _isClosed = false;
+    ::SendMessage(_hParent, NPPM_DMMSHOW, 0, reinterpret_cast<LPARAM>(_hSelf));
 }
 
+void DockingDlgInterface::hide() noexcept
+{
+    _isClosed = true;
+    ::SendMessage(_hParent, NPPM_DMMHIDE, 0, reinterpret_cast<LPARAM>(_hSelf));
+}
 
 //We can't make this noexcept as it'd mean child classes would unnecessarily need to be noexcept.
 //The caller will handle exceptions correctly.
@@ -68,8 +74,8 @@ INT_PTR DockingDlgInterface::run_dlgProc(UINT message, WPARAM, LPARAM lParam)
             {
                 switch (LOWORD(pnmh->code))
                 {
-                    case DMN_FLOAT:
-                        _isFloating = true;
+                    case DMN_CLOSE:
+                        _isClosed = true;
                         break;
 
                     case DMN_DOCK:
@@ -77,6 +83,15 @@ INT_PTR DockingDlgInterface::run_dlgProc(UINT message, WPARAM, LPARAM lParam)
                         _isFloating = false;
                         break;
 
+                    case DMN_FLOAT:
+                        _isFloating = true;
+                        break;
+
+                    //These are defined in DockingResource.h but I've not managed
+                    //to trigger them. 
+                    case DMN_SWITCHIN:
+                    case DMN_SWITCHOFF:
+                    case DMN_FLOATDROPPED:
                     default:
                         break;
                 }

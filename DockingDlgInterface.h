@@ -18,7 +18,6 @@
 
 #include "StaticDialog.h"
 
-//#include <shlwapi.h>
 #include <string>
 
 class DockingDlgInterface : public StaticDialog
@@ -33,21 +32,13 @@ class DockingDlgInterface : public StaticDialog
 
     virtual void updateDockingDlg() noexcept;
 
-    void display(bool toShow = true) const noexcept override;
+    virtual void display() noexcept;
+
+    virtual void hide() noexcept;
 
     bool isClosed() const noexcept
     {
         return _isClosed;
-    }
-
-    void setClosed(bool toClose) noexcept
-    {
-        _isClosed = toClose;
-    }
-
-    const TCHAR *getPluginFileName() const noexcept
-    {
-        return _moduleName.c_str();
     }
 
   protected:

@@ -29,7 +29,7 @@ namespace Linter
 
         ~OutputDialog();
 
-        void display(bool toShow = true) const noexcept override;
+        void display() noexcept override;
 
         /** Clears all linting information */
         void clear_lint_info();

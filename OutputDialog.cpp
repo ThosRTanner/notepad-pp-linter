@@ -54,8 +54,6 @@ std::array<Linter::OutputDialog::TabDefinition, Linter::OutputDialog::Num_Tabs> 
 
 ////////////////////////////////////////////////////////////////////////////////
 
-//Note: we do actually initialise dialogue_ during the construction, but it's done
-//in a callback from create...
 Linter::OutputDialog::OutputDialog(HANDLE module_handle, HWND npp_win, int dlg_num)
     : DockingDlgInterface(IDD_OUTPUT, static_cast<HINSTANCE>(module_handle), npp_win, dlg_num), dialogue_()
 {
@@ -63,28 +61,30 @@ Linter::OutputDialog::OutputDialog(HANDLE module_handle, HWND npp_win, int dlg_n
 
     initialise_dialogue();
     //How can we do this without a static cast?
-    //ANS: merge lost_view_ and tab_definitions_
+    //ANS: merge list_view_ and tab_definitions_
     for (int tab = 0; tab < Num_Tabs; tab += 1)
     {
         initialise_tab(static_cast<Tab>(tab));
     }
     selected_tab_changed();
+
+    //Don't have to do this with jslint, not sure why need it here, but if I don't do it,
+    //then when the dialog opens in undocked mode, it's all over the place.
+    resize();
+
     // I'm not sure why I need this. If I don't have it the dialogue opens up every time.
     // If I do have it, the dialogue opens only if it was open when notepad++ was shut down...
-    display(false);
+    hide();
 }
 
 Linter::OutputDialog::~OutputDialog()
 {
 }
 
-void Linter::OutputDialog::display(bool toShow) const noexcept
+void Linter::OutputDialog::display() noexcept
 {
-    DockingDlgInterface::display(toShow);
-    if (toShow)
-    {
-        ::SetFocus(dialogue_);
-    }
+    DockingDlgInterface::display();
+    ::SetFocus(dialogue_);
 }
 
 void Linter::OutputDialog::clear_lint_info()
@@ -192,7 +192,7 @@ INT_PTR CALLBACK Linter::OutputDialog::run_dlgProc(UINT message, WPARAM wParam, 
                 case TTN_GETDISPINFO:
                 {
                     LPTOOLTIPTEXT lpttt = reinterpret_cast<LPTOOLTIPTEXT>(notify_header);
-                    lpttt->hinst = getHinst();
+                    lpttt->hinst = _hInst;
 
                     // Specify the resource identifier of the descriptive
                     // text for the given button.
@@ -260,11 +260,12 @@ INT_PTR CALLBACK Linter::OutputDialog::run_dlgProc(UINT message, WPARAM wParam, 
             }
 
             // show context menu
-            TrackPopupMenu(menu, 0, point.x, point.y, 0, getHSelf(), nullptr);
+            TrackPopupMenu(menu, 0, point.x, point.y, 0, _hSelf, nullptr);
             return TRUE;
         }
         break;
 
+        case WM_MOVE:
         case WM_SIZE:
             resize();
             return TRUE;
@@ -311,7 +312,7 @@ void Linter::OutputDialog::on_toolbar_cmd(UINT /* message*/)
 #endif
 void Linter::OutputDialog::initialise_dialogue() noexcept
 {
-    dialogue_ = ::GetDlgItem(getHSelf(), IDC_TABBAR);
+    dialogue_ = ::GetDlgItem(_hSelf, IDC_TABBAR);
 
     TCITEM tie{};
 
@@ -328,7 +329,7 @@ void Linter::OutputDialog::initialise_dialogue() noexcept
 
 void Linter::OutputDialog::initialise_tab(Tab tab) noexcept
 {
-    auto const list_view = ::GetDlgItem(getHSelf(), tab_definitions_[tab].list_view_id_);
+    auto const list_view = ::GetDlgItem(_hSelf, tab_definitions_[tab].list_view_id_);
     list_views_[tab] = list_view;
 
     ListView_SetExtendedListViewStyle(list_view, LVS_EX_FULLROWSELECT | LVS_EX_AUTOSIZECOLUMNS);
@@ -706,7 +707,7 @@ void Linter::OutputDialog::copy_to_clipboard()
         HGLOBAL mem_handle_ = nullptr;
     };
 
-    Clipboard clipboard{getHSelf()};
+    Clipboard clipboard{_hSelf};
 
     clipboard.empty();
     clipboard.copy(str);

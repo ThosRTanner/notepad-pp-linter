@@ -62,9 +62,6 @@
     <ClCompile Include="StaticDialog.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Window.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="notepad\menuCmdID.h">
@@ -104,9 +101,6 @@
       <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="plugin.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="resource.h">
       <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="SourceLocation.h">
