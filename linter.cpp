@@ -10,6 +10,8 @@
 #include "XmlDecodeException.h"
 #include "XmlParser.h"
 
+#include "notepad/Notepad_plus_msgs.h"
+
 #include <CommCtrl.h>
 
 #include <map>
@@ -65,7 +67,7 @@ namespace
 #pragma warning(suppress: 26409 26414)
         std::unique_ptr<wchar_t[]> buff{new wchar_t[MAX_PATH + 1]};
 #endif
-        SendApp(part, MAX_PATH, reinterpret_cast<LPARAM>(buff.get()));
+        SendApp(part, MAX_PATH, buff.get());
         return buff.get();
     }
 
@@ -172,7 +174,7 @@ namespace
 
     unsigned int __stdcall AsyncCheck(void *)
     {
-        (void)CoInitialize(nullptr);
+        std::ignore = CoInitialize(nullptr);
         try
         {
             apply_linters();
@@ -220,7 +222,7 @@ namespace
     {
         if (isChanged)
         {
-            (void)DeleteTimerQueueTimer(timers, timer, nullptr);
+            std::ignore = DeleteTimerQueueTimer(timers, timer, nullptr);
             CreateTimerQueueTimer(&timer, timers, RunThread, nullptr, 300, 0, 0);
         }
     }
@@ -278,7 +280,7 @@ extern "C" __declspec(dllexport) void beNotified(SCNotification const *notifyCod
             //get which file changed
             {
                 auto const buffer = notifyCode->nmhdr.idFrom;
-                std::size_t const len = SendApp(NPPM_GETFULLPATHFROMBUFFERID, buffer, reinterpret_cast<LPARAM>(nullptr));
+                std::size_t const len = SendApp(NPPM_GETFULLPATHFROMBUFFERID, buffer);
                 if (len != -1)
                 {
 #if __cplusplus >= 202002L
@@ -287,7 +289,7 @@ extern "C" __declspec(dllexport) void beNotified(SCNotification const *notifyCod
 #pragma warning(suppress : 26409 26414)
                     std::unique_ptr<wchar_t[]> buff{new wchar_t[len + 1]};
 #endif
-                    SendApp(NPPM_GETFULLPATHFROMBUFFERID, buffer, reinterpret_cast<LPARAM>(buff.get()));
+                    SendApp(NPPM_GETFULLPATHFROMBUFFERID, buffer, buff.get());
                     if (std::wstring(buff.get(), len) == getIniFileName())
                     {
                         Changed();

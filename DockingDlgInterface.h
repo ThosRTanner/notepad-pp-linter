@@ -23,12 +23,30 @@
 class DockingDlgInterface : public StaticDialog
 {
   public:
+    /** Where to place dialogue initially */
+    enum class Position
+    {
+        Dock_Left,
+        Dock_Right,
+        Dock_Top,
+        Dock_Bottom,
+        Floating
+    };
+
     /** Create a docking dialogue.
      * 
      * dialogID is the resource number of the dialogue
      * dlg_num is the ID used to communicate with notepad++ (i.e. the menu entry)
+     * extra is extra text to display on dialogue title.
      */
-    DockingDlgInterface(int dialogID, HINSTANCE hInst, HWND npp_win, int dlg_num);
+    DockingDlgInterface(int dialogID, HINSTANCE hInst, HWND npp_win);
+
+    /** Register dialogue with Notepad++.
+     * 
+     * I'm not a fan of 2-phase initialisation, but this bit has to be done after the
+     * dialogue is actually created, or things go wrong
+     */
+    void register_dialogue(int dlg_num, Position pos, HICON icon = nullptr, wchar_t const *extra = nullptr);
 
     virtual void updateDockingDlg() noexcept;
 
@@ -36,18 +54,20 @@ class DockingDlgInterface : public StaticDialog
 
     virtual void hide() noexcept;
 
+    virtual void resize() noexcept = 0;
+
     bool isClosed() const noexcept
     {
-        return _isClosed;
+        return is_closed_;
     }
 
   protected:
     INT_PTR CALLBACK run_dlgProc(UINT message, WPARAM, LPARAM lParam) override;
 
   private:
-    bool _isFloating = true;
-    int _iDockedPos = 0;
-    std::wstring _moduleName;
-    std::wstring _pluginName;
-    bool _isClosed = false;
+    std::wstring module_name_;
+    std::wstring plugin_name_;
+    int docked_pos_ = 0;
+    bool is_floating_ = true;
+    bool is_closed_ = false;
 };

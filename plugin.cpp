@@ -140,19 +140,19 @@ void commandMenuCleanUp() noexcept
 {
 }
 
-void initConfig() noexcept
-{
-    ::SendMessage(nppData._nppHandle, NPPM_GETPLUGINSCONFIGDIR, MAX_PATH, reinterpret_cast<LPARAM>(&iniFilePath[0]));
-    if (!PathFileExists(&iniFilePath[0]))
+void initConfig() noexcept {
+    auto const fileName{&iniFilePath[0]};
+    SendApp(NPPM_GETPLUGINSCONFIGDIR, MAX_PATH, fileName);
+    if (!PathFileExists(fileName))
     {
-        ::CreateDirectory(&iniFilePath[0], nullptr);
+        ::CreateDirectory(fileName, nullptr);
     }
-    PathAppend(&iniFilePath[0], L"linter.xml");
+    PathAppend(fileName, L"linter.xml");
 }
 
 void editConfig() noexcept
 {
-    SendApp(NPPM_DOOPEN, 0, reinterpret_cast<LPARAM>(&iniFilePath[0]));
+    SendApp(NPPM_DOOPEN, 0, getIniFileName());
 }
 
 wchar_t const *getIniFileName() noexcept
@@ -162,14 +162,13 @@ wchar_t const *getIniFileName() noexcept
 
 HWND getScintillaWindow() noexcept
 {
-    LRESULT const view = SendMessage(nppData._nppHandle, NPPM_GETCURRENTVIEW, 0, 0);
+    LRESULT const view = SendApp(NPPM_GETCURRENTVIEW);
     return view == 0 ? nppData._scintillaMainHandle : nppData._scintillaSecondHandle;
 }
 
 LRESULT SendEditor(UINT Msg, WPARAM wParam, LPARAM lParam) noexcept
 {
-    HWND wEditor = getScintillaWindow();
-    return SendMessage(wEditor, Msg, wParam, lParam);
+    return SendMessage(getScintillaWindow(), Msg, wParam, lParam);
 }
 
 LRESULT SendApp(UINT Msg, WPARAM wParam, LPARAM lParam) noexcept
@@ -186,7 +185,7 @@ std::string getDocumentText()
 #pragma warning(suppress : 26409 26414)
     std::unique_ptr<char[]> buff{new char[lengthDoc + 1]};
 #endif
-    SendEditor(SCI_GETTEXT, lengthDoc, reinterpret_cast<LPARAM>(buff.get()));
+    SendEditor(SCI_GETTEXT, lengthDoc, buff.get());
     return std::string(buff.get(), lengthDoc);
 }
 
@@ -199,7 +198,7 @@ std::string getLineText(int line)
 #pragma warning(suppress : 26409 26414)
     std::unique_ptr<char[]> buff{new char[length + 1]};
 #endif
-    SendEditor(SCI_GETLINE, line, reinterpret_cast<LPARAM>(buff.get()));
+    SendEditor(SCI_GETLINE, line, buff.get());
     return std::string(buff.get(), length);
 }
 

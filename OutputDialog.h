@@ -84,7 +84,7 @@ namespace Linter
         void initialise_tab(Tab tab) noexcept;
 
         /** Window resize */
-        void resize() noexcept;
+        void resize() noexcept override;
 
         /** Selected tab has been changed. Display new one */
         void selected_tab_changed() noexcept;

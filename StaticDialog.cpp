@@ -1,8 +1,10 @@
 #include "stdafx.h"
 #include "StaticDialog.h"
+
 #include "SystemError.h"
 
-#include <string>
+#include "notepad/Notepad_plus_msgs.h"
+
 #include <windows.h>
 
 StaticDialog::StaticDialog(HINSTANCE module, HWND parent, int dialogID) :
@@ -15,14 +17,14 @@ StaticDialog::StaticDialog(HINSTANCE module, HWND parent, int dialogID) :
 
     ::SetWindowLongPtr(_hSelf, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(this));
 
-    ::SendMessage(_hParent, NPPM_MODELESSDIALOG, MODELESSDIALOGADD, reinterpret_cast<WPARAM>(_hSelf));
+    SendDialogInfoToNPP(NPPM_MODELESSDIALOG, MODELESSDIALOGADD);
 }
 
 StaticDialog::~StaticDialog()
 {
-    // Prevent run_dlgProc from doing anything, since its virtual
+    // Stop run_dlgProc from doing anything, since it calls a virtual method which won't be there.
     ::SetWindowLongPtr(_hSelf, GWLP_USERDATA, NULL);
-    ::SendMessage(_hParent, NPPM_MODELESSDIALOG, MODELESSDIALOGREMOVE, reinterpret_cast<WPARAM>(_hSelf));
+    SendDialogInfoToNPP(NPPM_MODELESSDIALOG, MODELESSDIALOGREMOVE);
     ::DestroyWindow(_hSelf);
 }
 
@@ -37,8 +39,7 @@ INT_PTR CALLBACK StaticDialog::dlgProc(HWND hwnd, UINT message, WPARAM wParam, L
     {
         try
         {
-            std::string const s{e.what()};
-            ::MessageBox(hwnd, std::wstring(s.begin(), s.end()).c_str(), L"Linter", MB_OK | MB_ICONERROR);
+            ::MessageBox(hwnd, static_cast<wchar_t *>(static_cast<_bstr_t>(e.what())), L"Linter", MB_OK | MB_ICONERROR);
         }
         catch (std::exception const &)
         {
@@ -70,4 +71,10 @@ void StaticDialog::getWindowRect(RECT &rc) const noexcept
 void StaticDialog::paint() const noexcept
 {
     ::RedrawWindow(_hSelf, nullptr, nullptr, RDW_INVALIDATE);
+}
+
+void StaticDialog::SendDialogInfoToNPP(int msg, int wParam) noexcept
+{
+#pragma warning(suppress : 26490)
+    ::SendMessage(_hParent, msg, wParam, reinterpret_cast<LPARAM>(_hSelf));
 }

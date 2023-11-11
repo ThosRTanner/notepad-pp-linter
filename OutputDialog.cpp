@@ -12,6 +12,7 @@
 #include <algorithm>
 #include <cstddef>
 #include <sstream>
+#include <tuple>
 
 /** Columns in the error list */
 enum List_Column
@@ -54,8 +55,9 @@ std::array<Linter::OutputDialog::TabDefinition, Linter::OutputDialog::Num_Tabs> 
 
 ////////////////////////////////////////////////////////////////////////////////
 
+//**FIXME Need to test this with an icon
 Linter::OutputDialog::OutputDialog(HANDLE module_handle, HWND npp_win, int dlg_num)
-    : DockingDlgInterface(IDD_OUTPUT, static_cast<HINSTANCE>(module_handle), npp_win, dlg_num), dialogue_()
+    : DockingDlgInterface(IDD_OUTPUT, static_cast<HINSTANCE>(module_handle), npp_win), dialogue_()
 {
     list_views_.fill(static_cast<HWND>(nullptr));
 
@@ -68,13 +70,7 @@ Linter::OutputDialog::OutputDialog(HANDLE module_handle, HWND npp_win, int dlg_n
     }
     selected_tab_changed();
 
-    //Don't have to do this with jslint, not sure why need it here, but if I don't do it,
-    //then when the dialog opens in undocked mode, it's all over the place.
-    resize();
-
-    // I'm not sure why I need this. If I don't have it the dialogue opens up every time.
-    // If I do have it, the dialogue opens only if it was open when notepad++ was shut down...
-    hide();
+    register_dialogue(dlg_num, Position::Dock_Bottom);
 }
 
 Linter::OutputDialog::~OutputDialog()
@@ -249,9 +245,11 @@ INT_PTR CALLBACK Linter::OutputDialog::run_dlgProc(UINT message, WPARAM wParam, 
             AppendMenu(menu, MF_ENABLED, Context_Select_All, L"Select All");
 
             // determine context menu position
-            POINT point;
-            point.x = LOWORD(lParam);
-            point.y = HIWORD(lParam);
+#if __cplusplus >= 202002L
+            POINT point{.x = LOWORD(lParam), .y = HIWORD(lParam)};
+#else
+            POINT point{LOWORD(lParam), HIWORD(lParam)};
+#endif
             if (point.x == 65535 || point.y == 65535)
             {
                 point.x = 0;
@@ -264,11 +262,6 @@ INT_PTR CALLBACK Linter::OutputDialog::run_dlgProc(UINT message, WPARAM wParam, 
             return TRUE;
         }
         break;
-
-        case WM_MOVE:
-        case WM_SIZE:
-            resize();
-            return TRUE;
 
         default:
             break;
@@ -315,7 +308,6 @@ void Linter::OutputDialog::initialise_dialogue() noexcept
     dialogue_ = ::GetDlgItem(_hSelf, IDC_TABBAR);
 
     TCITEM tie{};
-
     tie.mask = TCIF_TEXT | TCIF_IMAGE;
     tie.iImage = -1;
 
@@ -334,7 +326,7 @@ void Linter::OutputDialog::initialise_tab(Tab tab) noexcept
 
     ListView_SetExtendedListViewStyle(list_view, LVS_EX_FULLROWSELECT | LVS_EX_AUTOSIZECOLUMNS);
 
-    LVCOLUMN lvc;
+    LVCOLUMN lvc{};
     lvc.mask = LVCF_FMT | LVCF_WIDTH | LVCF_TEXT | LVCF_SUBITEM;
 
     lvc.iSubItem = Column_Tool;
@@ -406,9 +398,13 @@ void Linter::OutputDialog::update_displayed_counts()
             strTabName = tab_definitions_[tab].tab_name_;
         }
 
-        TCITEM tie;
+#if __cplusplus >= 202002L
+        TCITEM const tie{.mask = TCIF_TEXT, .pszText = const_cast<wchar_t *>(strTabName.c_str())};
+#else
+        TCITEM tie{};
         tie.mask = TCIF_TEXT;
         tie.pszText = const_cast<wchar_t *>(strTabName.c_str());
+#endif
         TabCtrl_SetItem(dialogue_, tab, &tie);
     }
 }
@@ -418,34 +414,35 @@ void Linter::OutputDialog::add_errors(Tab tab, std::vector<XmlParser::Error> con
     HWND list_view = list_views_[tab];
 
     std::wstringstream stream;
-
-    LVITEM lvI;
-    lvI.mask = LVIF_TEXT | LVIF_STATE | LVIF_PARAM;
-
     for (auto const &lint : lints)
     {
-        lvI.iSubItem = 0;
-        lvI.iItem = ListView_GetItemCount(list_view);
-        lvI.state = 0;
-        lvI.stateMask = 0;
-        lvI.lParam = lvI.iItem;
+        auto const item = ListView_GetItemCount(list_view);
+
+#if __cplusplus >= 202002L
+        LVITEM const lvI{.mask = LVIF_TEXT | LVIF_STATE | LVIF_PARAM, .iItem = item, .pszText = const_cast<wchar_t *>(L""), .lParam = item};
+#else
+        LVITEM lvI{};
+        lvI.mask = LVIF_TEXT | LVIF_STATE | LVIF_PARAM;
+        lvI.iItem = item;
         lvI.pszText = const_cast<wchar_t *>(L"");
+        lvI.lParam = item;
+#endif
         ListView_InsertItem(list_view, &lvI);
 
-        ListView_SetItemText(list_view, lvI.iItem, Column_Message, const_cast<wchar_t *>(lint.m_message.c_str()));
+        ListView_SetItemText(list_view, item, Column_Message, const_cast<wchar_t *>(lint.m_message.c_str()));
 
         std::wstring strFile = lint.m_tool;
-        ListView_SetItemText(list_view, lvI.iItem, Column_Tool, const_cast<wchar_t *>(strFile.c_str()));
+        ListView_SetItemText(list_view, item, Column_Tool, const_cast<wchar_t *>(strFile.c_str()));
 
         stream.str(L"");
         stream << lint.m_line;
         std::wstring strLine = stream.str();
-        ListView_SetItemText(list_view, lvI.iItem, Column_Line, const_cast<wchar_t *>(strLine.c_str()));
+        ListView_SetItemText(list_view, item, Column_Line, const_cast<wchar_t *>(strLine.c_str()));
 
         stream.str(L"");
         stream << lint.m_column;
         std::wstring strColumn = stream.str();
-        ListView_SetItemText(list_view, lvI.iItem, Column_Position, const_cast<wchar_t *>(strColumn.c_str()));
+        ListView_SetItemText(list_view, item, Column_Position, const_cast<wchar_t *>(strColumn.c_str()));
 
         //Ensure the message column is as wide as the widest column.
         ListView_SetColumnWidth(list_view, Column_Message, LVSCW_AUTOSIZE_USEHEADER);
@@ -457,11 +454,11 @@ void Linter::OutputDialog::add_errors(Tab tab, std::vector<XmlParser::Error> con
 
     //Not sure we should do this every time we add something, but...
     //Also allow user to sort differently and remember?
-    Sort_Call_Info info;
-
-    info.dialogue = this;
-    info.tab = tab;
-
+#if __cplusplus >= 202002L
+    Sort_Call_Info const info{.dialogue = this, .tab = tab};
+#else
+    Sort_Call_Info info{this, tab};
+#endif
     ListView_SortItemsEx(list_view, sort_call_function, reinterpret_cast<LPARAM>(&info));
     request_redraw();
 }
@@ -553,10 +550,13 @@ void Linter::OutputDialog::select_previous_lint()
 //FIXME We've already worked out the tab in all callers of this.
 void Linter::OutputDialog::show_selected_lint(int selected_item) noexcept
 {
-    LVITEM item;
+#if __cplusplus >= 202002L
+    LVITEM const item{.mask = LVIF_PARAM, .iItem = selected_item};
+#else
+    LVITEM item{};
     item.iItem = selected_item;
-    item.iSubItem = 0;
     item.mask = LVIF_PARAM;
+#endif
     ListView_GetItem(current_list_view_, &item);
 
     XmlParser::Error const &lint_error = errors_[current_tab_][item.lParam];
@@ -570,26 +570,26 @@ void Linter::OutputDialog::show_selected_lint(int selected_item) noexcept
         editConfig();
     }
 
-    SendEditor(SCI_GOTOLINE, line, 0);
+    SendEditor(SCI_GOTOLINE, line);
 
     // since there is no SCI_GOTOCOLUMN, we move to the right until ...
     for (;;)
     {
-        SendEditor(SCI_CHARRIGHT, 0, 0);
-        LRESULT const curPos = SendEditor(SCI_GETCURRENTPOS, 0, 0);
-        LRESULT const curLine = SendEditor(SCI_LINEFROMPOSITION, curPos, 0);
+        SendEditor(SCI_CHARRIGHT);
+        LRESULT const curPos = SendEditor(SCI_GETCURRENTPOS);
+        LRESULT const curLine = SendEditor(SCI_LINEFROMPOSITION, curPos);
         if (curLine > line)
         {
             // ... current line is greater than desired line or ...
-            SendEditor(SCI_CHARLEFT, 0, 0);
+            SendEditor(SCI_CHARLEFT);
             break;
         }
 
-        LRESULT const curCol = SendEditor(SCI_GETCOLUMN, curPos, 0);
+        LRESULT const curCol = SendEditor(SCI_GETCOLUMN, curPos);
         if (curCol > column)
         {
             // ... current column is greater than desired column or ...
-            SendEditor(SCI_CHARLEFT, 0, 0);
+            SendEditor(SCI_CHARLEFT);
             break;
         }
 
@@ -612,10 +612,13 @@ void Linter::OutputDialog::copy_to_clipboard()
     while (row != -1)
     {
         //Get the actual item for the row
-        LVITEM item;
+#if __cplusplus >= 202002L
+        LVITEM item{.mask = LVIF_PARAM, .iItem = row};
+#else
+        LVITEM item{};
         item.iItem = row;
-        item.iSubItem = 0;
         item.mask = LVIF_PARAM;
+#endif
         ListView_GetItem(current_list_view_, &item);
 
         auto const &lint_error = errors_[current_tab_][item.lParam];
@@ -726,6 +729,6 @@ int Linter::OutputDialog::sort_selected_list(Tab tab, LPARAM row1_index, LPARAM 
 
 int CALLBACK Linter::OutputDialog::sort_call_function(LPARAM val1, LPARAM val2, LPARAM lParamSort) noexcept
 {
-    auto const &info = *reinterpret_cast<Sort_Call_Info *>(lParamSort);
+    auto const &info = *reinterpret_cast<Sort_Call_Info const *>(lParamSort);
     return info.dialogue->sort_selected_list(info.tab, val1, val2);
 }

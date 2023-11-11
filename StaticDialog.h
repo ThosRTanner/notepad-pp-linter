@@ -1,5 +1,5 @@
 #pragma once
-#include "notepad/Notepad_plus_msgs.h"
+//#include "notepad/Notepad_plus_msgs.h"
 
 class StaticDialog
 {
@@ -20,6 +20,8 @@ class StaticDialog
     void getWindowRect(RECT &rc) const noexcept;
 
     void paint() const noexcept;
+
+    void SendDialogInfoToNPP(int msg, int wParam = 0) noexcept;
 
   protected:
     virtual INT_PTR CALLBACK run_dlgProc(UINT message, WPARAM wParam, LPARAM lParam) = 0;

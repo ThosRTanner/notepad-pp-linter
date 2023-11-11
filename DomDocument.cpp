@@ -70,7 +70,7 @@ void Linter::DomDocument::checkLoadResults(VARIANT_BOOL resultcode, HRESULT hr)
     if (resultcode != VARIANT_TRUE)
     {
         CComPtr<IXMLDOMParseError> error;
-        (void)m_document->get_parseError(&error);
+        m_document->get_parseError(&error);
         throw XmlDecodeException(error);
     }
 }

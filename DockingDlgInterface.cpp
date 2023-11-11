@@ -1,62 +1,72 @@
 #include "stdafx.h"
 #include "DockingDlgInterface.h"
 
-#include "notepad/DockingFeature/dockingResource.h"
-#include "notepad/DockingFeature/Docking.h"
+#include "notepad/Notepad_plus_msgs.h"
 
-#include <Shlwapi.h>
+#include "notepad/DockingFeature/Docking.h"
+#include "notepad/DockingFeature/dockingResource.h"
+
+#include <shlwapi.h>
+
 #include <cassert>
 
-DockingDlgInterface::DockingDlgInterface(int dialogID, HINSTANCE hInst, HWND parent, int dlg_num) : StaticDialog(hInst, parent, dialogID)
+DockingDlgInterface::DockingDlgInterface(
+    int dialogID, HINSTANCE hInst, HWND parent /*, int dlg_num, Position pos, HICON icon, wchar_t const *extra*/)
+    : StaticDialog(hInst, parent, dialogID)
+{
+}
+
+void DockingDlgInterface::register_dialogue(int dlg_num, Position pos, HICON icon, wchar_t const *extra)
 {
     TCHAR temp[MAX_PATH];
-    ::GetModuleFileName(static_cast<HMODULE>(hInst), &temp[0], MAX_PATH);
-    _moduleName = ::PathFindFileName(&temp[0]);
+
+    ::GetModuleFileName(static_cast<HMODULE>(_hInst), &temp[0], MAX_PATH);
+    module_name_ = ::PathFindFileName(&temp[0]);
 
     ::GetWindowText(_hSelf, &temp[0], MAX_PATH);
-    _pluginName = &temp[0];
+    plugin_name_ = &temp[0];
 
     tTbData data{};
 
-    // user information
     data.hClient = _hSelf;
-    data.pszName = _pluginName.c_str();
-
-    // supported features by plugin
-    data.uMask = 0;
-
-    // additional info
-    data.pszAddInfo = NULL;
-
-    // define the default docking behaviour
-    //**FIXME Pass in as mask and icon which if not null sets icontab
-    data.uMask = DWS_DF_CONT_BOTTOM | DWS_ICONTAB;
-    data.pszModuleName = _moduleName.c_str();
-
-    //Add an icon - I don't have one
-    //data.hIconTab = (HICON)GetTabIcon();
-
-    //The dialogue num is the function that caused this dialogue to be displayed.
+    data.pszName = plugin_name_.c_str();
     data.dlgID = dlg_num;
 
+    data.uMask = pos == Position::Floating ? DWS_DF_FLOATING : static_cast<int>(pos) << 28;
+    if (icon != nullptr)
+    {
+        data.uMask |= DWS_ICONTAB;
+        data.hIconTab = icon;
+    }
+    if (extra != nullptr)
+    {
+        data.uMask |= DWS_ADDINFO;
+        data.pszAddInfo = extra;
+    }
+    data.pszModuleName = module_name_.c_str();
+
     ::SendMessage(_hParent, NPPM_DMMREGASDCKDLG, 0, reinterpret_cast<LPARAM>(&data));
+
+    // I'm not sure why I need this. If I don't have it the dialogue opens up every time.
+    // If I do have it, the dialogue opens only if it was open when notepad++ was shut down...
+    hide();
 }
 
 void DockingDlgInterface::updateDockingDlg() noexcept
 {
-    ::SendMessage(_hParent, NPPM_DMMUPDATEDISPINFO, 0, reinterpret_cast<LPARAM>(_hSelf));
+    SendDialogInfoToNPP(NPPM_DMMUPDATEDISPINFO);
 }
 
 void DockingDlgInterface::display() noexcept
 {
-    _isClosed = false;
-    ::SendMessage(_hParent, NPPM_DMMSHOW, 0, reinterpret_cast<LPARAM>(_hSelf));
+    is_closed_ = false;
+    SendDialogInfoToNPP(NPPM_DMMSHOW);
 }
 
 void DockingDlgInterface::hide() noexcept
 {
-    _isClosed = true;
-    ::SendMessage(_hParent, NPPM_DMMHIDE, 0, reinterpret_cast<LPARAM>(_hSelf));
+    is_closed_ = true;
+    SendDialogInfoToNPP(NPPM_DMMHIDE);
 }
 
 //We can't make this noexcept as it'd mean child classes would unnecessarily need to be noexcept.
@@ -75,20 +85,20 @@ INT_PTR DockingDlgInterface::run_dlgProc(UINT message, WPARAM, LPARAM lParam)
                 switch (LOWORD(pnmh->code))
                 {
                     case DMN_CLOSE:
-                        _isClosed = true;
+                        is_closed_ = true;
                         break;
 
                     case DMN_DOCK:
-                        _iDockedPos = HIWORD(pnmh->code);
-                        _isFloating = false;
+                        docked_pos_ = HIWORD(pnmh->code);
+                        is_floating_ = false;
                         break;
 
                     case DMN_FLOAT:
-                        _isFloating = true;
+                        is_floating_ = true;
                         break;
 
                     //These are defined in DockingResource.h but I've not managed
-                    //to trigger them. 
+                    //to trigger them.
                     case DMN_SWITCHIN:
                     case DMN_SWITCHOFF:
                     case DMN_FLOATDROPPED:
@@ -101,6 +111,11 @@ INT_PTR DockingDlgInterface::run_dlgProc(UINT message, WPARAM, LPARAM lParam)
 
         case WM_PAINT:
             paint();
+            break;
+
+        case WM_MOVE:
+        case WM_SIZE:
+            resize();
             break;
 
         default:

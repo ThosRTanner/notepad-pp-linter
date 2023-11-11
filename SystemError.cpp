@@ -10,6 +10,7 @@
 
 #include <cstdio>
 #include <system_error>
+#include <tuple>
 
 #include <comdef.h>
 #include <winbase.h>
@@ -56,7 +57,7 @@ SystemError::SystemError(DWORD err, std::string const &info, const SourceLocatio
 SystemError::SystemError(HRESULT err, const SourceLocationCurrent &location) noexcept
 {
     IErrorInfo *err_info{nullptr};
-    (void)GetErrorInfo(0, &err_info);
+    std::ignore = GetErrorInfo(0, &err_info);
     _com_error error{err, err_info};
     try
     {
@@ -74,7 +75,7 @@ SystemError::SystemError(HRESULT err, const SourceLocationCurrent &location) noe
 SystemError::SystemError(HRESULT err, std::string const &info, const SourceLocationCurrent &location) noexcept
 {
     IErrorInfo *err_info{nullptr};
-    (void)GetErrorInfo(0, &err_info);
+    std::ignore = GetErrorInfo(0, &err_info);
     _com_error error{err, err_info};
     try
     {
