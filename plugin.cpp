@@ -1,14 +1,19 @@
 #include "stdafx.h"
 #include "plugin.h"
-#include "linter.h"
 
+#include "linter.h"
 #include "OutputDialog.h"
 #include "XmlParser.h"
 
 #include "notepad/PluginInterface.h"
 
+#include <Shlwapi.h>
+
 #include <memory>
 #include <string>
+
+#pragma comment(lib, "msxml6.lib")
+#pragma comment(lib, "shlwapi.lib")
 
 HANDLE timers(0);
 
@@ -98,8 +103,8 @@ extern "C" __declspec(dllexport) void setInfo(NppData notpadPlusData) noexcept
     {
         try
         {
-            std::string const s{e.what()};
-            ::MessageBox(notpadPlusData._nppHandle, std::wstring(s.begin(), s.end()).c_str(), L"Linter", MB_OK | MB_ICONERROR);
+            ::MessageBox(
+                notpadPlusData._nppHandle, static_cast<wchar_t const *>(static_cast<bstr_t>(e.what())), L"Linter", MB_OK | MB_ICONERROR);
         }
         catch (std::exception const &)
         {
@@ -140,7 +145,8 @@ void commandMenuCleanUp() noexcept
 {
 }
 
-void initConfig() noexcept {
+void initConfig() noexcept
+{
     auto const fileName{&iniFilePath[0]};
     SendApp(NPPM_GETPLUGINSCONFIGDIR, MAX_PATH, fileName);
     if (!PathFileExists(fileName))

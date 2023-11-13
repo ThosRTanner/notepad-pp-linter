@@ -5,10 +5,8 @@
 #include "SystemError.h"
 #include "XmlDecodeException.h"
 
-#include <stdexcept>
 #include <sstream>
-
-#pragma comment(lib, "msxml6.lib")
+#include <stdexcept>
 
 Linter::DomDocument::DomDocument(std::wstring const &filename)
 {

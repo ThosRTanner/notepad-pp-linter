@@ -15,7 +15,5 @@
 
 #define _ATL_CSTRING_EXPLICIT_CONSTRUCTORS    // some CString constructors will be explicit
 
-#include <atlbase.h>
-#include <atlstr.h>
-#include <ATLCom.h>
+#include <atlcomcli.h>
 #include <comdef.h>

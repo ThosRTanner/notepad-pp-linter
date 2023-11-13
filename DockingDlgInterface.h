@@ -36,8 +36,6 @@ class DockingDlgInterface : public StaticDialog
     /** Create a docking dialogue.
      * 
      * dialogID is the resource number of the dialogue
-     * dlg_num is the ID used to communicate with notepad++ (i.e. the menu entry)
-     * extra is extra text to display on dialogue title.
      */
     DockingDlgInterface(int dialogID, HINSTANCE hInst, HWND npp_win);
 
@@ -45,6 +43,10 @@ class DockingDlgInterface : public StaticDialog
      * 
      * I'm not a fan of 2-phase initialisation, but this bit has to be done after the
      * dialogue is actually created, or things go wrong
+     *
+     * dlg_num is the ID used to communicate with notepad++ (i.e. the menu entry)
+     * extra is extra text to display on dialogue title.
+
      */
     void register_dialogue(int dlg_num, Position pos, HICON icon = nullptr, wchar_t const *extra = nullptr);
 

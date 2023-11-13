@@ -3,8 +3,8 @@
 
 #include "encoding.h"
 #include "file.h"
-#include "plugin.h"
 #include "OutputDialog.h"
+#include "plugin.h"
 #include "Settings.h"
 #include "SystemError.h"
 #include "XmlDecodeException.h"
@@ -13,6 +13,7 @@
 #include "notepad/Notepad_plus_msgs.h"
 
 #include <CommCtrl.h>
+#include <process.h>
 
 #include <map>
 #include <memory>

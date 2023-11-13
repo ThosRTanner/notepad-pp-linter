@@ -4,11 +4,10 @@
 
 #include "encoding.h"
 
+#include <cstdio>
 #if __cplusplus >= 202002L
 #include <cstring>
 #endif
-
-#include <cstdio>
 #include <system_error>
 #include <tuple>
 

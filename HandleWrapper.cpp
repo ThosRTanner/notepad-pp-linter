@@ -2,6 +2,7 @@
 #include "HandleWrapper.h"
 
 #include "SystemError.h"
+
 #include <vector>
 
 using namespace Linter;

@@ -10,9 +10,7 @@
 
 #include <cassert>
 
-DockingDlgInterface::DockingDlgInterface(
-    int dialogID, HINSTANCE hInst, HWND parent /*, int dlg_num, Position pos, HICON icon, wchar_t const *extra*/)
-    : StaticDialog(hInst, parent, dialogID)
+DockingDlgInterface::DockingDlgInterface(int dialogID, HINSTANCE hInst, HWND parent) : StaticDialog(hInst, parent, dialogID)
 {
 }
 

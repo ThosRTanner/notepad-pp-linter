@@ -2,10 +2,6 @@
 
 #include "notepad/Scintilla.h"
 
-//#include <minwindef.h>
-//#include <windef.h>
-#include <winnt.h>
-
 #include <memory>
 #include <string>
 

@@ -1,6 +1,5 @@
 #pragma once
 
-#include <memory>
 #include <string>
 
 #include <msxml6.h>
@@ -10,7 +9,7 @@ namespace Linter
 {
     class DomDocument
     {
-        /** Importamnt note:
+        /** Important note:
          * The wstring constructor takes a filename.
          * The string constructor takes an xml string.
          */
