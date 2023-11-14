@@ -139,8 +139,8 @@
     <ClInclude Include="StaticDialog.h">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="Window.h">
-      <Filter>Source Files</Filter>
+    <ClInclude Include="resource.h">
+      <Filter>Resource Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

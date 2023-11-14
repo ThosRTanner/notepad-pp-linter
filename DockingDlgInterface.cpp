@@ -12,10 +12,6 @@
 
 DockingDlgInterface::DockingDlgInterface(int dialogID, HINSTANCE hInst, HWND parent) : StaticDialog(hInst, parent, dialogID)
 {
-}
-
-void DockingDlgInterface::register_dialogue(int dlg_num, Position pos, HICON icon, wchar_t const *extra)
-{
     TCHAR temp[MAX_PATH];
 
     ::GetModuleFileName(static_cast<HMODULE>(_hInst), &temp[0], MAX_PATH);
@@ -23,7 +19,10 @@ void DockingDlgInterface::register_dialogue(int dlg_num, Position pos, HICON ico
 
     ::GetWindowText(_hSelf, &temp[0], MAX_PATH);
     plugin_name_ = &temp[0];
+}
 
+void DockingDlgInterface::register_dialogue(int dlg_num, Position pos, HICON icon, wchar_t const *extra) noexcept
+{
     tTbData data{};
 
     data.hClient = _hSelf;

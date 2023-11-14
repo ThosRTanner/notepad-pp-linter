@@ -37,7 +37,7 @@ class DockingDlgInterface : public StaticDialog
      * 
      * dialogID is the resource number of the dialogue
      */
-    DockingDlgInterface(int dialogID, HINSTANCE hInst, HWND npp_win);
+    DockingDlgInterface(int dialogID, HINSTANCE hInst, HWND npp_win, int);
 
     /** Register dialogue with Notepad++.
      * 
@@ -48,7 +48,7 @@ class DockingDlgInterface : public StaticDialog
      * extra is extra text to display on dialogue title.
 
      */
-    void register_dialogue(int dlg_num, Position pos, HICON icon = nullptr, wchar_t const *extra = nullptr);
+    void register_dialogue(int dlg_num, Position pos, HICON icon = nullptr, wchar_t const *extra = nullptr) noexcept;
 
     virtual void updateDockingDlg() noexcept;
 
