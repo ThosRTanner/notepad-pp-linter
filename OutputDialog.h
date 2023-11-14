@@ -63,7 +63,7 @@ namespace Linter
             Num_Tabs = 2
         };
 
-        HWND dialogue_;
+        HWND tab_bar_;
         std::array<HWND, Num_Tabs> list_views_;
         Tab current_tab_;
         HWND current_list_view_;

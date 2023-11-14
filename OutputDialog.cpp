@@ -57,7 +57,7 @@ std::array<Linter::OutputDialog::TabDefinition, Linter::OutputDialog::Num_Tabs> 
 
 //**FIXME Need to test this with an icon
 Linter::OutputDialog::OutputDialog(HANDLE module_handle, HWND npp_win, int dlg_num)
-    : DockingDlgInterface(IDD_OUTPUT, static_cast<HINSTANCE>(module_handle), npp_win), dialogue_()
+    : DockingDlgInterface(IDD_OUTPUT, static_cast<HINSTANCE>(module_handle), npp_win), tab_bar_()
 {
     list_views_.fill(static_cast<HWND>(nullptr));
 
@@ -80,7 +80,7 @@ Linter::OutputDialog::~OutputDialog()
 void Linter::OutputDialog::display() noexcept
 {
     DockingDlgInterface::display();
-    ::SetFocus(dialogue_);
+    ::SetFocus(tab_bar_);
 }
 
 void Linter::OutputDialog::clear_lint_info()
@@ -188,7 +188,7 @@ INT_PTR CALLBACK Linter::OutputDialog::run_dlgProc(UINT message, WPARAM wParam, 
                 case TTN_GETDISPINFO:
                 {
                     LPTOOLTIPTEXT lpttt = reinterpret_cast<LPTOOLTIPTEXT>(notify_header);
-                    lpttt->hinst = _hInst;
+                    lpttt->hinst = module_instance_;
 
                     // Specify the resource identifier of the descriptive
                     // text for the given button.
@@ -258,7 +258,7 @@ INT_PTR CALLBACK Linter::OutputDialog::run_dlgProc(UINT message, WPARAM wParam, 
             }
 
             // show context menu
-            TrackPopupMenu(menu, 0, point.x, point.y, 0, _hSelf, nullptr);
+            TrackPopupMenu(menu, 0, point.x, point.y, 0, dialogue_window_, nullptr);
             return TRUE;
         }
         break;
@@ -305,7 +305,7 @@ void Linter::OutputDialog::on_toolbar_cmd(UINT /* message*/)
 #endif
 void Linter::OutputDialog::initialise_dialogue() noexcept
 {
-    dialogue_ = ::GetDlgItem(_hSelf, IDC_TABBAR);
+    tab_bar_ = ::GetDlgItem(dialogue_window_, IDC_TABBAR);
 
     TCITEM tie{};
     tie.mask = TCIF_TEXT | TCIF_IMAGE;
@@ -315,13 +315,13 @@ void Linter::OutputDialog::initialise_dialogue() noexcept
     {
         //This const cast is in no way worrying.
         tie.pszText = const_cast<wchar_t *>(tab_definitions_[tab].tab_name_);
-        TabCtrl_InsertItem(dialogue_, tab, &tie);
+        TabCtrl_InsertItem(tab_bar_, tab, &tie);
     }
 }
 
 void Linter::OutputDialog::initialise_tab(Tab tab) noexcept
 {
-    auto const list_view = ::GetDlgItem(_hSelf, tab_definitions_[tab].list_view_id_);
+    auto const list_view = ::GetDlgItem(dialogue_window_, tab_definitions_[tab].list_view_id_);
     list_views_[tab] = list_view;
 
     ListView_SetExtendedListViewStyle(list_view, LVS_EX_FULLROWSELECT | LVS_EX_AUTOSIZECOLUMNS);
@@ -359,19 +359,19 @@ void Linter::OutputDialog::resize() noexcept
     RECT rc;
     getClientRect(rc);
 
-    ::MoveWindow(dialogue_, rc.left, rc.top, rc.right - rc.left, rc.bottom - rc.top, TRUE);
+    ::MoveWindow(tab_bar_, rc.left, rc.top, rc.right - rc.left, rc.bottom - rc.top, TRUE);
 
-    TabCtrl_AdjustRect(dialogue_, FALSE, &rc);
+    TabCtrl_AdjustRect(tab_bar_, FALSE, &rc);
     for (auto const &list_view : list_views_)
     {
-        ::SetWindowPos(list_view, dialogue_, rc.left, rc.top, rc.right - rc.left, rc.bottom - rc.top, 0);
+        ::SetWindowPos(list_view, tab_bar_, rc.left, rc.top, rc.right - rc.left, rc.bottom - rc.top, 0);
         ListView_SetColumnWidth(list_view, Column_Message, LVSCW_AUTOSIZE);
     }
 }
 
 void Linter::OutputDialog::selected_tab_changed() noexcept
 {
-    int const selected = TabCtrl_GetCurSel(dialogue_);
+    int const selected = TabCtrl_GetCurSel(tab_bar_);
     current_tab_ = static_cast<Tab>(selected);
     current_list_view_ = list_views_[current_tab_];
     for (int tab = 0; tab < Num_Tabs; tab += 1)
@@ -405,7 +405,7 @@ void Linter::OutputDialog::update_displayed_counts()
         tie.mask = TCIF_TEXT;
         tie.pszText = const_cast<wchar_t *>(strTabName.c_str());
 #endif
-        TabCtrl_SetItem(dialogue_, tab, &tie);
+        TabCtrl_SetItem(tab_bar_, tab, &tie);
     }
 }
 
@@ -482,12 +482,7 @@ void Linter::OutputDialog::get_name_from_cmd(UINT resID, LPTSTR tip, UINT count)
 /*
 void Linter::OutputDialog::select_next_lint()
 {
-    if (_hSelf == nullptr)
-    {
-        return;
-    }
-
-    int tab = TabCtrl_GetCurSel(dialogue_);
+    int tab = TabCtrl_GetCurSel(tab_bar_);
     HWND list_view = list_views_[tab];
 
     int count = ListView_GetItemCount(list_view);
@@ -516,12 +511,7 @@ void Linter::OutputDialog::select_next_lint()
 /*
 void Linter::OutputDialog::select_previous_lint()
 {
-    if (_hSelf == nullptr)
-    {
-        return;
-    }
-
-    int tab = TabCtrl_GetCurSel(dialogue_);
+    int tab = TabCtrl_GetCurSel(tab_bar_);
     HWND list_view = list_views_[tab];
 
     int count = ListView_GetItemCount(list_view);
@@ -710,7 +700,7 @@ void Linter::OutputDialog::copy_to_clipboard()
         HGLOBAL mem_handle_ = nullptr;
     };
 
-    Clipboard clipboard{_hSelf};
+    Clipboard clipboard{dialogue_window_};
 
     clipboard.empty();
     clipboard.copy(str);

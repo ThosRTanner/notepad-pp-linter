@@ -59,9 +59,6 @@
     <ClCompile Include="DockingDlgInterface.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="StaticDialog.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="notepad\menuCmdID.h">
@@ -134,9 +131,6 @@
       <Filter>Source Files\notepad\DockingFeature</Filter>
     </ClInclude>
     <ClInclude Include="DockingDlgInterface.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="StaticDialog.h">
       <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="Window.h">

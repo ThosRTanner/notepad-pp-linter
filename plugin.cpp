@@ -28,7 +28,7 @@ enum
 namespace
 {
     HANDLE module_handle;
-    const TCHAR PLUGIN_NAME[] = L"Linter";
+    constexpr auto PLUGIN_NAME = L"Linter";
     TCHAR iniFilePath[MAX_PATH];
 
     NppData nppData;
@@ -51,7 +51,7 @@ namespace
         }
         else
         {
-            ::MessageBox(nppData._nppHandle, L"Unable to show lint errors due to startup issue", L"Linter", MB_OK | MB_ICONERROR);
+            ::MessageBox(nppData._nppHandle, L"Unable to show lint errors due to startup issue", PLUGIN_NAME, MB_OK | MB_ICONERROR);
         }
     }
 
@@ -104,12 +104,14 @@ extern "C" __declspec(dllexport) void setInfo(NppData notpadPlusData) noexcept
         try
         {
             ::MessageBox(
-                notpadPlusData._nppHandle, static_cast<wchar_t const *>(static_cast<bstr_t>(e.what())), L"Linter", MB_OK | MB_ICONERROR);
+                notpadPlusData._nppHandle, static_cast<wchar_t const *>(static_cast<bstr_t>(e.what())), PLUGIN_NAME, MB_OK | MB_ICONERROR);
         }
         catch (std::exception const &)
         {
-            ::MessageBox(
-                notpadPlusData._nppHandle, L"Something terrible has gone wrong but I can't tell you what", L"Linter", MB_OK | MB_ICONERROR);
+            ::MessageBox(notpadPlusData._nppHandle,
+                L"Something terrible has gone wrong but I can't tell you what",
+                PLUGIN_NAME,
+                MB_OK | MB_ICONERROR);
         }
     }
 }

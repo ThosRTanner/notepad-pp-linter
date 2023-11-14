@@ -16,11 +16,9 @@
 
 #pragma once
 
-#include "StaticDialog.h"
-
 #include <string>
 
-class DockingDlgInterface : public StaticDialog
+class DockingDlgInterface
 {
   public:
     /** Where to place dialogue initially */
@@ -39,6 +37,13 @@ class DockingDlgInterface : public StaticDialog
      */
     DockingDlgInterface(int dialogID, HINSTANCE hInst, HWND npp_win);
 
+    DockingDlgInterface(DockingDlgInterface const &) = delete;
+    DockingDlgInterface(DockingDlgInterface &&) = delete;
+    DockingDlgInterface &operator=(DockingDlgInterface const &) = delete;
+    DockingDlgInterface &operator=(DockingDlgInterface &&) = delete;
+
+    virtual ~DockingDlgInterface();
+
     /** Register dialogue with Notepad++.
      * 
      * I'm not a fan of 2-phase initialisation, but this bit has to be done after the
@@ -46,9 +51,8 @@ class DockingDlgInterface : public StaticDialog
      *
      * dlg_num is the ID used to communicate with notepad++ (i.e. the menu entry)
      * extra is extra text to display on dialogue title.
-
      */
-    void register_dialogue(int dlg_num, Position pos, HICON icon = nullptr, wchar_t const *extra = nullptr);
+    void register_dialogue(int dlg_num, Position pos, HICON icon = nullptr, wchar_t const *extra = nullptr) noexcept;
 
     virtual void updateDockingDlg() noexcept;
 
@@ -63,13 +67,33 @@ class DockingDlgInterface : public StaticDialog
         return is_closed_;
     }
 
+    void request_redraw(bool forceUpdate = false) const noexcept;
+
+    void getClientRect(RECT &rc) const noexcept;
+
+    void getWindowRect(RECT &rc) const noexcept;
+
+    void paint() const noexcept;
+
   protected:
-    INT_PTR CALLBACK run_dlgProc(UINT message, WPARAM, LPARAM lParam) override;
+    virtual INT_PTR CALLBACK run_dlgProc(UINT message, WPARAM, LPARAM lParam);
 
   private:
-    std::wstring module_name_;
-    std::wstring plugin_name_;
+    /** Utility wrapper round SendMessage to send pointers to our self */
+    void SendDialogInfoToNPP(int msg, int wParam = 0) noexcept;
+
+    static INT_PTR CALLBACK dlgProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam) noexcept;
+
+  protected:             //FIXME No!
+    HINSTANCE module_instance_;
+  private:
+    HWND parent_window_;
+  protected:            //FIXME No!
+    HWND dialogue_window_;
+  private:
     int docked_pos_ = 0;
     bool is_floating_ = true;
     bool is_closed_ = false;
+    std::wstring module_name_;
+    std::wstring plugin_name_;
 };
