@@ -153,7 +153,7 @@ INT_PTR CALLBACK Linter::OutputDialog::run_dlgProc(UINT message, WPARAM wParam, 
 
         case WM_NOTIFY:
         {
-            LPNMHDR notify_header = reinterpret_cast<LPNMHDR>(lParam);
+            NMHDR const *notify_header = reinterpret_cast<LPNMHDR>(lParam);
             switch (notify_header->code)
             {
                 case LVN_KEYDOWN:
@@ -187,17 +187,16 @@ INT_PTR CALLBACK Linter::OutputDialog::run_dlgProc(UINT message, WPARAM wParam, 
 
                 case TTN_GETDISPINFO:
                 {
+                    /* 
                     LPTOOLTIPTEXT lpttt = reinterpret_cast<LPTOOLTIPTEXT>(notify_header);
                     lpttt->hinst = module_instance_;
-
                     // Specify the resource identifier of the descriptive
                     // text for the given button.
-                    /*
-                        int resId = int(lpttt->hdr.idFrom);
-                        TCHAR tip[MAX_PATH];
-                        get_name_from_cmd(resId, tip, sizeof(tip));
-                        lpttt->lpszText = tip;
-                        */
+                    int resId = int(lpttt->hdr.idFrom);
+                    TCHAR tip[MAX_PATH];
+                    get_name_from_cmd(resId, tip, sizeof(tip));
+                    lpttt->lpszText = tip;
+                    */
                     return TRUE;
                 }
 
@@ -258,7 +257,7 @@ INT_PTR CALLBACK Linter::OutputDialog::run_dlgProc(UINT message, WPARAM wParam, 
             }
 
             // show context menu
-            TrackPopupMenu(menu, 0, point.x, point.y, 0, dialogue_window_, nullptr);
+            TrackPopupMenu(menu, 0, point.x, point.y, 0, get_handle(), nullptr);
             return TRUE;
         }
         break;
@@ -305,7 +304,7 @@ void Linter::OutputDialog::on_toolbar_cmd(UINT /* message*/)
 #endif
 void Linter::OutputDialog::initialise_dialogue() noexcept
 {
-    tab_bar_ = ::GetDlgItem(dialogue_window_, IDC_TABBAR);
+    tab_bar_ = GetDlgItem(IDC_TABBAR);
 
     TCITEM tie{};
     tie.mask = TCIF_TEXT | TCIF_IMAGE;
@@ -321,7 +320,7 @@ void Linter::OutputDialog::initialise_dialogue() noexcept
 
 void Linter::OutputDialog::initialise_tab(Tab tab) noexcept
 {
-    auto const list_view = ::GetDlgItem(dialogue_window_, tab_definitions_[tab].list_view_id_);
+    HWND const list_view = GetDlgItem(tab_definitions_[tab].list_view_id_);
     list_views_[tab] = list_view;
 
     ListView_SetExtendedListViewStyle(list_view, LVS_EX_FULLROWSELECT | LVS_EX_AUTOSIZECOLUMNS);
@@ -457,7 +456,7 @@ void Linter::OutputDialog::add_errors(Tab tab, std::vector<XmlParser::Error> con
 #if __cplusplus >= 202002L
     Sort_Call_Info const info{.dialogue = this, .tab = tab};
 #else
-    Sort_Call_Info info{this, tab};
+    Sort_Call_Info const info{this, tab};
 #endif
     ListView_SortItemsEx(list_view, sort_call_function, reinterpret_cast<LPARAM>(&info));
     request_redraw();
@@ -700,7 +699,7 @@ void Linter::OutputDialog::copy_to_clipboard()
         HGLOBAL mem_handle_ = nullptr;
     };
 
-    Clipboard clipboard{dialogue_window_};
+    Clipboard clipboard{get_handle()};
 
     clipboard.empty();
     clipboard.copy(str);

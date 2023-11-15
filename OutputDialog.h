@@ -114,7 +114,7 @@ namespace Linter
         int sort_selected_list(Tab tab, LPARAM row1_index, LPARAM row2_index) noexcept;
 
         /** This is what is actually called from the ListView_Sort method */
-        static int sort_call_function(LPARAM lParam1, LPARAM lParam2, LPARAM lParamSort) noexcept;
+        static int __stdcall sort_call_function(LPARAM lParam1, LPARAM lParam2, LPARAM lParamSort) noexcept;
     };
 
 }    // namespace Linter
