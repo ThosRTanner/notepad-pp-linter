@@ -56,24 +56,47 @@ class DockingDlgInterface
 
     virtual void updateDockingDlg() noexcept;
 
+    /** Called when dialogue is to be displayed.
+     * 
+     * Remember to call the base class instance
+     */
     virtual void display() noexcept;
 
+    /** Called when dialogue is to be hidden
+     * 
+     * Remember to call the base class instance.
+     */
     virtual void hide() noexcept;
 
+    /** Called when dialogue is being moved or resized.
+     * 
+     * You'll need to implement this to move things around.
+     */
     virtual void resize() noexcept = 0;
 
+    /** Find out if the dialogue has been closed. */
     bool isClosed() const noexcept
     {
         return is_closed_;
     }
 
-    void request_redraw(bool forceUpdate = false) const noexcept;
+    /** Requests a redraw (by invalidating the whole dialogue area) */
+    void request_redraw() const noexcept;
 
+    /** Utility to get the current client rectangle */
     void getClientRect(RECT &rc) const noexcept;
 
+    /** Utility to get the current window rectangle */
     void getWindowRect(RECT &rc) const noexcept;
 
-    void paint() const noexcept;
+    /** Utility to get a dialogue item */
+    HWND GetDlgItem(int item) const noexcept;
+
+    /** Utility to get hold of the current dialogue window handle */
+    HWND get_handle() const noexcept
+    {
+        return dialogue_window_;
+    }
 
   protected:
     virtual INT_PTR CALLBACK run_dlgProc(UINT message, WPARAM, LPARAM lParam);
@@ -84,13 +107,9 @@ class DockingDlgInterface
 
     static INT_PTR CALLBACK dlgProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam) noexcept;
 
-  protected:             //FIXME No!
     HINSTANCE module_instance_;
-  private:
     HWND parent_window_;
-  protected:            //FIXME No!
     HWND dialogue_window_;
-  private:
     int docked_pos_ = 0;
     bool is_floating_ = true;
     bool is_closed_ = false;

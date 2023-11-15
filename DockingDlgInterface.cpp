@@ -10,8 +10,6 @@
 
 #include <shlwapi.h>
 
-#include <cassert>
-
 namespace
 {
     std::wstring get_module_name(HINSTANCE module_instance)
@@ -28,6 +26,7 @@ namespace
         return &temp[0];
     }
 }
+
 DockingDlgInterface::DockingDlgInterface(int dialogID, HINSTANCE hInst, HWND parent)
     : module_instance_(hInst),
       parent_window_(parent),
@@ -98,13 +97,9 @@ void DockingDlgInterface::hide() noexcept
     SendDialogInfoToNPP(NPPM_DMMHIDE);
 }
 
-void DockingDlgInterface::request_redraw(bool forceUpdate) const noexcept
+void DockingDlgInterface::request_redraw() const noexcept
 {
     ::InvalidateRect(dialogue_window_, nullptr, TRUE);
-    if (forceUpdate)
-    {
-        ::UpdateWindow(dialogue_window_);
-    }
 }
 
 void DockingDlgInterface::getClientRect(RECT &rc) const noexcept
@@ -117,9 +112,9 @@ void DockingDlgInterface::getWindowRect(RECT &rc) const noexcept
     ::GetWindowRect(dialogue_window_, &rc);
 }
 
-void DockingDlgInterface::paint() const noexcept
+HWND DockingDlgInterface::GetDlgItem(int item) const noexcept
 {
-    ::RedrawWindow(dialogue_window_, nullptr, nullptr, RDW_INVALIDATE);
+    return ::GetDlgItem(dialogue_window_, item);
 }
 
 //We can't make this noexcept as it'd mean child classes would unnecessarily need to be noexcept.
@@ -163,7 +158,7 @@ INT_PTR DockingDlgInterface::run_dlgProc(UINT message, WPARAM, LPARAM lParam)
         }
 
         case WM_PAINT:
-            paint();
+            ::RedrawWindow(dialogue_window_, nullptr, nullptr, RDW_INVALIDATE);
             break;
 
         case WM_MOVE:
@@ -204,7 +199,7 @@ INT_PTR CALLBACK DockingDlgInterface::dlgProc(HWND hwnd, UINT message, WPARAM wP
         catch (std::exception const &)
         {
             ::MessageBox(
-                hwnd, L"Something terrible has gone wrong but I can't tell you what", instance->plugin_name_.c_str(), MB_OK | MB_ICONERROR);
+                hwnd, L"Caught exception but cannot get reason", instance->plugin_name_.c_str(), MB_OK | MB_ICONERROR);
         }
         return TRUE;
     }
