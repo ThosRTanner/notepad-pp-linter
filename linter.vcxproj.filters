@@ -133,8 +133,6 @@
     <ClInclude Include="DockingDlgInterface.h">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="Window.h">
-      <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -144,5 +142,10 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="cpp.hint" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="linter.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
   </ItemGroup>
 </Project>

@@ -68,7 +68,10 @@ Linter::OutputDialog::OutputDialog(HANDLE module_handle, HWND npp_win, int dlg_n
     }
     selected_tab_changed();
 
-    register_dialogue(dlg_num, Position::Dock_Bottom);
+    register_dialogue(dlg_num,
+        Position::Dock_Bottom,
+        static_cast<HICON>(::LoadImage(
+            static_cast<HINSTANCE>(module_handle), MAKEINTRESOURCE(IDI_ICON1), IMAGE_ICON, 0, 0, LR_LOADMAP3DCOLORS | LR_LOADTRANSPARENT)));
 }
 
 Linter::OutputDialog::~OutputDialog()
