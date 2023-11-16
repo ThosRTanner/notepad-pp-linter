@@ -1,20 +1,14 @@
 #include "stdafx.h"
 #include "DomDocument.h"
 
-#include "encoding.h"
 #include "SystemError.h"
 #include "XmlDecodeException.h"
-
-#include <sstream>
-#include <stdexcept>
 
 Linter::DomDocument::DomDocument(std::wstring const &filename)
 {
     init();
 
-    BSTR bstrValue{static_cast<_bstr_t>(filename.c_str())};
-    CComVariant value(bstrValue);
-
+    CComVariant value{static_cast<wchar_t const *>(static_cast<_bstr_t>(filename.c_str()))};
     VARIANT_BOOL resultCode = FALSE;
     HRESULT const hr = m_document->load(value, &resultCode);
 
@@ -36,7 +30,7 @@ Linter::DomDocument::~DomDocument() = default;
 CComPtr<IXMLDOMNodeList> Linter::DomDocument::getNodeList(std::string const &xpath)
 {
     CComPtr<IXMLDOMNodeList> nodes;
-    HRESULT hr = m_document->selectNodes(static_cast<_bstr_t>(xpath.c_str()), &nodes);
+    HRESULT const hr = m_document->selectNodes(static_cast<_bstr_t>(xpath.c_str()), &nodes);
     if (!SUCCEEDED(hr))
     {
         throw SystemError(hr, "Can't execute XPath " + xpath);

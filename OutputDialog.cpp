@@ -5,14 +5,12 @@
 #include "resource.h"
 #include "SystemError.h"
 
-#include "notepad/PluginInterface.h"
-
 #include <CommCtrl.h>
 
 #include <algorithm>
 #include <cstddef>
 #include <sstream>
-#include <tuple>
+#include <string>
 
 /** Columns in the error list */
 enum List_Column

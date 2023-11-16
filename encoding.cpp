@@ -1,7 +1,7 @@
-#include "StdAfx.h"
+#include "stdafx.h"
 #include "encoding.h"
 
-int Encoding::utfOffset(const std::string utf8, int unicodeOffset) noexcept
+int Encoding::utfOffset(const std::string & utf8, int unicodeOffset) noexcept
 {
     int result = 0;
     std::string::const_iterator i = utf8.begin(), end = utf8.end();

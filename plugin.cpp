@@ -3,7 +3,6 @@
 
 #include "linter.h"
 #include "OutputDialog.h"
-#include "XmlParser.h"
 
 #include "notepad/PluginInterface.h"
 

@@ -4,7 +4,6 @@
 #include "XmlParser.h"
 
 #include <array>
-#include <string>
 #include <vector>
 
 struct NppData;

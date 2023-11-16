@@ -6,18 +6,17 @@
 #include "OutputDialog.h"
 #include "plugin.h"
 #include "Settings.h"
-#include "SystemError.h"
 #include "XmlDecodeException.h"
 #include "XmlParser.h"
 
 #include "notepad/Notepad_plus_msgs.h"
 
-#include <CommCtrl.h>
 #include <process.h>
 
 #include <map>
 #include <memory>
 #include <stdexcept>
+#include <string>
 #include <vector>
 
 namespace

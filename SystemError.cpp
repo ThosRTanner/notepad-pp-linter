@@ -12,7 +12,6 @@
 #include <tuple>
 
 #include <comdef.h>
-#include <winbase.h>
 
 using namespace Linter;
 

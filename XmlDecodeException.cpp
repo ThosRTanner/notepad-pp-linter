@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "XmlDecodeException.h"
 
-#include <MsXml6.h>
+#include <msxml.h>
 
 #include <cstdio>
 

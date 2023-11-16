@@ -3,13 +3,11 @@
 
 #include "DomDocument.h"
 #include "SystemError.h"
-#include "encoding.h"
 
-#include <memory>
-#include <sstream>
 #include <string>
+#include <vector>
 
-#include <msxml6.h>
+#include <msxml.h>
 
 using Linter::SystemError;
 
