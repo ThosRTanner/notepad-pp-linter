@@ -183,21 +183,6 @@ INT_PTR CALLBACK Linter::OutputDialog::run_dlgProc(UINT message, WPARAM wParam, 
                     }
                     return TRUE;
 
-                case TTN_GETDISPINFO:
-                {
-                    /* 
-                    LPTOOLTIPTEXT lpttt = reinterpret_cast<LPTOOLTIPTEXT>(notify_header);
-                    lpttt->hinst = module_instance_;
-                    // Specify the resource identifier of the descriptive
-                    // text for the given button.
-                    int resId = int(lpttt->hdr.idFrom);
-                    TCHAR tip[MAX_PATH];
-                    get_name_from_cmd(resId, tip, sizeof(tip));
-                    lpttt->lpszText = tip;
-                    */
-                    return TRUE;
-                }
-
                 case TCN_SELCHANGE:
                     if (notify_header->idFrom == IDC_TABBAR)
                     {
@@ -268,38 +253,6 @@ INT_PTR CALLBACK Linter::OutputDialog::run_dlgProc(UINT message, WPARAM wParam, 
     return DockingDlgInterface::run_dlgProc(message, wParam, lParam);
 }
 
-#if 0
-void Linter::OutputDialog::on_toolbar_cmd(UINT /* message*/)
-{
-    switch (message)
-    {
-        case IDM_TB_JSLINT_CURRENT_FILE:
-            jsLintCurrentFile();
-            break;
-
-        case IDM_TB_JSLINT_ALL_FILES:
-            jsLintAllFiles();
-            break;
-
-        case IDM_TB_NEXT_LINT:
-            gotoNextLint();
-            break;
-
-        case IDM_TB_PREV_LINT:
-            gotoPrevLint();
-            break;
-
-        case IDM_TB_JSLINT_OPTIONS:
-            showJSLintOptionsDlg();
-            break;
-    }
-    */
-}
-
-//void Linter::OutputDialog::OnToolbarDropDown(LPNMTOOLBAR lpnmtb)
-//{
-//}
-#endif
 void Linter::OutputDialog::initialise_dialogue() noexcept
 {
     tab_bar_ = GetDlgItem(IDC_TABBAR);
@@ -460,33 +413,16 @@ void Linter::OutputDialog::add_errors(Tab tab, std::vector<XmlParser::Error> con
     request_redraw();
 }
 
-#if 0
-void Linter::OutputDialog::get_name_from_cmd(UINT resID, LPTSTR tip, UINT count)
+void Linter::OutputDialog::select_next_lint() noexcept
 {
-    // NOTE: On change, keep sure to change order of IDM_EX_... in toolBarIcons also
-    static wchar_t const *szToolTip[] = {
-        L"JSLint Current File",
-        L"JSLint All Files",
-        L"Go To Previous Lint",
-        L"Go To Next Lint",
-        L"JSLint Options",
-    };
+    //int const tab = TabCtrl_GetCurSel(tab_bar_);
+    HWND list_view = list_views_[current_tab_];
 
-    //This is almost definitely wrong.
-    wcscpy_s(tip, count, szToolTip[resID /* - IDM_TB_JSLINT_CURRENT_FILE*/]);
-}
-#endif
-/*
-void Linter::OutputDialog::select_next_lint()
-{
-    int tab = TabCtrl_GetCurSel(tab_bar_);
-    HWND list_view = list_views_[tab];
-
-    int count = ListView_GetItemCount(list_view);
+    int const count = ListView_GetItemCount(list_view);
     if (count == 0)
     {
         // no lints, set focus to editor
-        HWND current_window = GetCurrentScintillaWindow();
+        HWND current_window = getScintillaWindow();
         SetFocus(current_window);
         return;
     }
@@ -503,25 +439,23 @@ void Linter::OutputDialog::select_next_lint()
     ListView_EnsureVisible(list_view, row, FALSE);
     show_selected_lint(row);
 }
-*/
 
-/*
-void Linter::OutputDialog::select_previous_lint()
+void Linter::OutputDialog::select_previous_lint() noexcept
 {
-    int tab = TabCtrl_GetCurSel(tab_bar_);
-    HWND list_view = list_views_[tab];
+    //int const tab = TabCtrl_GetCurSel(tab_bar_);
+    HWND list_view = list_views_[current_tab_];
 
-    int count = ListView_GetItemCount(list_view);
+    int const count = ListView_GetItemCount(list_view);
     if (count == 0)
     {
         // no lints, set focus to editor
-        HWND current_window = GetCurrentScintillaWindow();
+        HWND current_window = getScintillaWindow();
         SetFocus(current_window);
         return;
     }
 
-    int row = ListView_GetNextItem(list_view, -1, LVNI_FOCUSED | LVNI_SELECTED);
-    if (--row == -1)
+    int row = ListView_GetNextItem(list_view, -1, LVNI_FOCUSED | LVNI_SELECTED) - 1;
+    if (row == -1)
     {
         row = count - 1;
     }
@@ -532,7 +466,6 @@ void Linter::OutputDialog::select_previous_lint()
     ListView_EnsureVisible(list_view, row, FALSE);
     show_selected_lint(row);
 }
-*/
 
 //FIXME We've already worked out the tab in all callers of this.
 void Linter::OutputDialog::show_selected_lint(int selected_item) noexcept
@@ -600,7 +533,7 @@ void Linter::OutputDialog::copy_to_clipboard()
     {
         //Get the actual item for the row
 #if __cplusplus >= 202002L
-        LVITEM item{.mask = LVIF_PARAM, .iItem = row};
+        LVITEM const item{.mask = LVIF_PARAM, .iItem = row};
 #else
         LVITEM item{};
         item.iItem = row;

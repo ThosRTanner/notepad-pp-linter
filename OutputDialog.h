@@ -39,16 +39,14 @@ namespace Linter
         /** Add a list of lint errors to the lint error list */
         void add_lint_errors(std::vector<XmlParser::Error> const &lints);
 
-        /*
-        void select_next_lint();
-        void select_previous_lint();
-        *.
-        */
+        /** Selects the next lint message */
+        void select_next_lint() noexcept;
+
+        /** Selects the next previous message */
+        void select_previous_lint() noexcept;
+
       protected:
         INT_PTR CALLBACK run_dlgProc(UINT message, WPARAM wParam, LPARAM lParam) override;
-
-        void on_toolbar_cmd(UINT message); //If we actually implement any...
-        //void OnToolbarDropDown(LPNMTOOLBAR lpnmtb);
 
       private:
         enum Tab

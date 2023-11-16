@@ -20,8 +20,10 @@ std::unique_ptr<Linter::OutputDialog> output_dialogue;
 
 enum
 {
-    MENU_ENTRY_EDIT_CONFIG,
-    MENU_ENTRY_SHOW_RESULTS
+    Menu_Entry_Edit_Config,
+    Menu_Entry_Show_Results,
+    Menu_Entry_Show_Next_Lint,
+    Menu_Entry_Show_Previous_Lint
 };
 
 namespace
@@ -54,9 +56,34 @@ namespace
         }
     }
 
+    void select_next_lint() noexcept
+    {
+        //FIXME move selection anyway
+        if (output_dialogue)
+        {
+            output_dialogue->select_next_lint();
+        }
+        else
+        {
+            ::MessageBox(nppData._nppHandle, L"Unable to show lint errors due to startup issue", PLUGIN_NAME, MB_OK | MB_ICONERROR);
+        }
+    }
+
+    void select_previous_lint() noexcept
+    {
+        if (output_dialogue)
+        {
+            output_dialogue->select_previous_lint();
+        }
+        else
+        {
+            ::MessageBox(nppData._nppHandle, L"Unable to show lint errors due to startup issue", PLUGIN_NAME, MB_OK | MB_ICONERROR);
+        }
+    }
+
     void commandMenuInit()
     {
-        output_dialogue = std::make_unique<Linter::OutputDialog>(module_handle, nppData._nppHandle, MENU_ENTRY_SHOW_RESULTS);
+        output_dialogue = std::make_unique<Linter::OutputDialog>(module_handle, nppData._nppHandle, Menu_Entry_Show_Results);
     }
 
     void ShowError(LRESULT start, LRESULT end, bool on) noexcept
@@ -122,13 +149,27 @@ extern "C" __declspec(dllexport) const TCHAR *getName() noexcept
 
 extern "C" __declspec(dllexport) FuncItem *getFuncsArray(int *nbF) noexcept
 {
-    int constexpr FUNCTIONS_COUNT = 2;
-    static FuncItem funcItem[FUNCTIONS_COUNT] = {
-        {L"Edit config",         editConfig,   MENU_ENTRY_EDIT_CONFIG },
-        {L"Show linter results", show_results, MENU_ENTRY_SHOW_RESULTS}
+#if __cplusplus >= 202002L
+    static ShortcutKey prev_key{._isCtrl = true, ._isShift = true, ._key = VK_F7};
+    static ShortcutKey next_key{._isCtrl = true, ._isShift = true, ._key = VK_F8};
+    static FuncItem funcItem[]{
+        {._itemName = L"Edit config", ._pFunc = editConfig, ._cmdID = Menu_Entry_Edit_Config},
+        {._itemName = L"Show linter results", ._pFunc = show_results, ._cmdID = Menu_Entry_Show_Results},
+        {._itemName = L"Show previous lint", ._pFunc = select_previous_lint, ._cmdID = Menu_Entry_Show_Previous_Lint, ._pShKey = &prev_key},
+        {._itemName = L"Show next lint", ._pFunc = select_next_lint, ._cmdID = Menu_Entry_Show_Next_Lint, ._pShKey = &next_key}
     };
+#else
+    static ShortcutKey prev_key{true, false, true, VK_F7};    //ctrl-alt-shift
+    static ShortcutKey next_key{true, false, true, VK_F8};
+    static FuncItem funcItem[]{
+        {L"Edit config", editConfig, Menu_Entry_Edit_Config},
+        {L"Show linter results", show_results, Menu_Entry_Show_Results},
+        {L"Show previous lint", select_previous_lint, Menu_Entry_Show_Previous_Lint, false, &prev_key},
+        {L"Show next lint", select_next_lint, Menu_Entry_Show_Next_Lint, false, &next_key}
+    };
+#endif
 
-    *nbF = FUNCTIONS_COUNT;
+    *nbF = sizeof(funcItem) / sizeof(funcItem[0]);
     return &funcItem[0];
 }
 
