@@ -3,10 +3,9 @@
 
 #include "SystemError.h"
 
-#include "notepad/Notepad_plus_msgs.h"
-
 #include "notepad/DockingFeature/Docking.h"
 #include "notepad/DockingFeature/dockingResource.h"
+#include "notepad/Notepad_plus_msgs.h"
 
 #include <shlwapi.h>
 
@@ -25,12 +24,13 @@ namespace
         ::GetWindowText(dialog_handle, &temp[0], MAX_PATH);
         return &temp[0];
     }
-}
+}    // namespace
 
 DockingDlgInterface::DockingDlgInterface(int dialogID, HINSTANCE hInst, HWND parent)
     : module_instance_(hInst),
       parent_window_(parent),
-      dialogue_window_(::CreateDialogParam(hInst, MAKEINTRESOURCE(dialogID), parent, dlgProc, reinterpret_cast<LPARAM>(this))),
+      dialogue_window_(
+          ::CreateDialogParam(hInst, MAKEINTRESOURCE(dialogID), parent, dlgProc, cast_to<LPARAM, DockingDlgInterface *>(this))),
       module_name_(get_module_name(hInst)),
       plugin_name_(get_plugin_name(dialogue_window_))
 {
@@ -39,7 +39,7 @@ DockingDlgInterface::DockingDlgInterface(int dialogID, HINSTANCE hInst, HWND par
         throw Linter::SystemError("Could not create dialogue");
     }
 
-    ::SetWindowLongPtr(dialogue_window_, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(this));
+    ::SetWindowLongPtr(dialogue_window_, GWLP_USERDATA, cast_to<LONG_PTR, DockingDlgInterface *>(this));
 
     SendDialogInfoToNPP(NPPM_MODELESSDIALOG, MODELESSDIALOGADD);
 }
@@ -73,7 +73,7 @@ void DockingDlgInterface::register_dialogue(int dlg_num, Position pos, HICON ico
     }
     data.pszModuleName = module_name_.c_str();
 
-    ::SendMessage(parent_window_, NPPM_DMMREGASDCKDLG, 0, reinterpret_cast<LPARAM>(&data));
+    ::SendMessage(parent_window_, NPPM_DMMREGASDCKDLG, 0, cast_to<LPARAM, tTbData *>(&data));
 
     // I'm not sure why I need this. If I don't have it the dialogue opens up every time.
     // If I do have it, the dialogue opens only if it was open when notepad++ was shut down...
@@ -126,7 +126,7 @@ INT_PTR DockingDlgInterface::run_dlgProc(UINT message, WPARAM, LPARAM lParam)
     {
         case WM_NOTIFY:
         {
-            NMHDR const *pnmh = reinterpret_cast<LPNMHDR>(lParam);
+            NMHDR const *pnmh = cast_to<LPNMHDR, LPARAM>(lParam);
 
             if (pnmh->hwndFrom == parent_window_)
             {
@@ -180,7 +180,7 @@ void DockingDlgInterface::SendDialogInfoToNPP(int msg, int wParam) noexcept
 
 INT_PTR CALLBACK DockingDlgInterface::dlgProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam) noexcept
 {
-    auto *instance = reinterpret_cast<DockingDlgInterface *>(::GetWindowLongPtr(hwnd, GWLP_USERDATA));
+    auto *instance = cast_to<DockingDlgInterface *, LONG_PTR>(::GetWindowLongPtr(hwnd, GWLP_USERDATA));
     if (instance == nullptr)
     {
         return FALSE;
@@ -198,8 +198,7 @@ INT_PTR CALLBACK DockingDlgInterface::dlgProc(HWND hwnd, UINT message, WPARAM wP
         }
         catch (std::exception const &)
         {
-            ::MessageBox(
-                hwnd, L"Caught exception but cannot get reason", instance->plugin_name_.c_str(), MB_OK | MB_ICONERROR);
+            ::MessageBox(hwnd, L"Caught exception but cannot get reason", instance->plugin_name_.c_str(), MB_OK | MB_ICONERROR);
         }
         return TRUE;
     }

@@ -31,21 +31,6 @@ enum Context_Menu_Entry
     Context_Select_All
 };
 
-/*
-////////////////////////////////////////////////////////////////////////////////
-
-
-#define IDM_TOOLBAR 2000
-
-#define IDM_TB_JSLINT_CURRENT_FILE (IDM_TOOLBAR + 1)
-#define IDM_TB_JSLINT_ALL_FILES (IDM_TOOLBAR + 2)
-#define IDM_TB_PREV_LINT (IDM_TOOLBAR + 3)
-#define IDM_TB_NEXT_LINT (IDM_TOOLBAR + 4)
-#define IDM_TB_JSLINT_OPTIONS (IDM_TOOLBAR + 5)
-
-////////////////////////////////////////////////////////////////////////////////
-*/
-
 std::array<Linter::OutputDialog::TabDefinition, Linter::OutputDialog::Num_Tabs> const Linter::OutputDialog::tab_definitions_ = {
     Linter::OutputDialog::TabDefinition{L"Lint Errors",   IDC_LIST_LINTS },
     Linter::OutputDialog::TabDefinition{L"System Errors", IDC_LIST_OUTPUT}
@@ -53,7 +38,6 @@ std::array<Linter::OutputDialog::TabDefinition, Linter::OutputDialog::Num_Tabs> 
 
 ////////////////////////////////////////////////////////////////////////////////
 
-//**FIXME Need to test this with an icon
 Linter::OutputDialog::OutputDialog(HANDLE module_handle, HWND npp_win, int dlg_num)
     : DockingDlgInterface(IDD_OUTPUT, static_cast<HINSTANCE>(module_handle), npp_win), tab_bar_()
 {
@@ -154,13 +138,13 @@ INT_PTR CALLBACK Linter::OutputDialog::run_dlgProc(UINT message, WPARAM wParam, 
 
         case WM_NOTIFY:
         {
-            NMHDR const *notify_header = reinterpret_cast<LPNMHDR>(lParam);
+            NMHDR const *notify_header = cast_to<LPNMHDR, LPARAM>(lParam);
             switch (notify_header->code)
             {
                 case LVN_KEYDOWN:
                     if (notify_header->idFrom == tab_definitions_[current_tab_].list_view_id_)
                     {
-                        NMLVKEYDOWN const *pnkd = reinterpret_cast<LPNMLVKEYDOWN>(lParam);
+                        NMLVKEYDOWN const *pnkd = cast_to<LPNMLVKEYDOWN, LPARAM>(lParam);
                         if (pnkd->wVKey == 'A' && (::GetKeyState(VK_CONTROL) & 0x8000U) != 0)
                         {
                             ListView_SetItemState(current_list_view_, -1, LVIS_SELECTED, LVIS_SELECTED);
@@ -177,7 +161,7 @@ INT_PTR CALLBACK Linter::OutputDialog::run_dlgProc(UINT message, WPARAM wParam, 
                 case NM_DBLCLK:
                     if (notify_header->idFrom == tab_definitions_[current_tab_].list_view_id_)
                     {
-                        NMITEMACTIVATE const *lpnmitem = reinterpret_cast<LPNMITEMACTIVATE>(lParam);
+                        NMITEMACTIVATE const *lpnmitem = cast_to<LPNMITEMACTIVATE, LPARAM>(lParam);
                         int const selected_item = lpnmitem->iItem;
                         if (selected_item != -1)
                         {
@@ -652,6 +636,6 @@ int Linter::OutputDialog::sort_selected_list(Tab tab, LPARAM row1_index, LPARAM 
 
 int CALLBACK Linter::OutputDialog::sort_call_function(LPARAM val1, LPARAM val2, LPARAM lParamSort) noexcept
 {
-    auto const &info = *reinterpret_cast<Sort_Call_Info const *>(lParamSort);
+    auto const &info = *cast_to<Sort_Call_Info const *, LPARAM>(lParamSort);
     return info.dialogue->sort_selected_list(info.tab, val1, val2);
 }

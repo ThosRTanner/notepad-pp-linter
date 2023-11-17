@@ -18,6 +18,17 @@
 
 #include <string>
 
+/** A slightly more explicit version of reinterpret_cast which requires
+ * both types to be specified, and disables the cast warning.
+ * 
+ */
+template <typename Target_Type, typename Orig_Type>
+Target_Type cast_to(Orig_Type val) noexcept
+{
+#pragma warning(suppress : 26490)
+    return reinterpret_cast<Target_Type>(val);
+}
+
 class DockingDlgInterface
 {
   public:

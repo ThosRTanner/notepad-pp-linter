@@ -81,11 +81,13 @@ namespace
         auto error = errorText.find(position);
         if (error != errorText.end())
         {
+#pragma warning(suppress : 26490)
             SendMessage(childHandle, WM_SETTEXT, 0, reinterpret_cast<LPARAM>((std::wstring(L" - ") + error->second).c_str()));
         }
         else
         {
             wchar_t const title[256] = {0};
+#pragma warning(suppress : 26490)
             SendMessage(childHandle, WM_GETTEXT, sizeof(title) / sizeof(title[0]) - 1, reinterpret_cast<LPARAM>(title));
 
             std::wstring str(&title[0]);
@@ -96,6 +98,7 @@ namespace
 
             if (!message.empty())
             {
+#pragma warning(suppress : 26490)
                 SendMessage(childHandle, WM_SETTEXT, 0, reinterpret_cast<LPARAM>(message.c_str()));
             }
         }
@@ -213,6 +216,7 @@ namespace
         if (threadHandle == 0)
         {
             unsigned threadID(0);
+#pragma warning(suppress : 26490)
             threadHandle = reinterpret_cast<HANDLE>(_beginthreadex(nullptr, 0, &AsyncCheck, nullptr, 0, &threadID));
             isChanged = false;
         }
