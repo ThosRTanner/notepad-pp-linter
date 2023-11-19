@@ -116,7 +116,11 @@ class DockingDlgInterface
     /** Utility wrapper round SendMessage to send pointers to our self */
     void SendDialogInfoToNPP(int msg, int wParam = 0) noexcept;
 
+    /** /Callback handler for messages */
     static INT_PTR CALLBACK dlgProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam) noexcept;
+
+    /** Called during construction to set up dialogue_window_ */
+    HWND create_dialogue_window(int dialogID);
 
     HINSTANCE module_instance_;
     HWND parent_window_;

@@ -24,21 +24,16 @@ namespace
         ::GetWindowText(dialog_handle, &temp[0], MAX_PATH);
         return &temp[0];
     }
+
 }    // namespace
 
 DockingDlgInterface::DockingDlgInterface(int dialogID, HINSTANCE hInst, HWND parent)
     : module_instance_(hInst),
       parent_window_(parent),
-      dialogue_window_(
-          ::CreateDialogParam(hInst, MAKEINTRESOURCE(dialogID), parent, dlgProc, cast_to<LPARAM, DockingDlgInterface *>(this))),
+      dialogue_window_(create_dialogue_window(dialogID)),
       module_name_(get_module_name(hInst)),
       plugin_name_(get_plugin_name(dialogue_window_))
 {
-    if (dialogue_window_ == nullptr)
-    {
-        throw Linter::SystemError("Could not create dialogue");
-    }
-
     ::SetWindowLongPtr(dialogue_window_, GWLP_USERDATA, cast_to<LONG_PTR, DockingDlgInterface *>(this));
 
     SendDialogInfoToNPP(NPPM_MODELESSDIALOG, MODELESSDIALOGADD);
@@ -202,4 +197,15 @@ INT_PTR CALLBACK DockingDlgInterface::dlgProc(HWND hwnd, UINT message, WPARAM wP
         }
         return TRUE;
     }
+}
+
+HWND DockingDlgInterface::create_dialogue_window(int dialogID)
+{
+    HWND const dialogue_window{::CreateDialogParam(
+        module_instance_, MAKEINTRESOURCE(dialogID), parent_window_, dlgProc, cast_to<LPARAM, DockingDlgInterface *>(this))};
+    if (dialogue_window == nullptr)
+    {
+        throw Linter::SystemError("Could not create dialogue");
+    }
+    return dialogue_window;
 }
