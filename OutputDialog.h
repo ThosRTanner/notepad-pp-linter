@@ -49,6 +49,9 @@ namespace Linter
         INT_PTR CALLBACK run_dlgProc(UINT message, WPARAM wParam, LPARAM lParam) override;
 
       private:
+        HWND tab_bar_;
+        HWND current_list_view_;
+
         enum Tab
         {
             Lint_Error,
@@ -60,25 +63,26 @@ namespace Linter
             Num_Tabs = 2
         };
 
-        HWND tab_bar_;
-        std::array<HWND, Num_Tabs> list_views_;
-        Tab current_tab_;
-        HWND current_list_view_;
-
         struct TabDefinition
         {
-            wchar_t const *tab_name_;
-            UINT list_view_id_;
-        };
-        static std::array<TabDefinition, Num_Tabs> const tab_definitions_;
+            TabDefinition(wchar_t const *name, UINT id, Tab tab, DockingDlgInterface const & parent);
 
-        std::array<std::vector<XmlParser::Error>, Num_Tabs> errors_;
+            wchar_t const *tab_name;
+            UINT list_view_id;
+            Tab tab;
+            HWND list_view;
+            std::vector<XmlParser::Error> errors;
+        };
+
+        std::array<TabDefinition, Num_Tabs> tab_definitions_;
+
+        TabDefinition *current_tab_;
 
         /** Initialise the output window */
         void initialise_dialogue() noexcept;
 
         /** Initialise the specified tab */
-        void initialise_tab(Tab tab) noexcept;
+        void initialise_tab(TabDefinition & tab) noexcept;
 
         /** Window resize */
         void resize() noexcept override;
@@ -92,25 +96,13 @@ namespace Linter
         /** Add list of errors to the appropriate tab */
         void add_errors(Tab tab, std::vector<XmlParser::Error> const &lints);
 
-        //void get_name_from_cmd(UINT resID, LPTSTR tip, UINT count);
-
         /** Move to the line/column of the displayed error */
         void show_selected_lint(int selected_item) noexcept;
 
         /** Copy selected messages to clipboard */
         void copy_to_clipboard();
 
-        /** Structure needed to map from sort call parameter to C++ */
-        struct Sort_Call_Info
-        {
-            OutputDialog *dialogue;
-            Tab tab;
-        };
-
-        /** This defines the sorting for the list view */
-        int sort_selected_list(Tab tab, LPARAM row1_index, LPARAM row2_index) noexcept;
-
-        /** This is what is actually called from the ListView_Sort method */
+        /** This is called from the ListView_Sort method */
         static int __stdcall sort_call_function(LPARAM lParam1, LPARAM lParam2, LPARAM lParamSort) noexcept;
     };
 
