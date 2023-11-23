@@ -86,6 +86,31 @@ void Linter::OutputDialog::add_lint_errors(std::vector<XmlParser::Error> const &
     add_errors(Tab::Lint_Error, errs);
 }
 
+void Linter::OutputDialog::select_next_lint() noexcept
+{
+    select_lint(1);
+}
+
+void Linter::OutputDialog::select_previous_lint() noexcept
+{
+    select_lint(-1);
+}
+
+void Linter::OutputDialog::resize() noexcept
+{
+    RECT rc;
+    getClientRect(rc);
+
+    ::MoveWindow(tab_bar_, rc.left, rc.top, rc.right - rc.left, rc.bottom - rc.top, TRUE);
+
+    TabCtrl_AdjustRect(tab_bar_, FALSE, &rc);
+    for (auto const &tab : tab_definitions_)
+    {
+        ::SetWindowPos(tab.list_view, tab_bar_, rc.left, rc.top, rc.right - rc.left, rc.bottom - rc.top, 0);
+        ListView_SetColumnWidth(tab.list_view, Column_Message, LVSCW_AUTOSIZE);
+    }
+}
+
 /** This is a strange function defined by windows.
  * 
  * The return value is basically TRUE if you've handled it, FALSE otherwise. If we don't
@@ -245,7 +270,9 @@ void Linter::OutputDialog::initialise_dialogue() noexcept
 
 void Linter::OutputDialog::initialise_tab(TabDefinition &tab) noexcept
 {
-    ListView_SetExtendedListViewStyle(tab.list_view, LVS_EX_FULLROWSELECT | LVS_EX_AUTOSIZECOLUMNS);
+    HWND const list_view = tab.list_view;
+
+    ListView_SetExtendedListViewStyle(list_view, LVS_EX_FULLROWSELECT | LVS_EX_AUTOSIZECOLUMNS);
 
     LVCOLUMN lvc{};
     lvc.mask = LVCF_FMT | LVCF_WIDTH | LVCF_TEXT | LVCF_SUBITEM;
@@ -254,40 +281,25 @@ void Linter::OutputDialog::initialise_tab(TabDefinition &tab) noexcept
     lvc.pszText = const_cast<wchar_t *>(L"Tool");
     lvc.cx = 100;
     lvc.fmt = LVCFMT_LEFT;
-    ListView_InsertColumn(tab.list_view, lvc.iSubItem, &lvc);
+    ListView_InsertColumn(list_view, lvc.iSubItem, &lvc);
 
     lvc.iSubItem = Column_Line;
     lvc.pszText = const_cast<wchar_t *>(L"Line");
     lvc.cx = 50;
     lvc.fmt = LVCFMT_RIGHT;
-    ListView_InsertColumn(tab.list_view, lvc.iSubItem, &lvc);
+    ListView_InsertColumn(list_view, lvc.iSubItem, &lvc);
 
     lvc.iSubItem = Column_Position;
     lvc.pszText = const_cast<wchar_t *>(L"Col");
     lvc.cx = 50;
     lvc.fmt = LVCFMT_RIGHT;
-    ListView_InsertColumn(tab.list_view, lvc.iSubItem, &lvc);
+    ListView_InsertColumn(list_view, lvc.iSubItem, &lvc);
 
     lvc.iSubItem = Column_Message;
     lvc.pszText = const_cast<wchar_t *>(L"Reason");
     lvc.cx = 500;
     lvc.fmt = LVCFMT_LEFT;
-    ListView_InsertColumn(tab.list_view, lvc.iSubItem, &lvc);
-}
-
-void Linter::OutputDialog::resize() noexcept
-{
-    RECT rc;
-    getClientRect(rc);
-
-    ::MoveWindow(tab_bar_, rc.left, rc.top, rc.right - rc.left, rc.bottom - rc.top, TRUE);
-
-    TabCtrl_AdjustRect(tab_bar_, FALSE, &rc);
-    for (auto const &tab : tab_definitions_)
-    {
-        ::SetWindowPos(tab.list_view, tab_bar_, rc.left, rc.top, rc.right - rc.left, rc.bottom - rc.top, 0);
-        ListView_SetColumnWidth(tab.list_view, Column_Message, LVSCW_AUTOSIZE);
-    }
+    ListView_InsertColumn(list_view, lvc.iSubItem, &lvc);
 }
 
 void Linter::OutputDialog::selected_tab_changed() noexcept
@@ -331,7 +343,7 @@ void Linter::OutputDialog::update_displayed_counts()
 void Linter::OutputDialog::add_errors(Tab tab, std::vector<XmlParser::Error> const &lints)
 {
     auto &tab_def = tab_definitions_[tab];
-    HWND list_view = tab_def.list_view;
+    HWND const list_view = tab_def.list_view;
 
     std::wstringstream stream;
     for (auto const &lint : lints)
@@ -378,7 +390,7 @@ void Linter::OutputDialog::add_errors(Tab tab, std::vector<XmlParser::Error> con
     request_redraw();
 }
 
-void Linter::OutputDialog::select_next_lint() noexcept
+void Linter::OutputDialog::select_lint(int n) noexcept
 {
     int const count = ListView_GetItemCount(current_list_view_);
     if (count == 0)
@@ -389,44 +401,20 @@ void Linter::OutputDialog::select_next_lint() noexcept
         return;
     }
 
-    int row = ListView_GetNextItem(current_list_view_, -1, LVNI_FOCUSED | LVNI_SELECTED) + 1;
-    if (row == count)
-    {
-        row = 0;
-    }
+    int row = ListView_GetNextItem(current_list_view_, -1, LVNI_FOCUSED | LVNI_SELECTED) + n;
+    row = (row % count + count) % count;
 
+    //Unselect all the rows.
     ListView_SetItemState(current_list_view_, -1, 0, LVIS_SELECTED | LVIS_FOCUSED);
 
+    //Select the newly calculated row.
     ListView_SetItemState(current_list_view_, row, LVIS_SELECTED | LVIS_FOCUSED, LVIS_SELECTED | LVIS_FOCUSED);
     ListView_EnsureVisible(current_list_view_, row, FALSE);
+
+    //And select the error location in the editor window
     show_selected_lint(row);
 }
 
-void Linter::OutputDialog::select_previous_lint() noexcept
-{
-    int const count = ListView_GetItemCount(current_list_view_);
-    if (count == 0)
-    {
-        // no lints, set focus to editor
-        HWND current_window = getScintillaWindow();
-        SetFocus(current_window);
-        return;
-    }
-
-    int row = ListView_GetNextItem(current_list_view_, -1, LVNI_FOCUSED | LVNI_SELECTED) - 1;
-    if (row == -1)
-    {
-        row = count - 1;
-    }
-
-    ListView_SetItemState(current_list_view_, -1, 0, LVIS_SELECTED | LVIS_FOCUSED);
-
-    ListView_SetItemState(current_list_view_, row, LVIS_SELECTED | LVIS_FOCUSED, LVIS_SELECTED | LVIS_FOCUSED);
-    ListView_EnsureVisible(current_list_view_, row, FALSE);
-    show_selected_lint(row);
-}
-
-//FIXME We've already worked out the tab in all callers of this.
 void Linter::OutputDialog::show_selected_lint(int selected_item) noexcept
 {
 #if __cplusplus >= 202002L

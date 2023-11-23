@@ -46,6 +46,8 @@ namespace Linter
         void select_previous_lint() noexcept;
 
       protected:
+        void resize() noexcept override;
+
         INT_PTR CALLBACK run_dlgProc(UINT message, WPARAM wParam, LPARAM lParam) override;
 
       private:
@@ -84,9 +86,6 @@ namespace Linter
         /** Initialise the specified tab */
         void initialise_tab(TabDefinition & tab) noexcept;
 
-        /** Window resize */
-        void resize() noexcept override;
-
         /** Selected tab has been changed. Display new one */
         void selected_tab_changed() noexcept;
 
@@ -95,6 +94,9 @@ namespace Linter
 
         /** Add list of errors to the appropriate tab */
         void add_errors(Tab tab, std::vector<XmlParser::Error> const &lints);
+
+        /** Skip to the n-th lint forward or backward */
+        void select_lint(int n) noexcept;
 
         /** Move to the line/column of the displayed error */
         void show_selected_lint(int selected_item) noexcept;

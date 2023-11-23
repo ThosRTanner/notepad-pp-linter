@@ -79,12 +79,6 @@ class DockingDlgInterface
      */
     virtual void hide() noexcept;
 
-    /** Called when dialogue is being moved or resized.
-     * 
-     * You'll need to implement this to move things around.
-     */
-    virtual void resize() noexcept = 0;
-
     /** Find out if the dialogue has been closed. */
     bool isClosed() const noexcept
     {
@@ -110,6 +104,12 @@ class DockingDlgInterface
     }
 
   protected:
+    /** Called when dialogue is being moved or resized.
+     * 
+     * You'll need to implement this to move things around.
+     */
+    virtual void resize() noexcept = 0;
+
     virtual INT_PTR CALLBACK run_dlgProc(UINT message, WPARAM, LPARAM lParam);
 
   private:
