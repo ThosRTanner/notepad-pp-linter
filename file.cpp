@@ -4,6 +4,8 @@
 #include "FilePipe.h"
 #include "SystemError.h"
 
+#include <memory>
+
 using namespace Linter;
 
 std::string File::exec(std::wstring commandLine, std::string const *text)
@@ -34,8 +36,10 @@ std::string File::exec(std::wstring commandLine, std::string const *text)
 
     PROCESS_INFORMATION procInfo = {0};
 
+    //See https://devblogs.microsoft.com/oldnewthing/20090601-00/?p=18083
+    std::unique_ptr<wchar_t[]> const cmdline{wcsdup(commandLine.c_str())};
     BOOL const isSuccess = CreateProcess(nullptr,
-        const_cast<wchar_t *>(commandLine.c_str()),    // command line
+        cmdline.get(),                                 // command line
         nullptr,                                       // process security attributes
         nullptr,                                       // primary thread security attributes
         TRUE,                                          // handles are inherited
