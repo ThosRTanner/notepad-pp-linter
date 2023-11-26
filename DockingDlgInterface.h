@@ -33,7 +33,6 @@ Target_Type cast_to(Orig_Type val) noexcept
 class DockingDlgInterface
 {
   public:
-
     /** Where to place dialogue initially */
     enum class Position
     {
@@ -119,6 +118,8 @@ class DockingDlgInterface
      * isn't a LONGPTR, but so far I haven't seen any messages that actually return
      * something that is a pointer.
      *
+     * If you aren't handling the message, you need to call the base class version of this.
+     * 
      * See below for some helpful return values.
      */
     virtual std::pair<bool, LONG> run_dlgProc(UINT message, WPARAM, LPARAM lParam);
@@ -127,6 +128,10 @@ class DockingDlgInterface
     {
         return std::pair<bool, LONG>(true, val);
     }
+
+    /** These provide easier to remember ways of returning an appropriate result from run_dlgproc */
+    static constexpr std::pair<bool, LONG> Dlg_Ret_Unhandled{false, 0};
+    static constexpr std::pair<bool, LONG> Dlg_Ret_True{true, TRUE};
 
   private:
     /** Utility wrapper round SendMessage to send pointers to our self */
@@ -147,7 +152,3 @@ class DockingDlgInterface
     std::wstring module_name_;
     std::wstring plugin_name_;
 };
-
-/** These provide easier to remember ways of returning an appropriate result from run_dlgproc */
-constexpr std::pair<bool, LONG> Dlg_Ret_Unhandled{false, 0};
-constexpr std::pair<bool, LONG> Dlg_Ret_True{true, TRUE};

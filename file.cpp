@@ -39,15 +39,15 @@ std::string File::exec(std::wstring commandLine, std::string const *text)
     //See https://devblogs.microsoft.com/oldnewthing/20090601-00/?p=18083
     std::unique_ptr<wchar_t[]> const cmdline{wcsdup(commandLine.c_str())};
     BOOL const isSuccess = CreateProcess(nullptr,
-        cmdline.get(),                                 // command line
-        nullptr,                                       // process security attributes
-        nullptr,                                       // primary thread security attributes
-        TRUE,                                          // handles are inherited
-        CREATE_NO_WINDOW,                              // creation flags
-        nullptr,                                       // use parent's environment
-        m_directory.c_str(),                           // use parent's current directory
-        &startInfo,                                    // STARTUPINFO pointer
-        &procInfo);                                    // receives PROCESS_INFORMATION
+        cmdline.get(),          // command line
+        nullptr,                // process security attributes
+        nullptr,                // primary thread security attributes
+        TRUE,                   // handles are inherited
+        CREATE_NO_WINDOW,       // creation flags
+        nullptr,                // use parent's environment
+        m_directory.c_str(),    // use parent's current directory
+        &startInfo,             // STARTUPINFO pointer
+        &procInfo);             // receives PROCESS_INFORMATION
 
     if (!isSuccess)
     {
@@ -93,8 +93,8 @@ void File::write(const std::string &data)
 
     const std::wstring tempFileName = m_directory + L"/" + m_fileName + L".temp.linter.file.tmp";
 
-    HandleWrapper fileHandle{
-        CreateFile(tempFileName.c_str(), GENERIC_WRITE, 0, nullptr, CREATE_ALWAYS, FILE_ATTRIBUTE_HIDDEN | FILE_ATTRIBUTE_TEMPORARY, nullptr)};
+    HandleWrapper fileHandle{CreateFile(
+        tempFileName.c_str(), GENERIC_WRITE, 0, nullptr, CREATE_ALWAYS, FILE_ATTRIBUTE_HIDDEN | FILE_ATTRIBUTE_TEMPORARY, nullptr)};
 
     fileHandle.writeFile(data);
 

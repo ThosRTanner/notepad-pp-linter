@@ -47,12 +47,11 @@ void HandleWrapper::writeFile(std::string const &str) const
     auto const end = str.end();
     while (start != end)
     {
-        const auto toWrite = static_cast<DWORD>(end - start);
+        const auto toWrite = static_cast<DWORD>(std::min(static_cast<std::ptrdiff_t>(std::numeric_limits<DWORD>::max()), end - start));
         DWORD written;
         if (!WriteFile(m_handle, &*start, toWrite, &written, nullptr))
         {
-            const DWORD err = GetLastError();
-            throw SystemError(err);
+            throw SystemError();
         }
         start += written;
     }

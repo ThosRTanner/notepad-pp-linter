@@ -15,7 +15,7 @@ std::vector<XmlParser::Error> XmlParser::getErrors(const std::string &xml)
 {
     ::Linter::DomDocument XMLDocument(xml);
     // Sample errors:
-    // 
+    //
     // <error line="12" column="19" severity="error" message="Unexpected identifier" source="jscs" />
     // <error source="jshint.W101" message="Line is too long. (W101)" severity="warning" column="81" line="58" />
     // <error source="eslint.rules.jsdoc/require-description-complete-sentence"
@@ -65,7 +65,7 @@ std::vector<XmlParser::Error> XmlParser::getErrors(const std::string &xml)
 
         element->getAttribute(static_cast<bstr_t>(L"message"), &value);
 #if __cplusplus >= 202002L
-        errors.push_back(Error{.m_line=line, .m_column=column, .m_message=value.bstrVal, .m_severity=severity, .m_tool=tool});
+        errors.push_back(Error{.m_line = line, .m_column = column, .m_message = value.bstrVal, .m_severity = severity, .m_tool = tool});
 #else
         errors.push_back(Error{line, column, value.bstrVal, severity, tool});
 #endif

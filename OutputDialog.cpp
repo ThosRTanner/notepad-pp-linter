@@ -196,7 +196,7 @@ std::pair<bool, LONG> Linter::OutputDialog::run_dlgProc(UINT message, WPARAM wPa
                                 return make_dlg_ret(CDRF_NOTIFYITEMDRAW);
 
                             case CDDS_ITEMPREPAINT:
-                                current_item_ = static_cast<DWORD>(custom_draw->nmcd.dwItemSpec);
+                                current_item_ = static_cast<int>(custom_draw->nmcd.dwItemSpec);
                                 return make_dlg_ret(CDRF_NOTIFYSUBITEMDRAW);
 
                             case CDDS_ITEMPREPAINT | CDDS_SUBITEM:
@@ -204,7 +204,7 @@ std::pair<bool, LONG> Linter::OutputDialog::run_dlgProc(UINT message, WPARAM wPa
                                 if (custom_draw->iSubItem == Column_Message)
                                 {
 #if __cplusplus >= 202002L
-                                    LVITEM const item{.mask = LVIF_PARAM, .iItem = row};
+                                    LVITEM const item{.mask = LVIF_PARAM, .iItem = current_item_};
 #else
                                     LVITEM item{};
                                     item.iItem = current_item_;
@@ -243,8 +243,8 @@ std::pair<bool, LONG> Linter::OutputDialog::run_dlgProc(UINT message, WPARAM wPa
                             default:
                                 break;
                         }
-                        break;
                     }
+                    break;
 
                 case TCN_SELCHANGE:
                     if (notify_header->idFrom == IDC_TABBAR)

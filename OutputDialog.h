@@ -54,7 +54,7 @@ namespace Linter
         HWND tab_bar_;
         HWND current_list_view_;
         //Current item - used during painting listview entries.
-        DWORD current_item_{0};
+        int current_item_{0};
 
         enum Tab
         {
@@ -69,7 +69,7 @@ namespace Linter
 
         struct TabDefinition
         {
-            TabDefinition(wchar_t const *name, UINT id, Tab tab, DockingDlgInterface const & parent);
+            TabDefinition(wchar_t const *name, UINT id, Tab tab, DockingDlgInterface const &parent);
 
             wchar_t const *tab_name;
             UINT list_view_id;
@@ -86,7 +86,7 @@ namespace Linter
         void initialise_dialogue() noexcept;
 
         /** Initialise the specified tab */
-        void initialise_tab(TabDefinition & tab) noexcept;
+        void initialise_tab(TabDefinition &tab) noexcept;
 
         /** Selected tab has been changed. Display new one */
         void selected_tab_changed() noexcept;

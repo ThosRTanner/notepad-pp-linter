@@ -11,7 +11,6 @@
 #include <ShlwApi.h>
 #include <WinUser.h>
 
-
 namespace
 {
     std::wstring get_module_name(HINSTANCE module_instance)
@@ -44,7 +43,7 @@ DockingDlgInterface::DockingDlgInterface(int dialogID, HINSTANCE hInst, HWND par
 
 DockingDlgInterface::~DockingDlgInterface()
 {
-    // Stop run_dlgProc from doing anything, since it calls a virtual method which won't be there.
+    // Stop dlgProc from doing anything, since it calls a virtual method which won't be there.
     ::SetWindowLongPtr(dialogue_window_, GWLP_USERDATA, NULL);
     SendDialogInfoToNPP(NPPM_MODELESSDIALOG, MODELESSDIALOGREMOVE);
     ::DestroyWindow(dialogue_window_);
@@ -179,7 +178,7 @@ void DockingDlgInterface::SendDialogInfoToNPP(int msg, int wParam) noexcept
 
 INT_PTR CALLBACK DockingDlgInterface::dlgProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam) noexcept
 {
-    auto *instance = cast_to<DockingDlgInterface *, LONG_PTR>(::GetWindowLongPtr(hwnd, GWLP_USERDATA));
+    auto *const instance = cast_to<DockingDlgInterface *, LONG_PTR>(::GetWindowLongPtr(hwnd, GWLP_USERDATA));
     if (instance == nullptr)
     {
         return FALSE;
