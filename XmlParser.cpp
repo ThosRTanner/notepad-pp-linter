@@ -52,6 +52,9 @@ std::vector<XmlParser::Error> XmlParser::getErrors(const std::string &xml)
         element->getAttribute(static_cast<bstr_t>(L"column"), &value);
         int const column = std::stoi(value.bstrVal);
 
+        element->getAttribute(static_cast<bstr_t>(L"severity"), &value);
+        std::wstring const severity(value.bstrVal);
+
         element->getAttribute(static_cast<bstr_t>(L"source"), &value);
         std::wstring tool(value.bstrVal);
         std::size_t const pos = tool.find_first_of('.');
@@ -61,8 +64,11 @@ std::vector<XmlParser::Error> XmlParser::getErrors(const std::string &xml)
         }
 
         element->getAttribute(static_cast<bstr_t>(L"message"), &value);
-
-        errors.push_back(Error{line, column, value.bstrVal, tool});
+#if __cplusplus >= 202002L
+        errors.push_back(Error{.m_line=line, .m_column=column, .m_message=value.bstrVal, .m_severity=severity, .m_tool=tool});
+#else
+        errors.push_back(Error{line, column, value.bstrVal, severity, tool});
+#endif
     }
 
     return errors;

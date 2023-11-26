@@ -16,7 +16,7 @@ namespace Linter
      * 1 tab - status (number of linters found for the current file, fatal errors, etc)
      * 1 tab for each linter 
      */
-    class OutputDialog : public DockingDlgInterface
+    class OutputDialog : protected DockingDlgInterface
     {
       public:
         OutputDialog(HANDLE module, HWND npp, int dlg_num);
@@ -46,13 +46,15 @@ namespace Linter
         void select_previous_lint() noexcept;
 
       protected:
-        void resize() noexcept override;
+        void window_pos_changed() noexcept override;
 
-        INT_PTR CALLBACK run_dlgProc(UINT message, WPARAM wParam, LPARAM lParam) override;
+        std::pair<bool, LONG> run_dlgProc(UINT message, WPARAM wParam, LPARAM lParam) override;
 
       private:
         HWND tab_bar_;
         HWND current_list_view_;
+        //Current item - used during painting listview entries.
+        DWORD current_item_{0};
 
         enum Tab
         {

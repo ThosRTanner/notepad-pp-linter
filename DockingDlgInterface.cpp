@@ -7,7 +7,10 @@
 #include "notepad/DockingFeature/dockingResource.h"
 #include "notepad/Notepad_plus_msgs.h"
 
-#include <shlwapi.h>
+#include <comutil.h>
+#include <ShlwApi.h>
+#include <WinUser.h>
+
 
 namespace
 {
@@ -115,7 +118,7 @@ HWND DockingDlgInterface::GetDlgItem(int item) const noexcept
 //We can't make this noexcept as it'd mean child classes would unnecessarily need to be noexcept.
 //The caller will handle exceptions correctly.
 #pragma warning(suppress : 26440)
-INT_PTR DockingDlgInterface::run_dlgProc(UINT message, WPARAM, LPARAM lParam)
+std::pair<bool, LONG> DockingDlgInterface::run_dlgProc(UINT message, WPARAM, LPARAM lParam)
 {
     switch (message)
     {
@@ -129,16 +132,16 @@ INT_PTR DockingDlgInterface::run_dlgProc(UINT message, WPARAM, LPARAM lParam)
                 {
                     case DMN_CLOSE:
                         is_closed_ = true;
-                        break;
+                        return Dlg_Ret_True;
 
                     case DMN_DOCK:
                         docked_pos_ = HIWORD(pnmh->code);
                         is_floating_ = false;
-                        break;
+                        return Dlg_Ret_True;
 
                     case DMN_FLOAT:
                         is_floating_ = true;
-                        break;
+                        return Dlg_Ret_True;
 
                     //These are defined in DockingResource.h but I've not managed
                     //to trigger them.
@@ -153,18 +156,19 @@ INT_PTR DockingDlgInterface::run_dlgProc(UINT message, WPARAM, LPARAM lParam)
         }
 
         case WM_PAINT:
+            //This must return FALSE (unhandled)
             ::RedrawWindow(dialogue_window_, nullptr, nullptr, RDW_INVALIDATE);
             break;
 
-        case WM_MOVE:
-        case WM_SIZE:
-            resize();
+        case WM_WINDOWPOSCHANGED:
+            //This must return FALSE (unhandled)
+            window_pos_changed();
             break;
 
         default:
             break;
     }
-    return FALSE;
+    return Dlg_Ret_Unhandled;
 }
 
 void DockingDlgInterface::SendDialogInfoToNPP(int msg, int wParam) noexcept
@@ -180,9 +184,15 @@ INT_PTR CALLBACK DockingDlgInterface::dlgProc(HWND hwnd, UINT message, WPARAM wP
     {
         return FALSE;
     }
+
     try
     {
-        return instance->run_dlgProc(message, wParam, lParam);
+        auto const retval = instance->run_dlgProc(message, wParam, lParam);
+        if (retval.first)
+        {
+            SetWindowLongPtr(hwnd, DWLP_MSGRESULT, retval.second);
+        }
+        return retval.first;
     }
     catch (std::exception const &e)
     {
@@ -195,7 +205,7 @@ INT_PTR CALLBACK DockingDlgInterface::dlgProc(HWND hwnd, UINT message, WPARAM wP
         {
             ::MessageBox(hwnd, L"Caught exception but cannot get reason", instance->plugin_name_.c_str(), MB_OK | MB_ICONERROR);
         }
-        return TRUE;
+        return FALSE;
     }
 }
 

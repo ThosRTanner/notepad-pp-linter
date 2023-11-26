@@ -16,11 +16,12 @@
 
 #pragma once
 
+#include <wtypes.h>
+
 #include <string>
 
 /** A slightly more explicit version of reinterpret_cast which requires
  * both types to be specified, and disables the cast warning.
- * 
  */
 template <typename Target_Type, typename Orig_Type>
 Target_Type cast_to(Orig_Type val) noexcept
@@ -32,6 +33,7 @@ Target_Type cast_to(Orig_Type val) noexcept
 class DockingDlgInterface
 {
   public:
+
     /** Where to place dialogue initially */
     enum class Position
     {
@@ -108,9 +110,23 @@ class DockingDlgInterface
      * 
      * You'll need to implement this to move things around.
      */
-    virtual void resize() noexcept = 0;
+    virtual void window_pos_changed() noexcept = 0;
 
-    virtual INT_PTR CALLBACK run_dlgProc(UINT message, WPARAM, LPARAM lParam);
+    /** Implement this to handle messages.
+     *
+     * You return a std::pair<bool, LONG> so you don't have to remember to call
+     * SetWindowLongPtr, the caller will do that for you. And yes, clearly a LONG
+     * isn't a LONGPTR, but so far I haven't seen any messages that actually return
+     * something that is a pointer.
+     *
+     * See below for some helpful return values.
+     */
+    virtual std::pair<bool, LONG> run_dlgProc(UINT message, WPARAM, LPARAM lParam);
+
+    inline auto make_dlg_ret(LONG val) noexcept
+    {
+        return std::pair<bool, LONG>(true, val);
+    }
 
   private:
     /** Utility wrapper round SendMessage to send pointers to our self */
@@ -131,3 +147,7 @@ class DockingDlgInterface
     std::wstring module_name_;
     std::wstring plugin_name_;
 };
+
+/** These provide easier to remember ways of returning an appropriate result from run_dlgproc */
+constexpr std::pair<bool, LONG> Dlg_Ret_Unhandled{false, 0};
+constexpr std::pair<bool, LONG> Dlg_Ret_True{true, TRUE};

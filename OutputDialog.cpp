@@ -6,6 +6,7 @@
 #include "SystemError.h"
 
 #include <CommCtrl.h>
+#include <WinUser.h>
 
 #include <algorithm>
 #include <cstddef>
@@ -36,9 +37,9 @@ Linter::OutputDialog::OutputDialog(HANDLE module_handle, HWND npp_win, int dlg_n
       tab_bar_(GetDlgItem(IDC_TABBAR)),
       current_tab_(&tab_definitions_.at(0)),
       tab_definitions_({
-          TabDefinition{L"Lint Errors",   IDC_LIST_LINTS,  Lint_Error, *this  },
+          TabDefinition{L"Lint Errors",   IDC_LIST_LINTS,  Lint_Error,   *this},
           TabDefinition{L"System Errors", IDC_LIST_OUTPUT, System_Error, *this}
-      })
+})
 {
     initialise_dialogue();
     for (auto &tab : tab_definitions_)
@@ -96,7 +97,7 @@ void Linter::OutputDialog::select_previous_lint() noexcept
     select_lint(-1);
 }
 
-void Linter::OutputDialog::resize() noexcept
+void Linter::OutputDialog::window_pos_changed() noexcept
 {
     RECT rc;
     getClientRect(rc);
@@ -118,7 +119,7 @@ void Linter::OutputDialog::resize() noexcept
  *
  * Some messages have special returns though.
  */
-INT_PTR CALLBACK Linter::OutputDialog::run_dlgProc(UINT message, WPARAM wParam, LPARAM lParam)
+std::pair<bool, LONG> Linter::OutputDialog::run_dlgProc(UINT message, WPARAM wParam, LPARAM lParam)
 {
     switch (message)
     {
@@ -129,7 +130,7 @@ INT_PTR CALLBACK Linter::OutputDialog::run_dlgProc(UINT message, WPARAM wParam, 
             {
                 case Context_Copy_Lints:
                     copy_to_clipboard();
-                    return TRUE;
+                    return Dlg_Ret_True;
 
                 case Context_Show_Source_Line:
                 {
@@ -138,12 +139,12 @@ INT_PTR CALLBACK Linter::OutputDialog::run_dlgProc(UINT message, WPARAM wParam, 
                     {
                         show_selected_lint(item);
                     }
-                    return TRUE;
+                    return Dlg_Ret_True;
                 }
 
                 case Context_Select_All:
                     ListView_SetItemState(current_list_view_, -1, LVIS_SELECTED, LVIS_SELECTED);
-                    return TRUE;
+                    return Dlg_Ret_True;
 
                 default:
                     break;
@@ -153,7 +154,7 @@ INT_PTR CALLBACK Linter::OutputDialog::run_dlgProc(UINT message, WPARAM wParam, 
 
         case WM_NOTIFY:
         {
-            NMHDR const *notify_header = cast_to<LPNMHDR, LPARAM>(lParam);
+            auto const notify_header = cast_to<NMHDR const *, LPARAM>(lParam);
             switch (notify_header->code)
             {
                 case LVN_KEYDOWN:
@@ -163,12 +164,12 @@ INT_PTR CALLBACK Linter::OutputDialog::run_dlgProc(UINT message, WPARAM wParam, 
                         if (pnkd->wVKey == 'A' && (::GetKeyState(VK_CONTROL) & 0x8000U) != 0)
                         {
                             ListView_SetItemState(current_list_view_, -1, LVIS_SELECTED, LVIS_SELECTED);
-                            return TRUE;
+                            return Dlg_Ret_True;
                         }
                         else if (pnkd->wVKey == 'C' && (::GetKeyState(VK_CONTROL) & 0x8000U) != 0)
                         {
                             copy_to_clipboard();
-                            return TRUE;
+                            return Dlg_Ret_True;
                         }
                     }
                     break;
@@ -176,20 +177,80 @@ INT_PTR CALLBACK Linter::OutputDialog::run_dlgProc(UINT message, WPARAM wParam, 
                 case NM_DBLCLK:
                     if (notify_header->idFrom == current_tab_->list_view_id)
                     {
-                        NMITEMACTIVATE const *lpnmitem = cast_to<LPNMITEMACTIVATE, LPARAM>(lParam);
-                        int const selected_item = lpnmitem->iItem;
+                        auto const item_activate = cast_to<NMITEMACTIVATE const *, LPARAM>(lParam);
+                        int const selected_item = item_activate->iItem;
                         if (selected_item != -1)
                         {
                             show_selected_lint(selected_item);
                         }
                     }
-                    return TRUE;
+                    return Dlg_Ret_True;
+
+                case NM_CUSTOMDRAW:
+                    if (notify_header->idFrom == current_tab_->list_view_id)
+                    {
+                        auto const custom_draw = cast_to<NMLVCUSTOMDRAW *, LPARAM>(lParam);
+                        switch (custom_draw->nmcd.dwDrawStage)
+                        {
+                            case CDDS_PREPAINT:
+                                return make_dlg_ret(CDRF_NOTIFYITEMDRAW);
+
+                            case CDDS_ITEMPREPAINT:
+                                current_item_ = static_cast<DWORD>(custom_draw->nmcd.dwItemSpec);
+                                return make_dlg_ret(CDRF_NOTIFYSUBITEMDRAW);
+
+                            case CDDS_ITEMPREPAINT | CDDS_SUBITEM:
+                            {
+                                if (custom_draw->iSubItem == Column_Message)
+                                {
+#if __cplusplus >= 202002L
+                                    LVITEM const item{.mask = LVIF_PARAM, .iItem = row};
+#else
+                                    LVITEM item{};
+                                    item.iItem = current_item_;
+                                    item.mask = LVIF_PARAM;
+#endif
+                                    ListView_GetItem(notify_header->hwndFrom, &item);
+
+                                    if (static_cast<std::size_t>(item.lParam) >= current_tab_->errors.size())
+                                    {
+                                        //For reasons I don't entirely understand, windows paints an entry for
+                                        //a line that doesn't exist. So don't do anything for that.
+                                        break;
+                                    }
+
+                                    // Now we colour the text according to the severity level.
+                                    auto const &lint_error = current_tab_->errors[item.lParam];
+                                    if (lint_error.m_severity == L"warning")
+                                    {
+                                        custom_draw->clrText = RGB(255, 127, 0);    //Orange
+                                    }
+                                    else if (lint_error.m_severity == L"error")
+                                    {
+                                        custom_draw->clrText = RGB(255, 0, 0);    // Red
+                                    }
+                                    else
+                                    {
+                                        custom_draw->clrText = RGB(0, 0, 0);    // Black
+                                    }
+
+                                    // Tell Windows to paint the control itself.
+                                    return make_dlg_ret(CDRF_DODEFAULT);
+                                }
+                                break;
+                            }
+
+                            default:
+                                break;
+                        }
+                        break;
+                    }
 
                 case TCN_SELCHANGE:
                     if (notify_header->idFrom == IDC_TABBAR)
                     {
                         selected_tab_changed();
-                        return TRUE;
+                        return Dlg_Ret_True;
                     }
                     break;
 
@@ -243,7 +304,7 @@ INT_PTR CALLBACK Linter::OutputDialog::run_dlgProc(UINT message, WPARAM wParam, 
 
             // show context menu
             TrackPopupMenu(menu, 0, point.x, point.y, 0, get_handle(), nullptr);
-            return TRUE;
+            return Dlg_Ret_True;
         }
         break;
 
@@ -595,7 +656,7 @@ int CALLBACK Linter::OutputDialog::sort_call_function(LPARAM row1_index, LPARAM 
     return res;
 }
 
-Linter::OutputDialog::TabDefinition::TabDefinition(wchar_t const *name, UINT id, Tab tab, DockingDlgInterface const & parent)
+Linter::OutputDialog::TabDefinition::TabDefinition(wchar_t const *name, UINT id, Tab tab, DockingDlgInterface const &parent)
     : tab_name(name), list_view_id(id), tab(tab), list_view(parent.GetDlgItem(id))
 {
     if (list_view == nullptr)
