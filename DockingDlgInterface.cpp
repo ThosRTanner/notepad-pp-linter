@@ -117,7 +117,7 @@ HWND DockingDlgInterface::GetDlgItem(int item) const noexcept
 //We can't make this noexcept as it'd mean child classes would unnecessarily need to be noexcept.
 //The caller will handle exceptions correctly.
 #pragma warning(suppress : 26440)
-std::pair<bool, LONG> DockingDlgInterface::run_dlgProc(UINT message, WPARAM, LPARAM lParam)
+std::optional<LONG> DockingDlgInterface::run_dlgProc(UINT message, WPARAM, LPARAM lParam)
 {
     switch (message)
     {
@@ -131,16 +131,16 @@ std::pair<bool, LONG> DockingDlgInterface::run_dlgProc(UINT message, WPARAM, LPA
                 {
                     case DMN_CLOSE:
                         is_closed_ = true;
-                        return Dlg_Ret_True;
+                        return TRUE;
 
                     case DMN_DOCK:
                         docked_pos_ = HIWORD(pnmh->code);
                         is_floating_ = false;
-                        return Dlg_Ret_True;
+                        return TRUE;
 
                     case DMN_FLOAT:
                         is_floating_ = true;
-                        return Dlg_Ret_True;
+                        return TRUE;
 
                     //These are defined in DockingResource.h but I've not managed
                     //to trigger them.
@@ -159,15 +159,10 @@ std::pair<bool, LONG> DockingDlgInterface::run_dlgProc(UINT message, WPARAM, LPA
             ::RedrawWindow(dialogue_window_, nullptr, nullptr, RDW_INVALIDATE);
             break;
 
-        case WM_WINDOWPOSCHANGED:
-            //This must return FALSE (unhandled)
-            window_pos_changed();
-            break;
-
         default:
             break;
     }
-    return Dlg_Ret_Unhandled;
+    return std::nullopt;
 }
 
 void DockingDlgInterface::SendDialogInfoToNPP(int msg, int wParam) noexcept
@@ -187,11 +182,11 @@ INT_PTR CALLBACK DockingDlgInterface::dlgProc(HWND hwnd, UINT message, WPARAM wP
     try
     {
         auto const retval = instance->run_dlgProc(message, wParam, lParam);
-        if (retval.first)
+        if (retval)
         {
-            SetWindowLongPtr(hwnd, DWLP_MSGRESULT, retval.second);
+            SetWindowLongPtr(hwnd, DWLP_MSGRESULT, *retval);
         }
-        return retval.first;
+        return static_cast<bool>(retval);
     }
     catch (std::exception const &e)
     {

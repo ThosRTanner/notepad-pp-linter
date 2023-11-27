@@ -28,13 +28,13 @@ enum
 
 namespace
 {
-    HANDLE module_handle;
+    HINSTANCE module_handle;
     constexpr auto PLUGIN_NAME = L"Linter";
     TCHAR iniFilePath[MAX_PATH];
 
     NppData nppData;
 
-    void pluginInit(HANDLE module) noexcept
+    void pluginInit(HINSTANCE module) noexcept
     {
         module_handle = module;
         timers = CreateTimerQueue();
@@ -96,7 +96,9 @@ namespace
 
 }    // namespace
 
-BOOL APIENTRY DllMain(HANDLE hModule, DWORD reasonForCall, LPVOID /*lpReserved*/) noexcept
+//int __stdcall DllMain(_In_ void *hModule, _In_ unsigned long reasonForCall, _In_opt_ void *) noexcept
+//BOOL APIENTRY DllMain(HANDLE hModule, DWORD reasonForCall, LPVOID /*lpReserved*/) noexcept
+BOOL WINAPI DllMain(HINSTANCE hModule, DWORD reasonForCall, LPVOID /*lpvReserved*/) noexcept
 {
     switch (reasonForCall)
     {

@@ -32,8 +32,8 @@ enum Context_Menu_Entry
     Context_Select_All
 };
 
-Linter::OutputDialog::OutputDialog(HANDLE module_handle, HWND npp_win, int dlg_num)
-    : DockingDlgInterface(IDD_OUTPUT, static_cast<HINSTANCE>(module_handle), npp_win),
+Linter::OutputDialog::OutputDialog(HINSTANCE module_handle, HWND npp_win, int dlg_num)
+    : DockingDlgInterface(IDD_OUTPUT, module_handle, npp_win),
       tab_bar_(GetDlgItem(IDC_TABBAR)),
       current_tab_(&tab_definitions_.at(0)),
       tab_definitions_({
@@ -50,8 +50,8 @@ Linter::OutputDialog::OutputDialog(HANDLE module_handle, HWND npp_win, int dlg_n
 
     register_dialogue(dlg_num,
         Position::Dock_Bottom,
-        static_cast<HICON>(::LoadImage(
-            static_cast<HINSTANCE>(module_handle), MAKEINTRESOURCE(IDI_ICON1), IMAGE_ICON, 0, 0, LR_LOADMAP3DCOLORS | LR_LOADTRANSPARENT)));
+        static_cast<HICON>(
+            ::LoadImage(module_handle, MAKEINTRESOURCE(IDI_ICON1), IMAGE_ICON, 0, 0, LR_LOADMAP3DCOLORS | LR_LOADTRANSPARENT)));
 }
 
 Linter::OutputDialog::~OutputDialog()
@@ -97,21 +97,6 @@ void Linter::OutputDialog::select_previous_lint() noexcept
     select_lint(-1);
 }
 
-void Linter::OutputDialog::window_pos_changed() noexcept
-{
-    RECT rc;
-    getClientRect(rc);
-
-    ::MoveWindow(tab_bar_, rc.left, rc.top, rc.right - rc.left, rc.bottom - rc.top, TRUE);
-
-    TabCtrl_AdjustRect(tab_bar_, FALSE, &rc);
-    for (auto const &tab : tab_definitions_)
-    {
-        ::SetWindowPos(tab.list_view, tab_bar_, rc.left, rc.top, rc.right - rc.left, rc.bottom - rc.top, 0);
-        ListView_SetColumnWidth(tab.list_view, Column_Message, LVSCW_AUTOSIZE);
-    }
-}
-
 /** This is a strange function defined by windows.
  * 
  * The return value is basically TRUE if you've handled it, FALSE otherwise. If we don't
@@ -119,7 +104,7 @@ void Linter::OutputDialog::window_pos_changed() noexcept
  *
  * Some messages have special returns though.
  */
-std::pair<bool, LONG> Linter::OutputDialog::run_dlgProc(UINT message, WPARAM wParam, LPARAM lParam)
+std::optional<LONG> Linter::OutputDialog::run_dlgProc(UINT message, WPARAM wParam, LPARAM lParam)
 {
     switch (message)
     {
@@ -130,7 +115,7 @@ std::pair<bool, LONG> Linter::OutputDialog::run_dlgProc(UINT message, WPARAM wPa
             {
                 case Context_Copy_Lints:
                     copy_to_clipboard();
-                    return Dlg_Ret_True;
+                    return TRUE;
 
                 case Context_Show_Source_Line:
                 {
@@ -139,12 +124,12 @@ std::pair<bool, LONG> Linter::OutputDialog::run_dlgProc(UINT message, WPARAM wPa
                     {
                         show_selected_lint(item);
                     }
-                    return Dlg_Ret_True;
+                    return TRUE;
                 }
 
                 case Context_Select_All:
                     ListView_SetItemState(current_list_view_, -1, LVIS_SELECTED, LVIS_SELECTED);
-                    return Dlg_Ret_True;
+                    return TRUE;
 
                 default:
                     break;
@@ -164,12 +149,12 @@ std::pair<bool, LONG> Linter::OutputDialog::run_dlgProc(UINT message, WPARAM wPa
                         if (pnkd->wVKey == 'A' && (::GetKeyState(VK_CONTROL) & 0x8000U) != 0)
                         {
                             ListView_SetItemState(current_list_view_, -1, LVIS_SELECTED, LVIS_SELECTED);
-                            return Dlg_Ret_True;
+                            return TRUE;
                         }
                         else if (pnkd->wVKey == 'C' && (::GetKeyState(VK_CONTROL) & 0x8000U) != 0)
                         {
                             copy_to_clipboard();
-                            return Dlg_Ret_True;
+                            return TRUE;
                         }
                     }
                     break;
@@ -183,8 +168,9 @@ std::pair<bool, LONG> Linter::OutputDialog::run_dlgProc(UINT message, WPARAM wPa
                         {
                             show_selected_lint(selected_item);
                         }
+                        return TRUE;
                     }
-                    return Dlg_Ret_True;
+                    break;
 
                 case NM_CUSTOMDRAW:
                     if (notify_header->idFrom == current_tab_->list_view_id)
@@ -193,14 +179,13 @@ std::pair<bool, LONG> Linter::OutputDialog::run_dlgProc(UINT message, WPARAM wPa
                         switch (custom_draw->nmcd.dwDrawStage)
                         {
                             case CDDS_PREPAINT:
-                                return make_dlg_ret(CDRF_NOTIFYITEMDRAW);
+                                return CDRF_NOTIFYITEMDRAW;
 
                             case CDDS_ITEMPREPAINT:
                                 current_item_ = static_cast<int>(custom_draw->nmcd.dwItemSpec);
-                                return make_dlg_ret(CDRF_NOTIFYSUBITEMDRAW);
+                                return CDRF_NOTIFYSUBITEMDRAW;
 
                             case CDDS_ITEMPREPAINT | CDDS_SUBITEM:
-                            {
                                 if (custom_draw->iSubItem == Column_Message)
                                 {
 #if __cplusplus >= 202002L
@@ -235,10 +220,9 @@ std::pair<bool, LONG> Linter::OutputDialog::run_dlgProc(UINT message, WPARAM wPa
                                     }
 
                                     // Tell Windows to paint the control itself.
-                                    return make_dlg_ret(CDRF_DODEFAULT);
+                                    return CDRF_DODEFAULT;
                                 }
                                 break;
-                            }
 
                             default:
                                 break;
@@ -250,7 +234,7 @@ std::pair<bool, LONG> Linter::OutputDialog::run_dlgProc(UINT message, WPARAM wPa
                     if (notify_header->idFrom == IDC_TABBAR)
                     {
                         selected_tab_changed();
-                        return Dlg_Ret_True;
+                        return TRUE;
                     }
                     break;
 
@@ -304,9 +288,13 @@ std::pair<bool, LONG> Linter::OutputDialog::run_dlgProc(UINT message, WPARAM wPa
 
             // show context menu
             TrackPopupMenu(menu, 0, point.x, point.y, 0, get_handle(), nullptr);
-            return Dlg_Ret_True;
+            return TRUE;
         }
-        break;
+
+        case WM_WINDOWPOSCHANGED:
+            //This must return FALSE (unhandled)
+            window_pos_changed();
+            return FALSE;
 
         default:
             break;
@@ -370,6 +358,21 @@ void Linter::OutputDialog::selected_tab_changed() noexcept
     for (auto const &tab : tab_definitions_)
     {
         ShowWindow(tab.list_view, &tab == current_tab_ ? SW_SHOW : SW_HIDE);
+    }
+}
+
+void Linter::OutputDialog::window_pos_changed() noexcept
+{
+    RECT rc;
+    getClientRect(rc);
+
+    ::MoveWindow(tab_bar_, rc.left, rc.top, rc.right - rc.left, rc.bottom - rc.top, TRUE);
+
+    TabCtrl_AdjustRect(tab_bar_, FALSE, &rc);
+    for (auto const &tab : tab_definitions_)
+    {
+        ::SetWindowPos(tab.list_view, tab_bar_, rc.left, rc.top, rc.right - rc.left, rc.bottom - rc.top, 0);
+        ListView_SetColumnWidth(tab.list_view, Column_Message, LVSCW_AUTOSIZE);
     }
 }
 

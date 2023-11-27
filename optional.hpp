@@ -694,12 +694,12 @@ union storage_t
 
 #if optional_CPP11_OR_GREATER
 
-    explicit storage_t( value_type && v )
+    explicit storage_t(value_type &&v) optional_noexcept
     {
         construct_value( std::move( v ) );
     }
 
-    void construct_value( value_type && v )
+    void construct_value( value_type && v ) optional_noexcept
     {
         ::new( value_ptr() ) value_type( std::move( v ) );
     }
@@ -718,7 +718,7 @@ union storage_t
 
 #endif
 
-    void destruct_value()
+    void destruct_value() optional_noexcept
     {
         value_ptr()->~T();
     }
@@ -728,7 +728,7 @@ union storage_t
         return as<value_type>();
     }
 
-    value_type * value_ptr()
+    value_type *value_ptr() optional_noexcept
     {
         return as<value_type>();
     }
@@ -738,7 +738,7 @@ union storage_t
         return * value_ptr();
     }
 
-    value_type & value() optional_ref_qual
+    value_type &value() optional_ref_qual optional_noexcept
     {
         return * value_ptr();
     }
@@ -790,15 +790,15 @@ union storage_t
     }
 
     template <typename U>
-    optional_nodiscard U * as()
+    optional_nodiscard U * as() optional_noexcept
     {
-        return reinterpret_cast<U*>( ptr() );
+        return static_cast<U*>( ptr() );
     }
 
     template <typename U>
-    optional_nodiscard U const * as() const
+    optional_nodiscard U const *as() const optional_noexcept
     {
-        return reinterpret_cast<U const *>( ptr() );
+        return static_cast<U const *>(ptr());
     }
 };
 
@@ -826,7 +826,7 @@ const nullopt_t nullopt(( nullopt_t::init() ));
 class bad_optional_access : public std::logic_error
 {
 public:
-  explicit bad_optional_access()
+    explicit bad_optional_access()
   : logic_error( "bad optional access" ) {}
 };
 

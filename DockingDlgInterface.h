@@ -16,7 +16,16 @@
 
 #pragma once
 
-#include <wtypes.h>
+#if __cplusplus >= 201703L
+#include <optional>
+#else
+#include "optional.hpp"
+namespace std
+{
+    using nonstd::nullopt;
+    using nonstd::optional;
+}    // namespace std
+#endif
 
 #include <string>
 
@@ -105,33 +114,19 @@ class DockingDlgInterface
     }
 
   protected:
-    /** Called when dialogue is being moved or resized.
-     * 
-     * You'll need to implement this to move things around.
-     */
-    virtual void window_pos_changed() noexcept = 0;
-
     /** Implement this to handle messages.
      *
-     * You return a std::pair<bool, LONG> so you don't have to remember to call
-     * SetWindowLongPtr, the caller will do that for you. And yes, clearly a LONG
-     * isn't a LONGPTR, but so far I haven't seen any messages that actually return
+     * Return std::nullopt to (to return FALSE to windows dialog processing), or a value to be set with
+     * SetWindowLongPtr (in which case TRUE will be returned).
+     *
+     * And yes, clearly a LONG isn't a LONGPTR, but so far I haven't seen any messages that actually return
      * something that is a pointer.
      *
      * If you aren't handling the message, you need to call the base class version of this.
      * 
      * See below for some helpful return values.
      */
-    virtual std::pair<bool, LONG> run_dlgProc(UINT message, WPARAM, LPARAM lParam);
-
-    inline auto make_dlg_ret(LONG val) noexcept
-    {
-        return std::pair<bool, LONG>(true, val);
-    }
-
-    /** These provide easier to remember ways of returning an appropriate result from run_dlgproc */
-    static constexpr std::pair<bool, LONG> Dlg_Ret_Unhandled{false, 0};
-    static constexpr std::pair<bool, LONG> Dlg_Ret_True{true, TRUE};
+    virtual std::optional<LONG> run_dlgProc(UINT message, WPARAM, LPARAM lParam);
 
   private:
     /** Utility wrapper round SendMessage to send pointers to our self */

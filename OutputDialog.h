@@ -19,7 +19,7 @@ namespace Linter
     class OutputDialog : protected DockingDlgInterface
     {
       public:
-        OutputDialog(HANDLE module, HWND npp, int dlg_num);
+        OutputDialog(HINSTANCE module, HWND npp, int dlg_num);
 
         OutputDialog(OutputDialog const &) = delete;
         OutputDialog(OutputDialog &&) = delete;
@@ -46,9 +46,7 @@ namespace Linter
         void select_previous_lint() noexcept;
 
       protected:
-        void window_pos_changed() noexcept override;
-
-        std::pair<bool, LONG> run_dlgProc(UINT message, WPARAM wParam, LPARAM lParam) override;
+        std::optional<LONG> run_dlgProc(UINT message, WPARAM wParam, LPARAM lParam) override;
 
       private:
         HWND tab_bar_;
@@ -90,6 +88,9 @@ namespace Linter
 
         /** Selected tab has been changed. Display new one */
         void selected_tab_changed() noexcept;
+
+        /** Window has changed size, position, layer */
+        void window_pos_changed() noexcept;
 
         /** Update the counts in the tab bar */
         void update_displayed_counts();
