@@ -6,7 +6,9 @@
 #include <array>
 #include <vector>
 
-struct NppData;
+//struct NppData;
+//struct NMLVCUSTOMDRAW;
+struct tagNMLVCUSTOMDRAW;
 
 namespace Linter
 {
@@ -85,6 +87,15 @@ namespace Linter
 
         /** Initialise the specified tab */
         void initialise_tab(TabDefinition &tab) noexcept;
+
+        /** Process WM_COMMAND message */
+        std::optional<LONG> process_dlg_command(WPARAM wParam);
+
+        /** Process WM_NOTIFY message */
+        std::optional<LONG> process_dlg_notify(LPARAM lParam);
+
+        /** Process NM_CUSTOMDRAW notification */
+        std::optional<LONG> process_custom_draw(tagNMLVCUSTOMDRAW *) noexcept;
 
         /** Selected tab has been changed. Display new one */
         void selected_tab_changed() noexcept;

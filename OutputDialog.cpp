@@ -106,143 +106,16 @@ void Linter::OutputDialog::select_previous_lint() noexcept
  */
 std::optional<LONG> Linter::OutputDialog::run_dlgProc(UINT message, WPARAM wParam, LPARAM lParam)
 {
+    std::optional<LONG> result;
     switch (message)
     {
         case WM_COMMAND:
-        {
-            //Context menu responses
-            switch (LOWORD(wParam))
-            {
-                case Context_Copy_Lints:
-                    copy_to_clipboard();
-                    return TRUE;
-
-                case Context_Show_Source_Line:
-                {
-                    int const item = ListView_GetNextItem(current_list_view_, -1, LVIS_FOCUSED | LVIS_SELECTED);
-                    if (item != -1)
-                    {
-                        show_selected_lint(item);
-                    }
-                    return TRUE;
-                }
-
-                case Context_Select_All:
-                    ListView_SetItemState(current_list_view_, -1, LVIS_SELECTED, LVIS_SELECTED);
-                    return TRUE;
-
-                default:
-                    break;
-            }
-        }
-        break;
+            result = process_dlg_command(wParam);
+            break;
 
         case WM_NOTIFY:
-        {
-            auto const notify_header = cast_to<NMHDR const *, LPARAM>(lParam);
-            switch (notify_header->code)
-            {
-                case LVN_KEYDOWN:
-                    if (notify_header->idFrom == current_tab_->list_view_id)
-                    {
-                        NMLVKEYDOWN const *pnkd = cast_to<LPNMLVKEYDOWN, LPARAM>(lParam);
-                        if (pnkd->wVKey == 'A' && (::GetKeyState(VK_CONTROL) & 0x8000U) != 0)
-                        {
-                            ListView_SetItemState(current_list_view_, -1, LVIS_SELECTED, LVIS_SELECTED);
-                            return TRUE;
-                        }
-                        else if (pnkd->wVKey == 'C' && (::GetKeyState(VK_CONTROL) & 0x8000U) != 0)
-                        {
-                            copy_to_clipboard();
-                            return TRUE;
-                        }
-                    }
-                    break;
-
-                case NM_DBLCLK:
-                    if (notify_header->idFrom == current_tab_->list_view_id)
-                    {
-                        auto const item_activate = cast_to<NMITEMACTIVATE const *, LPARAM>(lParam);
-                        int const selected_item = item_activate->iItem;
-                        if (selected_item != -1)
-                        {
-                            show_selected_lint(selected_item);
-                        }
-                        return TRUE;
-                    }
-                    break;
-
-                case NM_CUSTOMDRAW:
-                    if (notify_header->idFrom == current_tab_->list_view_id)
-                    {
-                        auto const custom_draw = cast_to<NMLVCUSTOMDRAW *, LPARAM>(lParam);
-                        switch (custom_draw->nmcd.dwDrawStage)
-                        {
-                            case CDDS_PREPAINT:
-                                return CDRF_NOTIFYITEMDRAW;
-
-                            case CDDS_ITEMPREPAINT:
-                                current_item_ = static_cast<int>(custom_draw->nmcd.dwItemSpec);
-                                return CDRF_NOTIFYSUBITEMDRAW;
-
-                            case CDDS_ITEMPREPAINT | CDDS_SUBITEM:
-                                if (custom_draw->iSubItem == Column_Message)
-                                {
-#if __cplusplus >= 202002L
-                                    LVITEM const item{.mask = LVIF_PARAM, .iItem = current_item_};
-#else
-                                    LVITEM item{};
-                                    item.iItem = current_item_;
-                                    item.mask = LVIF_PARAM;
-#endif
-                                    ListView_GetItem(notify_header->hwndFrom, &item);
-
-                                    if (static_cast<std::size_t>(item.lParam) >= current_tab_->errors.size())
-                                    {
-                                        //For reasons I don't entirely understand, windows paints an entry for
-                                        //a line that doesn't exist. So don't do anything for that.
-                                        break;
-                                    }
-
-                                    // Now we colour the text according to the severity level.
-                                    auto const &lint_error = current_tab_->errors[item.lParam];
-                                    if (lint_error.m_severity == L"warning")
-                                    {
-                                        custom_draw->clrText = RGB(255, 127, 0);    //Orange
-                                    }
-                                    else if (lint_error.m_severity == L"error")
-                                    {
-                                        custom_draw->clrText = RGB(255, 0, 0);    // Red
-                                    }
-                                    else
-                                    {
-                                        custom_draw->clrText = RGB(0, 0, 0);    // Black
-                                    }
-
-                                    // Tell Windows to paint the control itself.
-                                    return CDRF_DODEFAULT;
-                                }
-                                break;
-
-                            default:
-                                break;
-                        }
-                    }
-                    break;
-
-                case TCN_SELCHANGE:
-                    if (notify_header->idFrom == IDC_TABBAR)
-                    {
-                        selected_tab_changed();
-                        return TRUE;
-                    }
-                    break;
-
-                default:
-                    break;
-            }
-        }
-        break;
+            result = process_dlg_notify(lParam);
+            break;
 
         case WM_CONTEXTMENU:
         {
@@ -292,16 +165,15 @@ std::optional<LONG> Linter::OutputDialog::run_dlgProc(UINT message, WPARAM wPara
         }
 
         case WM_WINDOWPOSCHANGED:
-            //This must return FALSE (unhandled)
+            //This must return as if it was unhandled
             window_pos_changed();
-            return FALSE;
+            return std::nullopt;
 
         default:
             break;
     }
 
-    //Don't recognise the message. Pass it to the base class
-    return DockingDlgInterface::run_dlgProc(message, wParam, lParam);
+    return result ? result : DockingDlgInterface::run_dlgProc(message, wParam, lParam);
 }
 
 void Linter::OutputDialog::initialise_dialogue() noexcept
@@ -349,6 +221,146 @@ void Linter::OutputDialog::initialise_tab(TabDefinition &tab) noexcept
     lvc.cx = 500;
     lvc.fmt = LVCFMT_LEFT;
     ListView_InsertColumn(list_view, lvc.iSubItem, &lvc);
+}
+
+std::optional<LONG> Linter::OutputDialog::process_dlg_command(WPARAM wParam)
+{
+    switch (LOWORD(wParam))
+    {
+        case Context_Copy_Lints:
+            copy_to_clipboard();
+            return TRUE;
+
+        case Context_Show_Source_Line:
+        {
+            int const item = ListView_GetNextItem(current_list_view_, -1, LVIS_FOCUSED | LVIS_SELECTED);
+            if (item != -1)
+            {
+                show_selected_lint(item);
+            }
+            return TRUE;
+        }
+
+        case Context_Select_All:
+            ListView_SetItemState(current_list_view_, -1, LVIS_SELECTED, LVIS_SELECTED);
+            return TRUE;
+
+        default:
+            break;
+    }
+    return std::nullopt;
+}
+
+std::optional<LONG> Linter::OutputDialog::process_dlg_notify(LPARAM lParam)
+{
+    auto const notify_header = cast_to<NMHDR const *, LPARAM>(lParam);
+    switch (notify_header->code)
+    {
+        case LVN_KEYDOWN:
+            if (notify_header->idFrom == current_tab_->list_view_id)
+            {
+                NMLVKEYDOWN const *pnkd = cast_to<LPNMLVKEYDOWN, LPARAM>(lParam);
+                if (pnkd->wVKey == 'A' && (::GetKeyState(VK_CONTROL) & 0x8000U) != 0)
+                {
+                    ListView_SetItemState(current_list_view_, -1, LVIS_SELECTED, LVIS_SELECTED);
+                    return TRUE;
+                }
+                else if (pnkd->wVKey == 'C' && (::GetKeyState(VK_CONTROL) & 0x8000U) != 0)
+                {
+                    copy_to_clipboard();
+                    return TRUE;
+                }
+            }
+            break;
+
+        case NM_DBLCLK:
+            if (notify_header->idFrom == current_tab_->list_view_id)
+            {
+                auto const item_activate = cast_to<NMITEMACTIVATE const *, LPARAM>(lParam);
+                int const selected_item = item_activate->iItem;
+                if (selected_item != -1)
+                {
+                    show_selected_lint(selected_item);
+                }
+                return TRUE;
+            }
+            break;
+
+        case NM_CUSTOMDRAW:
+            if (notify_header->idFrom == current_tab_->list_view_id)
+            {
+                return process_custom_draw(cast_to<NMLVCUSTOMDRAW *, LPARAM>(lParam));
+            }
+            break;
+
+        case TCN_SELCHANGE:
+            if (notify_header->idFrom == IDC_TABBAR)
+            {
+                selected_tab_changed();
+                return TRUE;
+            }
+            break;
+
+        default:
+            break;
+    }
+    return std::nullopt;
+}
+
+std::optional<LONG> Linter::OutputDialog::process_custom_draw(NMLVCUSTOMDRAW *custom_draw) noexcept
+{
+    switch (custom_draw->nmcd.dwDrawStage)
+    {
+        case CDDS_PREPAINT:
+            return CDRF_NOTIFYITEMDRAW;
+
+        case CDDS_ITEMPREPAINT:
+            current_item_ = static_cast<int>(custom_draw->nmcd.dwItemSpec);
+            return CDRF_NOTIFYSUBITEMDRAW;
+
+        case CDDS_ITEMPREPAINT | CDDS_SUBITEM:
+            if (custom_draw->iSubItem == Column_Message)
+            {
+#if __cplusplus >= 202002L
+                LVITEM const item{.mask = LVIF_PARAM, .iItem = current_item_};
+#else
+                LVITEM item{};
+                item.iItem = current_item_;
+                item.mask = LVIF_PARAM;
+#endif
+                ListView_GetItem(custom_draw->nmcd.hdr.hwndFrom, &item);
+
+                if (static_cast<std::size_t>(item.lParam) >= current_tab_->errors.size())
+                {
+                    //For reasons I don't entirely understand, windows paints an entry for
+                    //a line that doesn't exist. So don't do anything for that.
+                    break;
+                }
+
+                // Now we colour the text according to the severity level.
+                auto const &lint_error = current_tab_->errors[item.lParam];
+                if (lint_error.m_severity == L"warning")
+                {
+                    custom_draw->clrText = RGB(255, 127, 0);    //Orange
+                }
+                else if (lint_error.m_severity == L"error")
+                {
+                    custom_draw->clrText = RGB(255, 0, 0);    // Red
+                }
+                else
+                {
+                    custom_draw->clrText = RGB(0, 0, 0);    // Black
+                }
+
+                // Tell Windows to paint the control itself.
+                return CDRF_DODEFAULT;
+            }
+            break;
+
+        default:
+            break;
+    }
+    return std::nullopt;
 }
 
 void Linter::OutputDialog::selected_tab_changed() noexcept
