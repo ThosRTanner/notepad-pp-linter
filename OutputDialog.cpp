@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "OutputDialog.h"
 
+#include "Clipboard.h"
 #include "plugin.h"
 #include "resource.h"
 #include "SystemError.h"
@@ -304,7 +305,7 @@ std::optional<LONG> Linter::OutputDialog::process_dlg_notify(LPARAM lParam)
     return std::nullopt;
 }
 
-std::optional<LONG> Linter::OutputDialog::process_custom_draw(NMLVCUSTOMDRAW *custom_draw) noexcept
+std::optional<LONG> Linter::OutputDialog::process_custom_draw(tagNMLVCUSTOMDRAW *custom_draw) noexcept
 {
     switch (custom_draw->nmcd.dwDrawStage)
     {
@@ -583,72 +584,6 @@ void Linter::OutputDialog::copy_to_clipboard()
     {
         return;
     }
-
-    //FIXME do i really need to recreate this every copy / paste?
-    class Clipboard
-    {
-      public:
-        explicit Clipboard(HWND self)
-        {
-            if (!::OpenClipboard(self))
-            {
-                throw SystemError("Cannot open the Clipboard");
-            }
-        }
-
-        Clipboard(Clipboard const &) = delete;
-        Clipboard(Clipboard &&) = delete;
-
-        Clipboard operator=(Clipboard const &) = delete;
-        Clipboard operator=(Clipboard &&) = delete;
-
-        ~Clipboard()
-        {
-            if (mem_handle_ != nullptr)
-            {
-                ::GlobalFree(mem_handle_);
-            }
-            ::CloseClipboard();
-        }
-
-        void empty()
-        {
-            if (!::EmptyClipboard())
-            {
-                throw SystemError("Cannot empty the Clipboard");
-            }
-        }
-
-        void copy(std::wstring const &str)
-        {
-            size_t const size = (str.size() + 1) * sizeof(TCHAR);
-            mem_handle_ = ::GlobalAlloc(GMEM_MOVEABLE, size);
-            if (mem_handle_ == nullptr)
-            {
-                throw SystemError("Cannot allocate memory for clipboard");
-            }
-
-            LPVOID lpsz = ::GlobalLock(mem_handle_);
-            if (lpsz == nullptr)
-            {
-                throw SystemError("Cannot lock memory for clipboard");
-            }
-
-            std::memcpy(lpsz, str.c_str(), size);
-
-            ::GlobalUnlock(mem_handle_);
-
-            if (::SetClipboardData(CF_UNICODETEXT, mem_handle_) == nullptr)
-            {
-                throw SystemError("Unable to set Clipboard data");
-            }
-
-            mem_handle_ = nullptr;
-        }
-
-      private:
-        HGLOBAL mem_handle_ = nullptr;
-    };
 
     Clipboard clipboard{get_handle()};
 

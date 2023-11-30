@@ -171,6 +171,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Clipboard.cpp" />
     <ClCompile Include="DockingDlgInterface.cpp" />
     <ClCompile Include="DomDocument.cpp" />
     <ClCompile Include="encoding.cpp" />
@@ -192,6 +193,7 @@
     <ClCompile Include="XmlParser.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Clipboard.h" />
     <ClInclude Include="DockingDlgInterface.h" />
     <ClInclude Include="DomDocument.h" />
     <ClInclude Include="encoding.h" />
