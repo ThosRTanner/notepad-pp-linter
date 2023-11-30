@@ -6,8 +6,6 @@
 #include <array>
 #include <vector>
 
-//struct NppData;
-//struct NMLVCUSTOMDRAW;
 struct tagNMLVCUSTOMDRAW;
 
 namespace Linter
@@ -90,6 +88,9 @@ namespace Linter
 
         /** Process WM_COMMAND message */
         std::optional<LONG> process_dlg_command(WPARAM wParam);
+
+        /** Process WM_CONTEXTMENU notification */
+        std::optional<LONG> process_dlg_context_menu(LPARAM lParam) noexcept;
 
         /** Process WM_NOTIFY message */
         std::optional<LONG> process_dlg_notify(LPARAM lParam);

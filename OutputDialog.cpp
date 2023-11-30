@@ -97,13 +97,6 @@ void Linter::OutputDialog::select_previous_lint() noexcept
     select_lint(-1);
 }
 
-/** This is a strange function defined by windows.
- * 
- * The return value is basically TRUE if you've handled it, FALSE otherwise. If we don't
- * understand the message, we hand it onto the DockingDialogInterface.
- *
- * Some messages have special returns though.
- */
 std::optional<LONG> Linter::OutputDialog::run_dlgProc(UINT message, WPARAM wParam, LPARAM lParam)
 {
     std::optional<LONG> result;
@@ -113,56 +106,13 @@ std::optional<LONG> Linter::OutputDialog::run_dlgProc(UINT message, WPARAM wPara
             result = process_dlg_command(wParam);
             break;
 
+        case WM_CONTEXTMENU:
+            result = process_dlg_context_menu(lParam);
+            break;
+
         case WM_NOTIFY:
             result = process_dlg_notify(lParam);
             break;
-
-        case WM_CONTEXTMENU:
-        {
-            // Right click in docked window.
-            // build context menu
-            HMENU menu = ::CreatePopupMenu();
-
-            int const numSelected = ListView_GetSelectedCount(current_list_view_);
-
-            if (numSelected >= 1)
-            {
-                int const iFocused = ListView_GetNextItem(current_list_view_, -1, LVIS_FOCUSED | LVIS_SELECTED);
-                if (iFocused != -1)
-                {
-                    AppendMenu(menu, MF_ENABLED, Context_Show_Source_Line, L"Show");
-                }
-            }
-
-            if (GetMenuItemCount(menu) > 0)
-            {
-                AppendMenu(menu, MF_SEPARATOR, 0, nullptr);
-            }
-
-            if (numSelected > 0)
-            {
-                AppendMenu(menu, MF_ENABLED, Context_Copy_Lints, L"Copy");
-            }
-
-            AppendMenu(menu, MF_ENABLED, Context_Select_All, L"Select All");
-
-            // determine context menu position
-#if __cplusplus >= 202002L
-            POINT point{.x = LOWORD(lParam), .y = HIWORD(lParam)};
-#else
-            POINT point{LOWORD(lParam), HIWORD(lParam)};
-#endif
-            if (point.x == 65535 || point.y == 65535)
-            {
-                point.x = 0;
-                point.y = 0;
-                ClientToScreen(current_list_view_, &point);
-            }
-
-            // show context menu
-            TrackPopupMenu(menu, 0, point.x, point.y, 0, get_handle(), nullptr);
-            return TRUE;
-        }
 
         case WM_WINDOWPOSCHANGED:
             //This must return as if it was unhandled
@@ -249,6 +199,53 @@ std::optional<LONG> Linter::OutputDialog::process_dlg_command(WPARAM wParam)
             break;
     }
     return std::nullopt;
+}
+
+std::optional<LONG> Linter::OutputDialog::process_dlg_context_menu(LPARAM lParam) noexcept
+{
+    // Right click in docked window.
+    // build context menu
+    HMENU menu = ::CreatePopupMenu();
+
+    int const numSelected = ListView_GetSelectedCount(current_list_view_);
+
+    if (numSelected >= 1)
+    {
+        int const iFocused = ListView_GetNextItem(current_list_view_, -1, LVIS_FOCUSED | LVIS_SELECTED);
+        if (iFocused != -1)
+        {
+            AppendMenu(menu, MF_ENABLED, Context_Show_Source_Line, L"Show");
+        }
+    }
+
+    if (GetMenuItemCount(menu) > 0)
+    {
+        AppendMenu(menu, MF_SEPARATOR, 0, nullptr);
+    }
+
+    if (numSelected > 0)
+    {
+        AppendMenu(menu, MF_ENABLED, Context_Copy_Lints, L"Copy");
+    }
+
+    AppendMenu(menu, MF_ENABLED, Context_Select_All, L"Select All");
+
+    // determine context menu position
+#if __cplusplus >= 202002L
+    POINT point{.x = LOWORD(lParam), .y = HIWORD(lParam)};
+#else
+    POINT point{LOWORD(lParam), HIWORD(lParam)};
+#endif
+    if (point.x == 65535 || point.y == 65535)
+    {
+        point.x = 0;
+        point.y = 0;
+        ClientToScreen(current_list_view_, &point);
+    }
+
+    // show context menu
+    TrackPopupMenu(menu, 0, point.x, point.y, 0, get_handle(), nullptr);
+    return TRUE;
 }
 
 std::optional<LONG> Linter::OutputDialog::process_dlg_notify(LPARAM lParam)
