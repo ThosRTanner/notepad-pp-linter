@@ -119,7 +119,7 @@ BOOL WINAPI DllMain(HINSTANCE hModule, DWORD reasonForCall, LPVOID /*lpvReserved
     return TRUE;
 }
 
-extern "C" __declspec(dllexport) void setInfo(NppData notpadPlusData) noexcept
+extern "C" __declspec(dllexport) void setInfo(NppData notpadPlusData)
 {
     try
     {
@@ -144,12 +144,12 @@ extern "C" __declspec(dllexport) void setInfo(NppData notpadPlusData) noexcept
     }
 }
 
-extern "C" __declspec(dllexport) const TCHAR *getName() noexcept
+extern "C" __declspec(dllexport) const TCHAR *getName()
 {
     return &PLUGIN_NAME[0];
 }
 
-extern "C" __declspec(dllexport) FuncItem *getFuncsArray(int *nbF) noexcept
+extern "C" __declspec(dllexport) FuncItem *getFuncsArray(int *nbF)
 {
 #if __cplusplus >= 202002L
     static ShortcutKey prev_key{._isCtrl = true, ._isShift = true, ._key = VK_F7};
@@ -164,6 +164,7 @@ extern "C" __declspec(dllexport) FuncItem *getFuncsArray(int *nbF) noexcept
     static ShortcutKey prev_key{true, false, true, VK_F7};    //ctrl-alt-shift
     static ShortcutKey next_key{true, false, true, VK_F8};
     static FuncItem funcItem[]{
+        //Note: These functions don't need to be noexcept but the resultant error message isn't great.
         {L"Edit config", editConfig, Menu_Entry_Edit_Config},
         {L"Show linter results", show_results, Menu_Entry_Show_Results},
         {L"Show previous lint", select_previous_lint, Menu_Entry_Show_Previous_Lint, false, &prev_key},
@@ -175,12 +176,12 @@ extern "C" __declspec(dllexport) FuncItem *getFuncsArray(int *nbF) noexcept
     return &funcItem[0];
 }
 
-extern "C" __declspec(dllexport) LRESULT messageProc(UINT /*Message*/, WPARAM /*wParam*/, LPARAM /*lParam*/) noexcept
+extern "C" __declspec(dllexport) LRESULT messageProc(UINT /*Message*/, WPARAM /*wParam*/, LPARAM /*lParam*/)
 {
     return TRUE;
 }
 
-extern "C" __declspec(dllexport) BOOL isUnicode() noexcept
+extern "C" __declspec(dllexport) BOOL isUnicode()
 {
     return TRUE;
 }

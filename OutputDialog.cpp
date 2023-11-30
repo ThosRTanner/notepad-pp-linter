@@ -98,9 +98,9 @@ void Linter::OutputDialog::select_previous_lint() noexcept
     select_lint(-1);
 }
 
-std::optional<LONG> Linter::OutputDialog::run_dlgProc(UINT message, WPARAM wParam, LPARAM lParam)
+std::optional<LONG_PTR> Linter::OutputDialog::run_dlgProc(UINT message, WPARAM wParam, LPARAM lParam)
 {
-    std::optional<LONG> result;
+    std::optional<LONG_PTR> result;
     switch (message)
     {
         case WM_COMMAND:
@@ -174,7 +174,7 @@ void Linter::OutputDialog::initialise_tab(TabDefinition &tab) noexcept
     ListView_InsertColumn(list_view, lvc.iSubItem, &lvc);
 }
 
-std::optional<LONG> Linter::OutputDialog::process_dlg_command(WPARAM wParam)
+std::optional<LONG_PTR> Linter::OutputDialog::process_dlg_command(WPARAM wParam)
 {
     switch (LOWORD(wParam))
     {
@@ -202,7 +202,7 @@ std::optional<LONG> Linter::OutputDialog::process_dlg_command(WPARAM wParam)
     return std::nullopt;
 }
 
-std::optional<LONG> Linter::OutputDialog::process_dlg_context_menu(LPARAM lParam) noexcept
+std::optional<LONG_PTR> Linter::OutputDialog::process_dlg_context_menu(LPARAM lParam) noexcept
 {
     // Right click in docked window.
     // build context menu
@@ -249,7 +249,7 @@ std::optional<LONG> Linter::OutputDialog::process_dlg_context_menu(LPARAM lParam
     return TRUE;
 }
 
-std::optional<LONG> Linter::OutputDialog::process_dlg_notify(LPARAM lParam)
+std::optional<LONG_PTR> Linter::OutputDialog::process_dlg_notify(LPARAM lParam)
 {
     auto const notify_header = cast_to<NMHDR const *, LPARAM>(lParam);
     switch (notify_header->code)
@@ -305,7 +305,7 @@ std::optional<LONG> Linter::OutputDialog::process_dlg_notify(LPARAM lParam)
     return std::nullopt;
 }
 
-std::optional<LONG> Linter::OutputDialog::process_custom_draw(tagNMLVCUSTOMDRAW *custom_draw) noexcept
+std::optional<LONG_PTR> Linter::OutputDialog::process_custom_draw(NMLVCUSTOMDRAW *custom_draw) noexcept
 {
     switch (custom_draw->nmcd.dwDrawStage)
     {

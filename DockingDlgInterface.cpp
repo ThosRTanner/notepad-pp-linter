@@ -117,7 +117,7 @@ HWND DockingDlgInterface::GetDlgItem(int item) const noexcept
 //We can't make this noexcept as it'd mean child classes would unnecessarily need to be noexcept.
 //The caller will handle exceptions correctly.
 #pragma warning(suppress : 26440)
-std::optional<LONG> DockingDlgInterface::run_dlgProc(UINT message, WPARAM, LPARAM lParam)
+std::optional<LONG_PTR> DockingDlgInterface::run_dlgProc(UINT message, WPARAM, LPARAM lParam)
 {
     switch (message)
     {

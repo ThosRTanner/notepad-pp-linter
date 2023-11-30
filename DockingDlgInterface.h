@@ -55,8 +55,9 @@ class DockingDlgInterface
     /** Create a docking dialogue.
      * 
      * dialogID is the resource number of the dialogue
+     * instance is the module instance (as passed to dllmain)
      */
-    DockingDlgInterface(int dialogID, HINSTANCE hInst, HWND npp_win);
+    DockingDlgInterface(int dialogID, HINSTANCE instance, HWND npp_win);
 
     DockingDlgInterface(DockingDlgInterface const &) = delete;
     DockingDlgInterface(DockingDlgInterface &&) = delete;
@@ -73,7 +74,7 @@ class DockingDlgInterface
      * dlg_num is the ID used to communicate with notepad++ (i.e. the menu entry)
      * extra is extra text to display on dialogue title.
      */
-    void register_dialogue(int dlg_num, Position pos, HICON icon = nullptr, wchar_t const *extra = nullptr) noexcept;
+    void register_dialogue(int dlg_num, Position, HICON = nullptr, wchar_t const *extra = nullptr) noexcept;
 
     virtual void updateDockingDlg() noexcept;
 
@@ -99,13 +100,13 @@ class DockingDlgInterface
     void request_redraw() const noexcept;
 
     /** Utility to get the current client rectangle */
-    void getClientRect(RECT &rc) const noexcept;
+    void getClientRect(RECT &) const noexcept;
 
     /** Utility to get the current window rectangle */
-    void getWindowRect(RECT &rc) const noexcept;
+    void getWindowRect(RECT &) const noexcept;
 
     /** Utility to get a dialogue item */
-    HWND GetDlgItem(int item) const noexcept;
+    HWND GetDlgItem(int) const noexcept;
 
     /** Utility to get hold of the current dialogue window handle */
     HWND get_handle() const noexcept
@@ -117,23 +118,21 @@ class DockingDlgInterface
     /** Implement this to handle messages.
      *
      * Return std::nullopt to (to return FALSE to windows dialog processing), or a value to be set with
-     * SetWindowLongPtr (in which case TRUE will be returned).
+     * SetWindowLongPtr (in which case TRUE will be returned). Note that some messages require you to
+     * return FALSE (std::nullopt) even if you do handle them.
      *
-     * And yes, clearly a LONG isn't a LONGPTR, but so far I haven't seen any messages that actually return
-     * something that is a pointer.
+     * If you don't handle the message, you MUST call the base class version of this.
      *
-     * If you aren't handling the message, you need to call the base class version of this.
-     * 
-     * See below for some helpful return values.
+     * message, wParam and lParam are the values passed to dlgProc by windows
      */
-    virtual std::optional<LONG> run_dlgProc(UINT message, WPARAM, LPARAM lParam);
+    virtual std::optional<LONG_PTR> run_dlgProc(UINT message, WPARAM wParam, LPARAM lParam);
 
   private:
     /** Utility wrapper round SendMessage to send pointers to our self */
     void SendDialogInfoToNPP(int msg, int wParam = 0) noexcept;
 
-    /** /Callback handler for messages */
-    static INT_PTR CALLBACK dlgProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam) noexcept;
+    /** Callback handler for messages */
+    static INT_PTR CALLBACK dlgProc(HWND, UINT message, WPARAM, LPARAM) noexcept;
 
     /** Called during construction to set up dialogue_window_ */
     HWND create_dialogue_window(int dialogID);

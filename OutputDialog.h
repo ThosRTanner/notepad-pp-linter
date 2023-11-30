@@ -6,7 +6,7 @@
 #include <array>
 #include <vector>
 
-struct tagNMLVCUSTOMDRAW;
+typedef struct tagNMLVCUSTOMDRAW NMLVCUSTOMDRAW;
 
 namespace Linter
 {
@@ -46,7 +46,7 @@ namespace Linter
         void select_previous_lint() noexcept;
 
       protected:
-        std::optional<LONG> run_dlgProc(UINT message, WPARAM wParam, LPARAM lParam) override;
+        std::optional<LONG_PTR> run_dlgProc(UINT message, WPARAM wParam, LPARAM lParam) override;
 
       private:
         HWND tab_bar_;
@@ -87,16 +87,16 @@ namespace Linter
         void initialise_tab(TabDefinition &tab) noexcept;
 
         /** Process WM_COMMAND message */
-        std::optional<LONG> process_dlg_command(WPARAM wParam);
+        std::optional<LONG_PTR> process_dlg_command(WPARAM wParam);
 
         /** Process WM_CONTEXTMENU notification */
-        std::optional<LONG> process_dlg_context_menu(LPARAM lParam) noexcept;
+        std::optional<LONG_PTR> process_dlg_context_menu(LPARAM lParam) noexcept;
 
         /** Process WM_NOTIFY message */
-        std::optional<LONG> process_dlg_notify(LPARAM lParam);
+        std::optional<LONG_PTR> process_dlg_notify(LPARAM lParam);
 
         /** Process NM_CUSTOMDRAW notification */
-        std::optional<LONG> process_custom_draw(tagNMLVCUSTOMDRAW *) noexcept;
+        std::optional<LONG_PTR> process_custom_draw(NMLVCUSTOMDRAW *) noexcept;
 
         /** Selected tab has been changed. Display new one */
         void selected_tab_changed() noexcept;
