@@ -603,7 +603,7 @@ int CALLBACK Linter::OutputDialog::sort_call_function(LPARAM row1_index, LPARAM 
     return res;
 }
 
-Linter::OutputDialog::TabDefinition::TabDefinition(wchar_t const *name, UINT id, Tab tab, DockingDlgInterface const &parent)
+Linter::OutputDialog::TabDefinition::TabDefinition(wchar_t const *name, UINT id, Tab tab, OutputDialog const &parent)
     : tab_name(name), list_view_id(id), tab(tab), list_view(parent.GetDlgItem(id))
 {
     if (list_view == nullptr)

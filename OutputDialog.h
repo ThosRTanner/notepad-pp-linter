@@ -67,7 +67,7 @@ namespace Linter
 
         struct TabDefinition
         {
-            TabDefinition(wchar_t const *name, UINT id, Tab tab, DockingDlgInterface const &parent);
+            TabDefinition(wchar_t const *name, UINT id, Tab tab, OutputDialog const &parent);
 
             wchar_t const *tab_name;
             UINT list_view_id;
@@ -89,7 +89,7 @@ namespace Linter
         /** Process WM_COMMAND message */
         std::optional<LONG_PTR> process_dlg_command(WPARAM wParam);
 
-        /** Process WM_CONTEXTMENU notification */
+        /** Process WM_CONTEXTMENU message */
         std::optional<LONG_PTR> process_dlg_context_menu(LPARAM lParam) noexcept;
 
         /** Process WM_NOTIFY message */

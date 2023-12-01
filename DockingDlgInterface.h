@@ -39,19 +39,13 @@ Target_Type cast_to(Orig_Type val) noexcept
     return reinterpret_cast<Target_Type>(val);
 }
 
+/** This is designed as a base class, you cannot instantiate this.
+ *
+ * It is recommended that you use private or protected inheritance.
+ */
 class DockingDlgInterface
 {
   public:
-    /** Where to place dialogue initially */
-    enum class Position
-    {
-        Dock_Left,
-        Dock_Right,
-        Dock_Top,
-        Dock_Bottom,
-        Floating
-    };
-
     /** Create a docking dialogue.
      * 
      * dialogID is the resource number of the dialogue
@@ -64,7 +58,17 @@ class DockingDlgInterface
     DockingDlgInterface &operator=(DockingDlgInterface const &) = delete;
     DockingDlgInterface &operator=(DockingDlgInterface &&) = delete;
 
-    virtual ~DockingDlgInterface();
+    virtual ~DockingDlgInterface() = 0;
+
+    /** Where to place dialogue initially */
+    enum class Position
+    {
+        Dock_Left,
+        Dock_Right,
+        Dock_Top,
+        Dock_Bottom,
+        Floating
+    };
 
     /** Register dialogue with Notepad++.
      * 

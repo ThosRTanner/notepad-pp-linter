@@ -4,6 +4,8 @@
 #include <msxml.h>
 
 #include <cstdio>
+#include <iomanip>
+#include <sstream>
 
 Linter::XmlDecodeException::XmlDecodeException(IXMLDOMParseError *error)
 {
@@ -17,26 +19,27 @@ Linter::XmlDecodeException::XmlDecodeException(IXMLDOMParseError *error)
     BSTR url;
     error->get_url(&url);
 
-    std::size_t pos = std::snprintf(&m_buff[0],
-        sizeof(m_buff),
-        "Invalid xml in %s at line %ld col %ld",
-        url == nullptr ? "temporary linter output file" : static_cast<char *>(static_cast<_bstr_t>(url)),
-        m_line,
-        m_column);
+    std::wostringstream msg;
+    msg << "Invalid xml in " << (url == nullptr ? L"temporary linter output file" : url)
+        << " at line " << m_line << " col " << m_column;
 
     BSTR text;
     error->get_srcText(&text);
     if (text != nullptr)
     {
-        pos += static_cast<std::size_t>(
-            std::snprintf(&m_buff[pos], sizeof(m_buff) - pos, " (near %s)", static_cast<char *>(static_cast<_bstr_t>(text))));
+        msg << " (near " << text << ")";
     }
 
     long code;
     error->get_errorCode(&code);
+
     BSTR reason;
     error->get_reason(&reason);
-    std::snprintf(&m_buff[pos], sizeof(m_buff) - pos, ": code %08lx %s", code, static_cast<char *>(static_cast<_bstr_t>(reason)));
+
+    msg << ": code 0x" << std::hex << std::setw(8) << std::setfill(L'0') << code
+        << " " << reason;
+
+    std::snprintf(&m_buff[0], sizeof(m_buff), "%s", static_cast<char *>(static_cast<_bstr_t>(msg.str().c_str())));
 }
 
 Linter::XmlDecodeException::XmlDecodeException(XmlDecodeException &&) noexcept = default;

@@ -78,7 +78,7 @@ namespace
         HWND main = GetParent(getScintillaWindow());
         HWND childHandle = FindWindowEx(main, nullptr, L"msctls_statusbar32", nullptr);
 
-        auto error = errorText.find(position);
+        auto const error = errorText.find(position);
         if (error != errorText.end())
         {
 #pragma warning(suppress : 26490)

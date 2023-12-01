@@ -8,7 +8,7 @@ Linter::DomDocument::DomDocument(std::wstring const &filename)
 {
     init();
 
-    CComVariant value{static_cast<wchar_t const *>(static_cast<_bstr_t>(filename.c_str()))};
+    CComVariant value{filename.c_str()};
     VARIANT_BOOL resultCode = FALSE;
     HRESULT const hr = m_document->load(value, &resultCode);
 
