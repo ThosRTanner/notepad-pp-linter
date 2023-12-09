@@ -15,14 +15,14 @@ namespace
 {
     std::wstring get_module_name(HINSTANCE module_instance)
     {
-        TCHAR temp[MAX_PATH];
+        TCHAR temp[MAX_PATH] = {0};
         ::GetModuleFileName(module_instance, &temp[0], MAX_PATH);
         return ::PathFindFileName(&temp[0]);
     }
 
     std::wstring get_plugin_name(HWND dialog_handle)
     {
-        TCHAR temp[MAX_PATH];
+        TCHAR temp[MAX_PATH] = {0};
         ::GetWindowText(dialog_handle, &temp[0], MAX_PATH);
         return &temp[0];
     }
@@ -99,14 +99,18 @@ void DockingDlgInterface::request_redraw() const noexcept
     ::InvalidateRect(dialogue_window_, nullptr, TRUE);
 }
 
-void DockingDlgInterface::getClientRect(RECT &rc) const noexcept
+RECT DockingDlgInterface::getClientRect() const noexcept
 {
+    RECT rc;
     ::GetClientRect(dialogue_window_, &rc);
+    return rc;
 }
 
-void DockingDlgInterface::getWindowRect(RECT &rc) const noexcept
+RECT DockingDlgInterface::getWindowRect() const noexcept
 {
+    RECT rc;
     ::GetWindowRect(dialogue_window_, &rc);
+    return rc;
 }
 
 HWND DockingDlgInterface::GetDlgItem(int item) const noexcept

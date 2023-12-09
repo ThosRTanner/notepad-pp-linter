@@ -373,8 +373,7 @@ void Linter::OutputDialog::selected_tab_changed() noexcept
 
 void Linter::OutputDialog::window_pos_changed() noexcept
 {
-    RECT rc;
-    getClientRect(rc);
+    RECT const rc = getClientRect();
 
     ::MoveWindow(tab_bar_, rc.left, rc.top, rc.right - rc.left, rc.bottom - rc.top, TRUE);
 

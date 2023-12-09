@@ -104,10 +104,10 @@ class DockingDlgInterface
     void request_redraw() const noexcept;
 
     /** Utility to get the current client rectangle */
-    void getClientRect(RECT &) const noexcept;
+    RECT getClientRect() const noexcept;
 
     /** Utility to get the current window rectangle */
-    void getWindowRect(RECT &) const noexcept;
+    RECT getWindowRect() const noexcept;
 
     /** Utility to get a dialogue item */
     HWND GetDlgItem(int) const noexcept;

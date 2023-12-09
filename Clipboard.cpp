@@ -30,7 +30,7 @@ void Linter::Clipboard::empty()
 
 void Linter::Clipboard::copy(std::wstring const &str)
 {
-    size_t const size = (str.size() + 1) * sizeof(TCHAR);
+    size_t const size = str.size() * sizeof(TCHAR);
     mem_handle_ = ::GlobalAlloc(GMEM_MOVEABLE, size);
     if (mem_handle_ == nullptr)
     {
