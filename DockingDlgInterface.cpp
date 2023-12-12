@@ -135,7 +135,8 @@ std::optional<LONG_PTR> DockingDlgInterface::run_dlgProc(UINT message, WPARAM, L
                 {
                     case DMN_CLOSE:
                         is_closed_ = true;
-                        return TRUE;
+                        //Must not mark this handled or the window never closes.
+                        break;
 
                     case DMN_DOCK:
                         docked_pos_ = HIWORD(pnmh->code);
