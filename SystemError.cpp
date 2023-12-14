@@ -88,7 +88,13 @@ SystemError::SystemError(HRESULT err, std::string const &info, const SourceLocat
     addLocationToMessage(location);
 }
 
+Linter::SystemError::SystemError(SystemError const &) noexcept = default;
+
 Linter::SystemError::SystemError(SystemError &&) noexcept = default;
+
+SystemError &Linter::SystemError::operator=(SystemError const &) noexcept = default;
+
+SystemError &Linter::SystemError::operator=(SystemError &&) noexcept = default;
 
 SystemError::~SystemError() = default;
 

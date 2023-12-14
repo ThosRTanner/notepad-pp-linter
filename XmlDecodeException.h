@@ -10,10 +10,10 @@ namespace Linter
       public:
         explicit XmlDecodeException(IXMLDOMParseError *);
 
-        XmlDecodeException(XmlDecodeException const &) = delete;
+        XmlDecodeException(XmlDecodeException const &) noexcept;
         XmlDecodeException(XmlDecodeException &&) noexcept;
-        XmlDecodeException &operator=(XmlDecodeException const &) = delete;
-        XmlDecodeException &operator=(XmlDecodeException &&) = delete;
+        XmlDecodeException &operator=(XmlDecodeException const &) noexcept;
+        XmlDecodeException &operator=(XmlDecodeException &&) noexcept;
         ~XmlDecodeException();
 
         /** Returns user-readable string describing error */

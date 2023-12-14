@@ -135,7 +135,7 @@ std::optional<LONG_PTR> DockingDlgInterface::run_dlgProc(UINT message, WPARAM, L
                 {
                     case DMN_CLOSE:
                         is_closed_ = true;
-                        return TRUE;
+                        return std::nullopt;
 
                     case DMN_DOCK:
                         docked_pos_ = HIWORD(pnmh->code);

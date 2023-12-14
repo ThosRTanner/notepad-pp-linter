@@ -42,7 +42,13 @@ Linter::XmlDecodeException::XmlDecodeException(IXMLDOMParseError *error)
     std::snprintf(&m_buff[0], sizeof(m_buff), "%s", static_cast<char *>(static_cast<_bstr_t>(msg.str().c_str())));
 }
 
+Linter::XmlDecodeException::XmlDecodeException(XmlDecodeException const &) noexcept = default;
+
 Linter::XmlDecodeException::XmlDecodeException(XmlDecodeException &&) noexcept = default;
+
+Linter::XmlDecodeException &Linter::XmlDecodeException::operator=(XmlDecodeException const &) noexcept = default;
+
+Linter::XmlDecodeException &Linter::XmlDecodeException::operator=(XmlDecodeException &&) noexcept = default;
 
 Linter::XmlDecodeException::~XmlDecodeException() = default;
 

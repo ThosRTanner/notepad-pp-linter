@@ -28,10 +28,10 @@ namespace Linter
         /** Creates an exception object from specified error with addition information string */
         SystemError(HRESULT err, std::string const &, const SourceLocationCurrent &location = SourceLocation::current()) noexcept;
 
-        SystemError(SystemError const &) = delete;
+        SystemError(SystemError const &) noexcept;
         SystemError(SystemError &&) noexcept;
-        SystemError &operator=(SystemError const &) = delete;
-        SystemError &operator=(SystemError &&) = delete;
+        SystemError &operator=(SystemError const &) noexcept;
+        SystemError &operator=(SystemError &&) noexcept;
 
         ~SystemError();
 
