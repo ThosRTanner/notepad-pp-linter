@@ -8,7 +8,7 @@
 
 using namespace Linter;
 
-std::string File::exec(std::wstring commandLine, std::string const *text)
+std::pair<std::string, std::string> File::exec(std::wstring commandLine, std::string const *text)
 {
     if (!m_file.empty())
     {
@@ -69,7 +69,9 @@ std::string File::exec(std::wstring commandLine, std::string const *text)
     stderrpipe.m_writer.close();
     stdinpipe.m_writer.close();
 
-    return stdoutpipe.m_reader.readFile();
+    std::string out = stdoutpipe.m_reader.readFile();
+    std::string err = stderrpipe.m_reader.readFile();
+    return std::make_pair(out, err);
 }
 
 File::File(const std::wstring &fileName, const std::wstring &directory) : m_fileName(fileName), m_directory(directory)

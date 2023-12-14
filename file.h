@@ -1,5 +1,6 @@
 #pragma once
 #include <string>
+#include <utility>
 
 class File
 {
@@ -12,7 +13,7 @@ class File
     File &operator=(File &&) = delete;
 
     ~File();
-    std::string exec(std::wstring commandLine, std::string const *str);
+    std::pair<std::string, std::string> exec(std::wstring commandLine, std::string const *str);
     void write(const std::string &data);
 
   private:

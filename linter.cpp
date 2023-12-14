@@ -64,7 +64,7 @@ namespace
 #if __cplusplus >= 202002L
         auto buff{std::make_unique_for_overwrite<wchar_t[]>(MAX_PATH + 1)};
 #else
-#pragma warning(suppress: 26409 26414)
+#pragma warning(suppress : 26409 26414)
         std::unique_ptr<wchar_t[]> buff{new wchar_t[MAX_PATH + 1]};
 #endif
         SendApp(part, MAX_PATH, buff.get());
@@ -160,8 +160,13 @@ namespace
             //std::string xml = File::exec(L"C:\\Users\\deadem\\AppData\\Roaming\\npm\\jscs.cmd --reporter=checkstyle ", file);
             try
             {
-                std::string xml = file.exec(command.first, command.second ? &text : nullptr);
-                std::vector<XmlParser::Error> parseError = XmlParser::getErrors(xml);
+                auto output = file.exec(command.first, command.second ? &text : nullptr);
+                std::vector<XmlParser::Error> parseError;
+                if (output.first == "" && output.second != "")
+                {
+                    throw std::runtime_error(output.second);
+                }
+                parseError = XmlParser::getErrors(output.first);
                 errors.insert(errors.end(), parseError.begin(), parseError.end());
                 if (output_dialogue)
                 {
@@ -197,7 +202,7 @@ namespace
     {
         ClearErrors();
         errorText.clear();
-        if (! errors.empty())
+        if (!errors.empty())
         {
             InitErrors();
         }
