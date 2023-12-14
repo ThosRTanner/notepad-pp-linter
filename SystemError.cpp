@@ -28,7 +28,7 @@ SystemError::SystemError(DWORD err, const SourceLocationCurrent &location) noexc
 {
     try
     {
-        std::snprintf(&m_buff[0], sizeof(m_buff), "%s", std::system_category().message(err).c_str());
+        std::snprintf(&m_buff[0], sizeof(m_buff), "%s", std::generic_category().message(err).c_str());
     }
     catch (std::exception const &e)
     {
@@ -42,7 +42,7 @@ SystemError::SystemError(DWORD err, std::string const &info, const SourceLocatio
 {
     try
     {
-        std::snprintf(&m_buff[0], sizeof(m_buff), "%s - %s", info.c_str(), std::system_category().message(err).c_str());
+        std::snprintf(&m_buff[0], sizeof(m_buff), "%s - %s", info.c_str(), std::generic_category().message(err).c_str());
     }
     catch (std::exception const &e)
     {
