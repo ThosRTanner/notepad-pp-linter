@@ -687,7 +687,7 @@ union storage_t
         construct_value( v );
     }
 
-    void construct_value( value_type const & v )
+    void construct_value(value_type const &v) optional_noexcept
     {
         ::new( value_ptr() ) value_type( v );
     }
@@ -723,7 +723,7 @@ union storage_t
         value_ptr()->~T();
     }
 
-    optional_nodiscard value_type const * value_ptr() const
+    optional_nodiscard value_type const *value_ptr() const optional_noexcept
     {
         return as<value_type>();
     }
@@ -733,7 +733,7 @@ union storage_t
         return as<value_type>();
     }
 
-    optional_nodiscard value_type const & value() const optional_ref_qual
+    optional_nodiscard value_type const &value() const optional_ref_qual optional_noexcept
     {
         return * value_ptr();
     }
@@ -1406,7 +1406,7 @@ private:
 
 #if optional_CPP11_OR_GREATER
     template< typename V >
-    void initialize( V && value )
+    void initialize(V &&value) optional_noexcept
     {
         assert( ! has_value()  );
         contained.construct_value( std::move( value ) );

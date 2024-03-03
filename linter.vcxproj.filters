@@ -136,6 +136,12 @@
     <ClInclude Include="DockingDlgInterface.h">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="resource.h">
+      <Filter>Resource Files</Filter>
+    </ClInclude>
+    <ClInclude Include="optional.hpp">
+      <Filter>Source Files</Filter>
+    </ClInclude>
     <ClInclude Include="Clipboard.h">
       <Filter>Source Files</Filter>
     </ClInclude>

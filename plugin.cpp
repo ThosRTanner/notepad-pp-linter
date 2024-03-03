@@ -1,13 +1,17 @@
 #include "stdafx.h"
 #include "plugin.h"
 
-#include "linter.h"
 #include "OutputDialog.h"
+#include "linter.h"
 
+#include "notepad/Notepad_plus_msgs.h"
 #include "notepad/PluginInterface.h"
+#include "notepad/Scintilla.h"
 
 #include <Shlwapi.h>
+#include <comutil.h>
 
+#include <exception>
 #include <memory>
 #include <string>
 
@@ -37,7 +41,7 @@ namespace
     void pluginInit(HINSTANCE module) noexcept
     {
         module_handle = module;
-        timers = CreateTimerQueue();
+//        timers = CreateTimerQueue();
     }
 
     void pluginCleanUp() noexcept
@@ -96,14 +100,14 @@ namespace
 
 }    // namespace
 
-//int __stdcall DllMain(_In_ void *hModule, _In_ unsigned long reasonForCall, _In_opt_ void *) noexcept
+int __stdcall DllMain(_In_ void *hModule, _In_ unsigned long reasonForCall, _In_opt_ void *) noexcept
 //BOOL APIENTRY DllMain(HANDLE hModule, DWORD reasonForCall, LPVOID /*lpReserved*/) noexcept
-BOOL WINAPI DllMain(HINSTANCE hModule, DWORD reasonForCall, LPVOID /*lpvReserved*/) noexcept
+//BOOL WINAPI DllMain(HINSTANCE hModule, DWORD reasonForCall, LPVOID /*lpvReserved*/) noexcept
 {
     switch (reasonForCall)
     {
         case DLL_PROCESS_ATTACH:
-            pluginInit(hModule);
+            pluginInit(static_cast<HINSTANCE>(hModule));
             break;
 
         case DLL_PROCESS_DETACH:
@@ -123,6 +127,7 @@ extern "C" __declspec(dllexport) void setInfo(NppData notpadPlusData)
 {
     try
     {
+        timers = CreateTimerQueue();
         nppData = notpadPlusData;
         initConfig();
         commandMenuInit();
