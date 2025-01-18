@@ -4,6 +4,14 @@
 #include "SystemError.h"
 #include "XmlDecodeException.h"
 
+#include <atlcomcli.h>
+#include <comutil.h>
+#include <msxml.h>
+#include <winerror.h>
+#include <wtypes.h>
+
+#include <string>
+
 Linter::DomDocument::DomDocument(std::wstring const &filename)
 {
     init();

@@ -1,13 +1,13 @@
 #include "stdafx.h"
 #include "linter.h"
 
-#include "encoding.h"
-#include "file.h"
 #include "OutputDialog.h"
-#include "plugin.h"
 #include "Settings.h"
 #include "XmlDecodeException.h"
 #include "XmlParser.h"
+#include "encoding.h"
+#include "file.h"
+#include "plugin.h"
 
 #include "notepad/Notepad_plus_msgs.h"
 
@@ -17,6 +17,7 @@
 #include <memory>
 #include <stdexcept>
 #include <string>
+#include <tuple>
 #include <vector>
 
 namespace
@@ -308,6 +309,7 @@ extern "C" __declspec(dllexport) void beNotified(SCNotification const *notifyCod
             break;
 
         case SCN_MODIFIED:
+        //**case NPPM_GLOBAL_MODIFIED:
             if ((notifyCode->modificationType & (SC_MOD_DELETETEXT | SC_MOD_INSERTTEXT)) != 0)
             {
                 Changed();

@@ -2,9 +2,9 @@
 #include "OutputDialog.h"
 
 #include "Clipboard.h"
+#include "SystemError.h"
 #include "plugin.h"
 #include "resource.h"
-#include "SystemError.h"
 
 #include <CommCtrl.h>
 #include <WinUser.h>

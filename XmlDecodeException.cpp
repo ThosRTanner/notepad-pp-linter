@@ -1,10 +1,12 @@
 #include "stdafx.h"
 #include "XmlDecodeException.h"
 
+#include <comutil.h>
 #include <msxml.h>
 
 #include <cstdio>
 #include <iomanip>
+#include <ios>
 #include <sstream>
 
 Linter::XmlDecodeException::XmlDecodeException(IXMLDOMParseError *error)
@@ -39,7 +41,7 @@ Linter::XmlDecodeException::XmlDecodeException(IXMLDOMParseError *error)
     msg << ": code 0x" << std::hex << std::setw(8) << std::setfill(L'0') << code
         << " " << reason;
 
-    std::snprintf(&m_buff[0], sizeof(m_buff), "%s", static_cast<char *>(static_cast<_bstr_t>(msg.str().c_str())));
+    std::snprintf(&m_buff[0], sizeof(m_buff), "%s", static_cast<char *>(static_cast<bstr_t>(msg.str().c_str())));
 }
 
 Linter::XmlDecodeException::XmlDecodeException(XmlDecodeException const &) noexcept = default;

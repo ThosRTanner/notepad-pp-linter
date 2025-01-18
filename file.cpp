@@ -4,7 +4,17 @@
 #include "FilePipe.h"
 #include "SystemError.h"
 
+#include <comutil.h>
+#include <errhandlingapi.h>
+#include <fileapi.h>
+#include <handleapi.h>
+#include <io.h>
+#include <processthreadsapi.h>
+
+#include <cstring>
 #include <memory>
+#include <string>
+#include <utility>
 
 using namespace Linter;
 
