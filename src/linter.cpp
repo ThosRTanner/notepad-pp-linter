@@ -7,9 +7,9 @@
 #include "XmlParser.h"
 #include "encoding.h"
 #include "file.h"
-#include "plugin.h"
+#include "plugin_main.h"
 
-#include "notepad/Notepad_plus_msgs.h"
+#include "Notepad_plus_msgs.h"
 
 #include <process.h>
 

@@ -3,9 +3,9 @@
 
 #include "SystemError.h"
 
-#include "notepad/DockingFeature/Docking.h"
-#include "notepad/DockingFeature/dockingResource.h"
-#include "notepad/Notepad_plus_msgs.h"
+#include "DockingFeature/Docking.h"
+#include "DockingFeature/dockingResource.h"
+#include "Notepad_plus_msgs.h"
 
 #include <comutil.h>
 #include <ShlwApi.h>

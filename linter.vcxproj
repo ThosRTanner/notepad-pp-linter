@@ -109,6 +109,9 @@
       <EnablePREfast>true</EnablePREfast>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
+      <AdditionalIncludeDirectories>.;..\Docking_Dialogue_Interface;..\Docking_Dialogue_Interface\plugintemplate\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
+      <ForcedIncludeFiles>stdafx.h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -142,6 +145,9 @@
       <EnablePREfast>true</EnablePREfast>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
+      <AdditionalIncludeDirectories>.;..\Docking_Dialogue_Interface;..\Docking_Dialogue_Interface\plugintemplate\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
+      <ForcedIncludeFiles>stdafx.h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -173,6 +179,9 @@
       <EnablePREfast>true</EnablePREfast>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
+      <AdditionalIncludeDirectories>.;..\Docking_Dialogue_Interface;..\Docking_Dialogue_Interface\plugintemplate\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
+      <ForcedIncludeFiles>stdafx.h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -208,6 +217,9 @@
       <EnablePREfast>true</EnablePREfast>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
+      <AdditionalIncludeDirectories>.;..\Docking_Dialogue_Interface;..\Docking_Dialogue_Interface\plugintemplate\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
+      <ForcedIncludeFiles>stdafx.h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -223,63 +235,75 @@
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="Clipboard.cpp" />
-    <ClCompile Include="DockingDlgInterface.cpp" />
-    <ClCompile Include="DomDocument.cpp" />
-    <ClCompile Include="encoding.cpp" />
-    <ClCompile Include="file.cpp" />
-    <ClCompile Include="FilePipe.cpp" />
-    <ClCompile Include="HandleWrapper.cpp" />
-    <ClCompile Include="linter.cpp" />
-    <ClCompile Include="OutputDialog.cpp" />
-    <ClCompile Include="plugin.cpp" />
-    <ClCompile Include="Settings.cpp" />
-    <ClCompile Include="stdafx.cpp">
+    <ClCompile Include="Docking_Dialogue_Interface\Plugin\Dialogue_Interface.cpp" />
+    <ClCompile Include="Docking_Dialogue_Interface\Plugin\Docking_Dialogue_Interface.cpp" />
+    <ClCompile Include="Docking_Dialogue_Interface\Plugin\Modal_Dialogue_Interface.cpp" />
+    <ClCompile Include="Docking_Dialogue_Interface\Plugin\Non_Modal_Dialogue_Base.cpp" />
+    <ClCompile Include="Docking_Dialogue_Interface\Plugin\Non_Modal_Dialogue_Interface.cpp" />
+    <ClCompile Include="Docking_Dialogue_Interface\Plugin\Plugin.cpp" />
+    <ClCompile Include="src\Clipboard.cpp" />
+    <ClCompile Include="src\DockingDlgInterface.cpp" />
+    <ClCompile Include="src\DomDocument.cpp" />
+    <ClCompile Include="src\encoding.cpp" />
+    <ClCompile Include="src\file.cpp" />
+    <ClCompile Include="src\FilePipe.cpp" />
+    <ClCompile Include="src\HandleWrapper.cpp" />
+    <ClCompile Include="src\linter.cpp" />
+    <ClCompile Include="src\OutputDialog.cpp" />
+    <ClCompile Include="src\plugin_main.cpp" />
+    <ClCompile Include="src\Settings.cpp" />
+    <ClCompile Include="src\stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="SystemError.cpp" />
-    <ClCompile Include="XmlDecodeException.cpp" />
-    <ClCompile Include="XmlParser.cpp" />
+    <ClCompile Include="src\SystemError.cpp" />
+    <ClCompile Include="src\XmlDecodeException.cpp" />
+    <ClCompile Include="src\XmlParser.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Clipboard.h" />
-    <ClInclude Include="DockingDlgInterface.h" />
-    <ClInclude Include="DomDocument.h" />
-    <ClInclude Include="encoding.h" />
-    <ClInclude Include="file.h" />
-    <ClInclude Include="FilePipe.h" />
-    <ClInclude Include="HandleWrapper.h" />
-    <ClInclude Include="linter.h" />
-    <ClInclude Include="notepad\DockingFeature\Docking.h" />
-    <ClInclude Include="notepad\DockingFeature\dockingResource.h" />
-    <ClInclude Include="notepad\menuCmdID.h" />
-    <ClInclude Include="notepad\Notepad_plus_msgs.h" />
-    <ClInclude Include="notepad\PluginInterface.h" />
-    <ClInclude Include="notepad\Scintilla.h" />
-    <ClInclude Include="notepad\Sci_Position.h" />
-    <ClInclude Include="optional.hpp" />
-    <ClInclude Include="OutputDialog.h" />
-    <ClInclude Include="plugin.h" />
-    <ClInclude Include="resource.h" />
-    <ClInclude Include="Settings.h" />
-    <ClInclude Include="SourceLocation.h" />
-    <ClInclude Include="stdafx.h" />
-    <ClInclude Include="SystemError.h" />
-    <ClInclude Include="targetver.h" />
-    <ClInclude Include="XmlDecodeException.h" />
-    <ClInclude Include="XmlParser.h" />
+    <ClInclude Include="Docking_Dialogue_Interface\plugintemplate\src\menuCmdID.h" />
+    <ClInclude Include="Docking_Dialogue_Interface\plugintemplate\src\Notepad_plus_msgs.h" />
+    <ClInclude Include="Docking_Dialogue_Interface\plugintemplate\src\PluginInterface.h" />
+    <ClInclude Include="Docking_Dialogue_Interface\plugintemplate\src\Scintilla.h" />
+    <ClInclude Include="Docking_Dialogue_Interface\plugintemplate\src\Sci_Position.h" />
+    <ClInclude Include="Docking_Dialogue_Interface\Plugin\Callback_Context.h" />
+    <ClInclude Include="Docking_Dialogue_Interface\Plugin\Dialogue_Interface.h" />
+    <ClInclude Include="Docking_Dialogue_Interface\Plugin\Docking_Dialogue_Interface.h" />
+    <ClInclude Include="Docking_Dialogue_Interface\Plugin\Min_Win_Defs.h" />
+    <ClInclude Include="Docking_Dialogue_Interface\Plugin\Modal_Dialogue_Interface.h" />
+    <ClInclude Include="Docking_Dialogue_Interface\Plugin\Non_Modal_Dialogue_Base.h" />
+    <ClInclude Include="Docking_Dialogue_Interface\Plugin\Non_Modal_Dialogue_Interface.h" />
+    <ClInclude Include="Docking_Dialogue_Interface\Plugin\Plugin.h" />
+    <ClInclude Include="src\Clipboard.h" />
+    <ClInclude Include="src\DockingDlgInterface.h" />
+    <ClInclude Include="src\DomDocument.h" />
+    <ClInclude Include="src\encoding.h" />
+    <ClInclude Include="src\file.h" />
+    <ClInclude Include="src\FilePipe.h" />
+    <ClInclude Include="src\HandleWrapper.h" />
+    <ClInclude Include="src\linter.h" />
+    <ClInclude Include="src\optional.hpp" />
+    <ClInclude Include="src\OutputDialog.h" />
+    <ClInclude Include="src\plugin_main.h" />
+    <ClInclude Include="src\resource.h" />
+    <ClInclude Include="src\Settings.h" />
+    <ClInclude Include="src\SourceLocation.h" />
+    <ClInclude Include="src\stdafx.h" />
+    <ClInclude Include="src\SystemError.h" />
+    <ClInclude Include="src\targetver.h" />
+    <ClInclude Include="src\XmlDecodeException.h" />
+    <ClInclude Include="src\XmlParser.h" />
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="Resource.rc" />
+    <ResourceCompile Include="src\Resource.rc" />
   </ItemGroup>
   <ItemGroup>
     <None Include="cpp.hint" />
   </ItemGroup>
   <ItemGroup>
-    <Image Include="linter.ico" />
+    <Image Include="src\linter.ico" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -9,145 +9,181 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav</Extensions>
     </Filter>
-    <Filter Include="Source Files\notepad">
-      <UniqueIdentifier>{bb266a58-166d-40aa-bded-c7c712afdf5c}</UniqueIdentifier>
+    <Filter Include="Notepad++">
+      <UniqueIdentifier>{e41639c8-40b9-4510-beb9-a9532e3042df}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\notepad\DockingFeature">
-      <UniqueIdentifier>{2fe37eee-18ba-4d0c-909c-87db8ba36769}</UniqueIdentifier>
+    <Filter Include="Docking Dialogue Interface">
+      <UniqueIdentifier>{661a6974-3605-4667-a753-e1031d8e0d5d}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="encoding.cpp">
+    <ClCompile Include="src\Clipboard.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="file.cpp">
+    <ClCompile Include="src\DockingDlgInterface.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="linter.cpp">
+    <ClCompile Include="src\DomDocument.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="plugin.cpp">
+    <ClCompile Include="src\encoding.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="stdafx.cpp">
+    <ClCompile Include="src\file.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="XmlParser.cpp">
+    <ClCompile Include="src\FilePipe.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="SystemError.cpp">
+    <ClCompile Include="src\HandleWrapper.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="DomDocument.cpp">
+    <ClCompile Include="src\linter.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="HandleWrapper.cpp">
+    <ClCompile Include="src\OutputDialog.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="FilePipe.cpp">
+    <ClCompile Include="src\plugin_main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="XmlDecodeException.cpp">
+    <ClCompile Include="src\Settings.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="OutputDialog.cpp">
+    <ClCompile Include="src\stdafx.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Settings.cpp">
+    <ClCompile Include="src\SystemError.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="DockingDlgInterface.cpp">
+    <ClCompile Include="src\XmlDecodeException.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Clipboard.cpp">
+    <ClCompile Include="src\XmlParser.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Docking_Dialogue_Interface\Plugin\Dialogue_Interface.cpp">
+      <Filter>Docking Dialogue Interface</Filter>
+    </ClCompile>
+    <ClCompile Include="Docking_Dialogue_Interface\Plugin\Docking_Dialogue_Interface.cpp">
+      <Filter>Docking Dialogue Interface</Filter>
+    </ClCompile>
+    <ClCompile Include="Docking_Dialogue_Interface\Plugin\Modal_Dialogue_Interface.cpp">
+      <Filter>Docking Dialogue Interface</Filter>
+    </ClCompile>
+    <ClCompile Include="Docking_Dialogue_Interface\Plugin\Non_Modal_Dialogue_Base.cpp">
+      <Filter>Docking Dialogue Interface</Filter>
+    </ClCompile>
+    <ClCompile Include="Docking_Dialogue_Interface\Plugin\Non_Modal_Dialogue_Interface.cpp">
+      <Filter>Docking Dialogue Interface</Filter>
+    </ClCompile>
+    <ClCompile Include="Docking_Dialogue_Interface\Plugin\Plugin.cpp">
+      <Filter>Docking Dialogue Interface</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="notepad\menuCmdID.h">
-      <Filter>Source Files\notepad</Filter>
-    </ClInclude>
-    <ClInclude Include="notepad\Notepad_plus_msgs.h">
-      <Filter>Source Files\notepad</Filter>
-    </ClInclude>
-    <ClInclude Include="notepad\PluginInterface.h">
-      <Filter>Source Files\notepad</Filter>
-    </ClInclude>
-    <ClInclude Include="notepad\Scintilla.h">
-      <Filter>Source Files\notepad</Filter>
-    </ClInclude>
-    <ClInclude Include="XmlParser.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="encoding.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="file.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="FilePipe.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="DomDocument.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
     <ClInclude Include="DomDocument.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="HandleWrapper.h">
+    <ClInclude Include="src\Clipboard.h">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="linter.h">
+    <ClInclude Include="src\DockingDlgInterface.h">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="plugin.h">
+    <ClInclude Include="src\DomDocument.h">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="SourceLocation.h">
+    <ClInclude Include="src\encoding.h">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="stdafx.h">
+    <ClInclude Include="src\file.h">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="SystemError.h">
+    <ClInclude Include="src\FilePipe.h">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="targetver.h">
+    <ClInclude Include="src\HandleWrapper.h">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="XmlDecodeException.h">
+    <ClInclude Include="src\linter.h">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="OutputDialog.h">
+    <ClInclude Include="src\optional.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="Settings.h">
+    <ClInclude Include="src\OutputDialog.h">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="notepad\Sci_Position.h">
-      <Filter>Source Files\notepad</Filter>
-    </ClInclude>
-    <ClInclude Include="notepad\DockingFeature\dockingResource.h">
-      <Filter>Source Files\notepad\DockingFeature</Filter>
-    </ClInclude>
-    <ClInclude Include="notepad\DockingFeature\Docking.h">
-      <Filter>Source Files\notepad\DockingFeature</Filter>
-    </ClInclude>
-    <ClInclude Include="DockingDlgInterface.h">
+    <ClInclude Include="src\plugin_main.h">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="resource.h">
+    <ClInclude Include="src\Settings.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\SourceLocation.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\stdafx.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\SystemError.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\targetver.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\XmlDecodeException.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\XmlParser.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\resource.h">
       <Filter>Resource Files</Filter>
     </ClInclude>
-    <ClInclude Include="optional.hpp">
-      <Filter>Source Files</Filter>
+    <ClInclude Include="Docking_Dialogue_Interface\plugintemplate\src\menuCmdID.h">
+      <Filter>Notepad++</Filter>
     </ClInclude>
-    <ClInclude Include="Clipboard.h">
-      <Filter>Source Files</Filter>
+    <ClInclude Include="Docking_Dialogue_Interface\plugintemplate\src\Notepad_plus_msgs.h">
+      <Filter>Notepad++</Filter>
+    </ClInclude>
+    <ClInclude Include="Docking_Dialogue_Interface\plugintemplate\src\PluginInterface.h">
+      <Filter>Notepad++</Filter>
+    </ClInclude>
+    <ClInclude Include="Docking_Dialogue_Interface\plugintemplate\src\Sci_Position.h">
+      <Filter>Notepad++</Filter>
+    </ClInclude>
+    <ClInclude Include="Docking_Dialogue_Interface\plugintemplate\src\Scintilla.h">
+      <Filter>Notepad++</Filter>
+    </ClInclude>
+    <ClInclude Include="Docking_Dialogue_Interface\Plugin\Callback_Context.h">
+      <Filter>Docking Dialogue Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="Docking_Dialogue_Interface\Plugin\Dialogue_Interface.h">
+      <Filter>Docking Dialogue Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="Docking_Dialogue_Interface\Plugin\Docking_Dialogue_Interface.h">
+      <Filter>Docking Dialogue Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="Docking_Dialogue_Interface\Plugin\Min_Win_Defs.h">
+      <Filter>Docking Dialogue Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="Docking_Dialogue_Interface\Plugin\Modal_Dialogue_Interface.h">
+      <Filter>Docking Dialogue Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="Docking_Dialogue_Interface\Plugin\Non_Modal_Dialogue_Base.h">
+      <Filter>Docking Dialogue Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="Docking_Dialogue_Interface\Plugin\Non_Modal_Dialogue_Interface.h">
+      <Filter>Docking Dialogue Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="Docking_Dialogue_Interface\Plugin\Plugin.h">
+      <Filter>Docking Dialogue Interface</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="Resource.rc">
+    <ResourceCompile Include="src\Resource.rc">
       <Filter>Resource Files</Filter>
     </ResourceCompile>
   </ItemGroup>
@@ -155,7 +191,7 @@
     <None Include="cpp.hint" />
   </ItemGroup>
   <ItemGroup>
-    <Image Include="linter.ico">
+    <Image Include="src\linter.ico">
       <Filter>Resource Files</Filter>
     </Image>
   </ItemGroup>

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "notepad/Scintilla.h"
+#include "Scintilla.h"
 
 #include <memory>
 #include <string>

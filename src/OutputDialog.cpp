@@ -3,7 +3,7 @@
 
 #include "Clipboard.h"
 #include "SystemError.h"
-#include "plugin.h"
+#include "plugin_main.h"
 #include "resource.h"
 
 #include <CommCtrl.h>
