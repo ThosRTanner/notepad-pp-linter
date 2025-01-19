@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Scintilla.h"
+#include "notepad++/Scintilla.h"
 
 #include <memory>
 #include <string>
@@ -16,10 +16,6 @@ extern std::unique_ptr<Linter::OutputDialog> output_dialogue;
 int constexpr SCE_SQUIGGLE_UNDERLINE_RED = INDIC_CONTAINER + 2;
 
 void commandMenuCleanUp() noexcept;
-void initConfig() noexcept;
-void editConfig() noexcept;
-
-wchar_t const *getIniFileName() noexcept;
 
 HWND getScintillaWindow() noexcept;
 

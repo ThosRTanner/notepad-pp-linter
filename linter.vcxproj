@@ -109,7 +109,7 @@
       <EnablePREfast>true</EnablePREfast>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <AdditionalIncludeDirectories>.;..\Docking_Dialogue_Interface;..\Docking_Dialogue_Interface\plugintemplate\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.;Docking_Dialogue_Interface;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
       <ForcedIncludeFiles>stdafx.h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
     </ClCompile>
@@ -145,7 +145,7 @@
       <EnablePREfast>true</EnablePREfast>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <AdditionalIncludeDirectories>.;..\Docking_Dialogue_Interface;..\Docking_Dialogue_Interface\plugintemplate\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.;Docking_Dialogue_Interface;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
       <ForcedIncludeFiles>stdafx.h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
     </ClCompile>
@@ -179,7 +179,7 @@
       <EnablePREfast>true</EnablePREfast>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <AdditionalIncludeDirectories>.;..\Docking_Dialogue_Interface;..\Docking_Dialogue_Interface\plugintemplate\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.;Docking_Dialogue_Interface;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
       <ForcedIncludeFiles>stdafx.h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
     </ClCompile>
@@ -217,7 +217,7 @@
       <EnablePREfast>true</EnablePREfast>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <AdditionalIncludeDirectories>.;..\Docking_Dialogue_Interface;..\Docking_Dialogue_Interface\plugintemplate\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.;Docking_Dialogue_Interface;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
       <ForcedIncludeFiles>stdafx.h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
     </ClCompile>
@@ -242,6 +242,7 @@
     <ClCompile Include="Docking_Dialogue_Interface\Plugin\Non_Modal_Dialogue_Interface.cpp" />
     <ClCompile Include="Docking_Dialogue_Interface\Plugin\Plugin.cpp" />
     <ClCompile Include="src\Clipboard.cpp" />
+    <ClCompile Include="src\dllmain.cpp" />
     <ClCompile Include="src\DockingDlgInterface.cpp" />
     <ClCompile Include="src\DomDocument.cpp" />
     <ClCompile Include="src\encoding.cpp" />
@@ -263,11 +264,12 @@
     <ClCompile Include="src\XmlParser.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Docking_Dialogue_Interface\plugintemplate\src\menuCmdID.h" />
-    <ClInclude Include="Docking_Dialogue_Interface\plugintemplate\src\Notepad_plus_msgs.h" />
-    <ClInclude Include="Docking_Dialogue_Interface\plugintemplate\src\PluginInterface.h" />
-    <ClInclude Include="Docking_Dialogue_Interface\plugintemplate\src\Scintilla.h" />
-    <ClInclude Include="Docking_Dialogue_Interface\plugintemplate\src\Sci_Position.h" />
+    <ClInclude Include="Docking_Dialogue_Interface\notepad++\DockingFeature\Docking.h" />
+    <ClInclude Include="Docking_Dialogue_Interface\notepad++\DockingFeature\dockingResource.h" />
+    <ClInclude Include="Docking_Dialogue_Interface\notepad++\menuCmdID.h" />
+    <ClInclude Include="Docking_Dialogue_Interface\notepad++\Notepad_plus_msgs.h" />
+    <ClInclude Include="Docking_Dialogue_Interface\notepad++\PluginInterface.h" />
+    <ClInclude Include="Docking_Dialogue_Interface\notepad++\Scintilla.h" />
     <ClInclude Include="Docking_Dialogue_Interface\Plugin\Callback_Context.h" />
     <ClInclude Include="Docking_Dialogue_Interface\Plugin\Dialogue_Interface.h" />
     <ClInclude Include="Docking_Dialogue_Interface\Plugin\Docking_Dialogue_Interface.h" />
@@ -284,7 +286,6 @@
     <ClInclude Include="src\FilePipe.h" />
     <ClInclude Include="src\HandleWrapper.h" />
     <ClInclude Include="src\linter.h" />
-    <ClInclude Include="src\optional.hpp" />
     <ClInclude Include="src\OutputDialog.h" />
     <ClInclude Include="src\plugin_main.h" />
     <ClInclude Include="src\resource.h" />

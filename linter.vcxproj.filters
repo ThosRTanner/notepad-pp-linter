@@ -15,6 +15,9 @@
     <Filter Include="Docking Dialogue Interface">
       <UniqueIdentifier>{661a6974-3605-4667-a753-e1031d8e0d5d}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Notepad++\DockingFeature">
+      <UniqueIdentifier>{920caa76-4406-4c90-b6a5-d9fc88287be5}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Clipboard.cpp">
@@ -80,6 +83,9 @@
     <ClCompile Include="Docking_Dialogue_Interface\Plugin\Plugin.cpp">
       <Filter>Docking Dialogue Interface</Filter>
     </ClCompile>
+    <ClCompile Include="src\dllmain.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="DomDocument.h">
@@ -107,9 +113,6 @@
       <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="src\linter.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\optional.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="src\OutputDialog.h">
@@ -142,21 +145,6 @@
     <ClInclude Include="src\resource.h">
       <Filter>Resource Files</Filter>
     </ClInclude>
-    <ClInclude Include="Docking_Dialogue_Interface\plugintemplate\src\menuCmdID.h">
-      <Filter>Notepad++</Filter>
-    </ClInclude>
-    <ClInclude Include="Docking_Dialogue_Interface\plugintemplate\src\Notepad_plus_msgs.h">
-      <Filter>Notepad++</Filter>
-    </ClInclude>
-    <ClInclude Include="Docking_Dialogue_Interface\plugintemplate\src\PluginInterface.h">
-      <Filter>Notepad++</Filter>
-    </ClInclude>
-    <ClInclude Include="Docking_Dialogue_Interface\plugintemplate\src\Sci_Position.h">
-      <Filter>Notepad++</Filter>
-    </ClInclude>
-    <ClInclude Include="Docking_Dialogue_Interface\plugintemplate\src\Scintilla.h">
-      <Filter>Notepad++</Filter>
-    </ClInclude>
     <ClInclude Include="Docking_Dialogue_Interface\Plugin\Callback_Context.h">
       <Filter>Docking Dialogue Interface</Filter>
     </ClInclude>
@@ -180,6 +168,24 @@
     </ClInclude>
     <ClInclude Include="Docking_Dialogue_Interface\Plugin\Plugin.h">
       <Filter>Docking Dialogue Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="Docking_Dialogue_Interface\notepad++\menuCmdID.h">
+      <Filter>Notepad++</Filter>
+    </ClInclude>
+    <ClInclude Include="Docking_Dialogue_Interface\notepad++\Notepad_plus_msgs.h">
+      <Filter>Notepad++</Filter>
+    </ClInclude>
+    <ClInclude Include="Docking_Dialogue_Interface\notepad++\PluginInterface.h">
+      <Filter>Notepad++</Filter>
+    </ClInclude>
+    <ClInclude Include="Docking_Dialogue_Interface\notepad++\Scintilla.h">
+      <Filter>Notepad++</Filter>
+    </ClInclude>
+    <ClInclude Include="Docking_Dialogue_Interface\notepad++\DockingFeature\Docking.h">
+      <Filter>Notepad++\DockingFeature</Filter>
+    </ClInclude>
+    <ClInclude Include="Docking_Dialogue_Interface\notepad++\DockingFeature\dockingResource.h">
+      <Filter>Notepad++\DockingFeature</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

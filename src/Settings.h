@@ -1,10 +1,6 @@
 #pragma once
 
-#if __cplusplus >= 201703L
 #include <filesystem>
-#else
-#include <minwindef.h>
-#endif
 #include <string>
 #include <vector>
 
@@ -13,7 +9,7 @@ namespace Linter
     class Settings
     {
       public:
-        explicit Settings(wchar_t const *settings_xml);
+        Settings(std::wstring const & settings_xml);
 
         struct Linter
         {
@@ -25,31 +21,31 @@ namespace Linter
         /** Returns the alpha mask for the 'squiggle' or -1 if not set */
         int alpha() const noexcept
         {
-            return m_alpha;
+            return alpha_;
         }
 
         /** Returns the colour for the 'squiggle' or -1 if not set */
         int color() const noexcept
         {
-            return m_color;
+            return colour_;
         }
 
         /** Return an iterator to the linters */
         std::vector<Linter>::const_iterator begin() const noexcept
         {
-            return m_linters.cbegin();
+            return linters_.cbegin();
         }
 
         /** Returns true if there are no linters to run */
         bool empty() const noexcept
         {
-            return m_linters.empty();
+            return linters_.empty();
         }
 
         /** Return an iterator to the linters */
         std::vector<Linter>::const_iterator end() const noexcept
         {
-            return m_linters.cend();
+            return linters_.cend();
         }
 
         /** Reread settings if they've changed */
@@ -58,16 +54,12 @@ namespace Linter
     private:
         void read_settings();
 
-        std::wstring m_settings_xml;
+        std::wstring settings_xml_;
 
-        int m_alpha = -1;
-        int m_color = -1;
-#if __cplusplus >= 201703L
-        std::filesystem::file_time_type m_last_update_time;
-#else
-        FILETIME m_last_update_time = {0, 0};
-#endif
-        std::vector<Linter> m_linters;
+        int alpha_ = -1;
+        int colour_ = -1;
+        std::filesystem::file_time_type last_update_time_;
+        std::vector<Linter> linters_;
     };
 
 }    // namespace Linter

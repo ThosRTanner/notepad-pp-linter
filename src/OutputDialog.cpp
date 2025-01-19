@@ -490,13 +490,7 @@ void Linter::OutputDialog::select_lint(int n) noexcept
 
 void Linter::OutputDialog::show_selected_lint(int selected_item) noexcept
 {
-#if __cplusplus >= 202002L
     LVITEM const item{.mask = LVIF_PARAM, .iItem = selected_item};
-#else
-    LVITEM item{};
-    item.iItem = selected_item;
-    item.mask = LVIF_PARAM;
-#endif
     ListView_GetItem(current_list_view_, &item);
 
     XmlParser::Error const &lint_error = current_tab_->errors[item.lParam];
@@ -507,7 +501,8 @@ void Linter::OutputDialog::show_selected_lint(int selected_item) noexcept
     /* We only need to do this if we need to pop up linter.xml. The following isn't ideal */
     if (current_tab_->tab == Tab::System_Error)
     {
-        editConfig();
+        //FIXME
+        // editConfig();
     }
 
     SendEditor(SCI_GOTOLINE, line);
