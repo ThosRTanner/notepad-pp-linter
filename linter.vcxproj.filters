@@ -41,10 +41,10 @@
     <ClCompile Include="src\HandleWrapper.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\linter.cpp">
+    <ClCompile Include="src\Linter.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\OutputDialog.cpp">
+    <ClCompile Include="src\Output_Dialogue.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\plugin_main.cpp">
@@ -88,9 +88,6 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="DomDocument.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="src\Clipboard.h">
       <Filter>Source Files</Filter>
     </ClInclude>
@@ -112,10 +109,10 @@
     <ClInclude Include="src\HandleWrapper.h">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\linter.h">
+    <ClInclude Include="src\Linter.h">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\OutputDialog.h">
+    <ClInclude Include="src\Output_Dialogue.h">
       <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="src\plugin_main.h">
@@ -195,6 +192,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="cpp.hint" />
+    <None Include=".clang-format" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="src\linter.ico">

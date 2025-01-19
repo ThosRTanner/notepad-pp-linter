@@ -1,4 +1,3 @@
-#include "stdafx.h"
 #include "Settings.h"
 
 #include "DomDocument.h"
@@ -35,7 +34,7 @@ void Linter::Settings::read_settings()
 
     LONG uLength;
     HRESULT hr = styleNode->get_length(&uLength);
-    if (!SUCCEEDED(hr))
+    if (! SUCCEEDED(hr))
     {
         throw SystemError(hr, "Can't get XPath style length");
     }
@@ -44,29 +43,35 @@ void Linter::Settings::read_settings()
     {
         CComPtr<IXMLDOMNode> node;
         hr = styleNode->nextNode(&node);
-        if (!SUCCEEDED(hr))
+        if (! SUCCEEDED(hr))
         {
             throw SystemError(hr, "Can't read style node");
         }
         CComQIPtr<IXMLDOMElement> element(node);
         CComVariant value;
-        if (element->getAttribute(static_cast<bstr_t>(L"alpha"), &value) == S_OK)
+        if (element->getAttribute(static_cast<bstr_t>(L"alpha"), &value)
+            == S_OK)
         {
             int alphaVal{0};
             if (value.bstrVal)
             {
-                std::wstringstream data{std::wstring(value.bstrVal, SysStringLen(value.bstrVal))};
+                std::wstringstream data{
+                    std::wstring(value.bstrVal, SysStringLen(value.bstrVal))
+                };
                 data >> alphaVal;
             }
             alpha_ = alphaVal;
         }
 
-        if (element->getAttribute(static_cast<bstr_t>(L"color"), &value) == S_OK)
+        if (element->getAttribute(static_cast<bstr_t>(L"color"), &value)
+            == S_OK)
         {
             unsigned int colorVal{0};
             if (value.bstrVal)
             {
-                std::wstringstream data{std::wstring(value.bstrVal, SysStringLen(value.bstrVal))};
+                std::wstringstream data{
+                    std::wstring(value.bstrVal, SysStringLen(value.bstrVal))
+                };
                 data >> std::hex >> colorVal;
             }
 
@@ -80,11 +85,12 @@ void Linter::Settings::read_settings()
         }
     }
 
-    // <error line="12" column="19" severity="error" message="Unexpected identifier" source="jscs" />
+    // <error line="12" column="19" severity="error" message="Unexpected
+    // identifier" source="jscs" />
     CComPtr<IXMLDOMNodeList> XMLNodeList{XMLDocument.getNodeList("//linter")};
 
     hr = XMLNodeList->get_length(&uLength);
-    if (!SUCCEEDED(hr))
+    if (! SUCCEEDED(hr))
     {
         throw SystemError(hr, "Can't get XPath length");
     }
@@ -106,7 +112,8 @@ void Linter::Settings::read_settings()
             linter.m_command = value.bstrVal;
 
             element->getAttribute(static_cast<bstr_t>(L"stdin"), &value);
-            linter.m_useStdin = value.boolVal != 0;    //Is that strictly necessary?
+            linter.m_useStdin =
+                value.boolVal != 0;    // Is that strictly necessary?
 
             linters_.push_back(linter);
         }

@@ -16,17 +16,7 @@
 
 #pragma once
 
-#if __cplusplus >= 201703L
 #include <optional>
-#else
-#include "optional.hpp"
-namespace std
-{
-    using nonstd::nullopt;
-    using nonstd::optional;
-}    // namespace std
-#endif
-
 #include <string>
 
 /** A slightly more explicit version of reinterpret_cast which requires
@@ -47,7 +37,7 @@ class DockingDlgInterface
 {
   public:
     /** Create a docking dialogue.
-     * 
+     *
      * dialogID is the resource number of the dialogue
      * instance is the module instance (as passed to dllmain)
      */
@@ -71,25 +61,27 @@ class DockingDlgInterface
     };
 
     /** Register dialogue with Notepad++.
-     * 
-     * I'm not a fan of 2-phase initialisation, but this bit has to be done after the
-     * dialogue is actually created, or things go wrong
      *
-     * dlg_num is the ID used to communicate with notepad++ (i.e. the menu entry)
-     * extra is extra text to display on dialogue title.
+     * I'm not a fan of 2-phase initialisation, but this bit has to be done
+     * after the dialogue is actually created, or things go wrong
+     *
+     * dlg_num is the ID used to communicate with notepad++ (i.e. the menu
+     * entry) extra is extra text to display on dialogue title.
      */
-    void register_dialogue(int dlg_num, Position, HICON = nullptr, wchar_t const *extra = nullptr) noexcept;
+    void register_dialogue(
+        int dlg_num, Position, HICON = nullptr, wchar_t const *extra = nullptr
+    ) noexcept;
 
     virtual void updateDockingDlg() noexcept;
 
     /** Called when dialogue is to be displayed.
-     * 
+     *
      * Remember to call the base class instance
      */
     virtual void display() noexcept;
 
     /** Called when dialogue is to be hidden
-     * 
+     *
      * Remember to call the base class instance.
      */
     virtual void hide() noexcept;
@@ -121,22 +113,27 @@ class DockingDlgInterface
   protected:
     /** Implement this to handle messages.
      *
-     * Return std::nullopt to (to return FALSE to windows dialog processing), or a value to be set with
-     * SetWindowLongPtr (in which case TRUE will be returned). Note that some messages require you to
-     * return FALSE (std::nullopt) even if you do handle them.
+     * Return std::nullopt to (to return FALSE to windows dialog processing), or
+     * a value to be set with SetWindowLongPtr (in which case TRUE will be
+     * returned). Note that some messages require you to return FALSE
+     * (std::nullopt) even if you do handle them.
      *
-     * If you don't handle the message, you MUST call the base class version of this.
+     * If you don't handle the message, you MUST call the base class version of
+     * this.
      *
      * message, wParam and lParam are the values passed to dlgProc by windows
      */
-    virtual std::optional<LONG_PTR> run_dlgProc(UINT message, WPARAM wParam, LPARAM lParam);
+    virtual std::optional<LONG_PTR> run_dlgProc(
+        UINT message, WPARAM wParam, LPARAM lParam
+    );
 
   private:
     /** Utility wrapper round SendMessage to send pointers to our self */
     void SendDialogInfoToNPP(int msg, int wParam = 0) noexcept;
 
     /** Callback handler for messages */
-    static INT_PTR CALLBACK dlgProc(HWND, UINT message, WPARAM, LPARAM) noexcept;
+    static INT_PTR CALLBACK
+    dlgProc(HWND, UINT message, WPARAM, LPARAM) noexcept;
 
     /** Called during construction to set up dialogue_window_ */
     HWND create_dialogue_window(int dialogID);

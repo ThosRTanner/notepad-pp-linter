@@ -1,9 +1,6 @@
-#include "stdafx.h"
+#include "Linter.h"
 
-#include "linter.h"
-
-#include "OutputDialog.h"
-#include "Plugin/Callback_Context.h"    // IWYU pragma: keep
+#include "Output_Dialogue.h"
 #include "Settings.h"
 #include "XmlDecodeException.h"
 #include "XmlParser.h"
@@ -11,9 +8,12 @@
 #include "file.h"
 #include "plugin_main.h"
 
+#include "Plugin/Callback_Context.h"    // IWYU pragma: keep
 #include "notepad++/Notepad_plus_msgs.h"
 
+#include <handleapi.h>
 #include <process.h>
+#include <threadpoollegacyapiset.h>
 
 #include <map>
 #include <memory>
@@ -25,10 +25,13 @@
 namespace
 {
 
-bool isChanged = true;
+// Set if current file (buffer) has changed
+// FIXME should be class member
+bool file_changed = true;
 
-HANDLE timer(0);
-HANDLE threadHandle(0);
+HANDLE timers{nullptr};
+HANDLE timer{nullptr};
+HANDLE threadHandle{nullptr};
 
 std::vector<XmlParser::Error> errors;
 std::map<LRESULT, std::wstring> errorText;
@@ -195,7 +198,7 @@ void apply_linters()
             auto output =
                 file.exec(command.first, command.second ? &text : nullptr);
             std::vector<XmlParser::Error> parseError;
-            if (output.first == "" && output.second != "")
+            if (output.first.empty() && not output.second.empty())
             {
                 throw std::runtime_error(output.second);
             }
@@ -254,38 +257,17 @@ void DrawBoxes()
 void CALLBACK
 RunThread(PVOID /*lpParam*/, BOOLEAN /*TimerOrWaitFired*/) noexcept
 {
-    if (threadHandle == 0)
+    if (threadHandle == nullptr)
     {
         unsigned threadID(0);
 #pragma warning(suppress : 26490)
         threadHandle = reinterpret_cast<HANDLE>(
             _beginthreadex(nullptr, 0, &AsyncCheck, nullptr, 0, &threadID)
         );
-        isChanged = false;
+        file_changed = false;
     }
 }
 
-void Check() noexcept
-{
-    if (isChanged)
-    {
-        std::ignore = DeleteTimerQueueTimer(timers, timer, nullptr);
-        CreateTimerQueueTimer(&timer, timers, RunThread, nullptr, 300, 0, 0);
-    }
-}
-
-void Changed() noexcept
-{
-    isChanged = true;
-    Check();
-}
-
-void initLinters()
-{
-    // FIXME put into class? NB note this is currently ony done aftrer ready which seems
-    // a bit pointless.
-    //    settings = std::make_unique<Linter::Settings>(getIniFileName());
-}
 }    // namespace
 
 DEFINE_PLUGIN_MENU_CALLBACKS(Linter::Linter);
@@ -293,23 +275,30 @@ DEFINE_PLUGIN_MENU_CALLBACKS(Linter::Linter);
 namespace Linter
 {
 
-// FIXME should this be a member?
-HANDLE timers{nullptr};
-
 Linter::Linter(NppData const &data) :
     Super(data, get_plugin_name()),
-    config_file_(get_config_dir() + L"\\linter.xml")
-{
-    timers = ::CreateTimerQueue();
-    //  output_dialogue =
-    //  std::make_unique<Linter::OutputDialog>(module_handle,
-    //  nppData._nppHandle, Menu_Entry_Show_Results);
+    config_file_(get_config_dir() + L"\\linter.xml"),
+    output_dialogue_(
+        std::make_unique<Output_Dialogue>(Menu_Entry_Show_Results, *this)
+    )
 
-    //FIXME This should be a member?
-    settings = std::make_unique<::Linter::Settings>(config_file_);
+{
+    // FIXME should this be a member
+    timers = ::CreateTimerQueue();
+
+    // FIXME This should be a member?
+    settings = std::make_unique<Settings>(config_file_);
+
+    // FIXME crock
+    set_legacy_nppdata(data);
+        // FIXME Crock
+        output_dialogue = output_dialogue_.get();
 }
 
-Linter::~Linter() = default;
+Linter::~Linter()
+{
+    std::ignore = ::DeleteTimerQueueEx(timers, nullptr);
+}
 
 wchar_t const *Linter::get_plugin_name() noexcept
 {
@@ -322,11 +311,11 @@ std::vector<FuncItem> &Linter::on_get_menu_entries()
     PLUGIN_MENU_MAKE_CALLBACK(Linter, entry, text, method, __VA_ARGS__)
 
     static ShortcutKey prev_key{
-        ._isCtrl = true, ._isShift = true, ._key = VK_F7
+        ._isAlt = true, ._isShift = true, ._key = VK_F7
     };
 
     static ShortcutKey next_key{
-        ._isCtrl = true, ._isShift = true, ._key = VK_F8
+        ._isAlt = true, ._isShift = true, ._key = VK_F8
     };
 
     static std::vector<FuncItem> res = {
@@ -354,22 +343,20 @@ std::vector<FuncItem> &Linter::on_get_menu_entries()
 
 void Linter::on_notification(SCNotification const *notification)
 {
-    static bool isReady = false;
-
-    if (threadHandle)
+    if (threadHandle != nullptr)
     {
         if (::WaitForSingleObject(threadHandle, 0) == WAIT_OBJECT_0)
         {
-            CloseHandle(threadHandle);
+            ::CloseHandle(threadHandle);
             DrawBoxes();
             threadHandle = 0;
-            Check();
+            relint_current_file();
         }
     }
 
     // Don't do anything until notepad++ tells us it's ready.
-    //FIXME Why?
-    if (! isReady && notification->nmhdr.code != NPPN_READY)
+    // FIXME Why?
+    if (! notepad_is_ready_ && notification->nmhdr.code != NPPN_READY)
     {
         return;
     }
@@ -377,23 +364,18 @@ void Linter::on_notification(SCNotification const *notification)
     switch (notification->nmhdr.code)
     {
         case NPPN_READY:
-            initLinters();
-            isReady = true;
-            Changed();
-            break;
-
-        case NPPN_SHUTDOWN:
-            commandMenuCleanUp();
+            notepad_is_ready_ = true;
+            mark_file_changed();
             break;
 
         case NPPN_BUFFERACTIVATED:
-            Changed();
+            mark_file_changed();
             break;
 
         case NPPN_FILESAVED:
             if (get_document_path(notification->nmhdr.idFrom) == config_file_)
             {
-                Changed();
+                mark_file_changed();
             }
             break;
 
@@ -403,7 +385,7 @@ void Linter::on_notification(SCNotification const *notification)
                  & (SC_MOD_DELETETEXT | SC_MOD_INSERTTEXT))
                 != 0)
             {
-                Changed();
+                mark_file_changed();
             }
             break;
 
@@ -411,6 +393,7 @@ void Linter::on_notification(SCNotification const *notification)
             showTooltip();
             break;
 
+        case NPPN_SHUTDOWN:
         case SCN_PAINTED:
         case SCN_FOCUSIN:
         case SCN_FOCUSOUT:
@@ -426,47 +409,31 @@ void Linter::edit_config() noexcept
 
 void Linter::show_results() noexcept
 {
-    if (output_dialogue)
-    {
-        output_dialogue->display();
-    }
-    else
-    {
-        message_box(
-            L"Unable to show lint errors due to startup issue",
-            MB_OK | MB_ICONERROR
-        );
-    }
+    output_dialogue_->display();
 }
 
 void Linter::select_next_lint() noexcept
 {
-    // FIXME move selection anyway
-    if (output_dialogue)
-    {
-        output_dialogue->select_next_lint();
-    }
-    else
-    {
-        message_box(
-            L"Unable to show lint errors due to startup issue",
-            MB_OK | MB_ICONERROR
-        );
-    }
+    output_dialogue_->select_next_lint();
 }
 
 void Linter::select_previous_lint() noexcept
 {
-    if (output_dialogue)
+    output_dialogue_->select_previous_lint();
+}
+
+void Linter::mark_file_changed() noexcept
+{
+    file_changed = true;
+    relint_current_file();
+}
+
+void Linter::relint_current_file() noexcept
+{
+    if (file_changed)
     {
-        output_dialogue->select_previous_lint();
-    }
-    else
-    {
-        message_box(
-            L"Unable to show lint errors due to startup issue",
-            MB_OK | MB_ICONERROR
-        );
+        std::ignore = DeleteTimerQueueTimer(timers, timer, nullptr);
+        CreateTimerQueueTimer(&timer, timers, RunThread, nullptr, 300, 0, 0);
     }
 }
 

@@ -1,19 +1,21 @@
-#include "stdafx.h"
 #include "FilePipe.h"
 
 #include "SystemError.h"
 
-Linter::FilePipe::Pipe Linter::FilePipe::create()
+namespace Linter
 {
-    SECURITY_ATTRIBUTES security;
 
-    security.nLength = sizeof(SECURITY_ATTRIBUTES);
-    security.bInheritHandle = TRUE;
-    security.lpSecurityDescriptor = nullptr;
+FilePipe::Pipe Linter::FilePipe::create()
+{
+    SECURITY_ATTRIBUTES security = {
+        .nLength = sizeof(SECURITY_ATTRIBUTES),
+        .lpSecurityDescriptor = nullptr,
+        .bInheritHandle = TRUE,
+    };
 
     HANDLE parent;
     HANDLE child;
-    if (!CreatePipe(&parent, &child, &security, 0))
+    if (! CreatePipe(&parent, &child, &security, 0))
     {
         throw SystemError(GetLastError());
     }
@@ -21,10 +23,12 @@ Linter::FilePipe::Pipe Linter::FilePipe::create()
     return {HandleWrapper(parent), HandleWrapper(child)};
 }
 
-void Linter::FilePipe::detachFromParent(const HandleWrapper &handle)
+void FilePipe::detachFromParent(HandleWrapper const &handle)
 {
-    if (!SetHandleInformation(handle, HANDLE_FLAG_INHERIT, 0))
+    if (! SetHandleInformation(handle, HANDLE_FLAG_INHERIT, 0))
     {
         throw SystemError(GetLastError());
     }
 }
+
+}    // namespace Linter

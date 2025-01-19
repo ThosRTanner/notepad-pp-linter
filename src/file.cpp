@@ -1,4 +1,3 @@
-#include "stdafx.h"
 #include "file.h"
 
 #include "FilePipe.h"
@@ -18,9 +17,11 @@
 
 using namespace Linter;
 
-std::pair<std::string, std::string> File::exec(std::wstring commandLine, std::string const *text)
+std::pair<std::string, std::string> File::exec(
+    std::wstring commandLine, std::string const *text
+)
 {
-    if (!m_file.empty())
+    if (! m_file.empty())
     {
         commandLine += ' ';
         commandLine += '"';
@@ -28,11 +29,11 @@ std::pair<std::string, std::string> File::exec(std::wstring commandLine, std::st
         commandLine += '"';
     }
 
-    const auto stdoutpipe = FilePipe::create();
-    const auto stderrpipe = FilePipe::create();
-    const auto stdinpipe = FilePipe::create();
+    auto const stdoutpipe = FilePipe::create();
+    auto const stderrpipe = FilePipe::create();
+    auto const stdinpipe = FilePipe::create();
 
-    //Stop my handle being inherited by the child
+    // Stop my handle being inherited by the child
     FilePipe::detachFromParent(stdoutpipe.m_reader);
     FilePipe::detachFromParent(stderrpipe.m_reader);
     FilePipe::detachFromParent(stdinpipe.m_writer);
@@ -46,9 +47,10 @@ std::pair<std::string, std::string> File::exec(std::wstring commandLine, std::st
 
     PROCESS_INFORMATION procInfo = {0};
 
-    //See https://devblogs.microsoft.com/oldnewthing/20090601-00/?p=18083
+    // See https://devblogs.microsoft.com/oldnewthing/20090601-00/?p=18083
     std::unique_ptr<wchar_t[]> const cmdline{wcsdup(commandLine.c_str())};
-    BOOL const isSuccess = CreateProcess(nullptr,
+    BOOL const isSuccess = CreateProcess(
+        nullptr,
         cmdline.get(),          // command line
         nullptr,                // process security attributes
         nullptr,                // primary thread security attributes
@@ -57,13 +59,16 @@ std::pair<std::string, std::string> File::exec(std::wstring commandLine, std::st
         nullptr,                // use parent's environment
         m_directory.c_str(),    // use parent's current directory
         &startInfo,             // STARTUPINFO pointer
-        &procInfo);             // receives PROCESS_INFORMATION
+        &procInfo
+    );    // receives PROCESS_INFORMATION
 
-    if (!isSuccess)
+    if (! isSuccess)
     {
         DWORD const error{GetLastError()};
         bstr_t const cmd{commandLine.c_str()};
-        throw SystemError(error, "Can't execute command: " + static_cast<std::string>(cmd));
+        throw SystemError(
+            error, "Can't execute command: " + static_cast<std::string>(cmd)
+        );
     }
 
     if (text != nullptr)
@@ -71,7 +76,8 @@ std::pair<std::string, std::string> File::exec(std::wstring commandLine, std::st
         stdinpipe.m_writer.writeFile(*text);
     }
 
-    //We need to close all the handles for this end otherwise strange things happen.
+    // We need to close all the handles for this end otherwise strange things
+    // happen.
     CloseHandle(procInfo.hProcess);
     CloseHandle(procInfo.hThread);
 
@@ -84,29 +90,39 @@ std::pair<std::string, std::string> File::exec(std::wstring commandLine, std::st
     return std::make_pair(out, err);
 }
 
-File::File(const std::wstring &fileName, const std::wstring &directory) : m_fileName(fileName), m_directory(directory)
+File::File(std::wstring const &fileName, std::wstring const &directory) :
+    m_fileName(fileName),
+    m_directory(directory)
 {
 }
 
 File::~File()
 {
-    if (!m_file.empty())
+    if (! m_file.empty())
     {
         _wunlink(m_file.c_str());
     }
 }
 
-void File::write(const std::string &data)
+void File::write(std::string const &data)
 {
     if (data.empty())
     {
         return;
     }
 
-    const std::wstring tempFileName = m_directory + L"/" + m_fileName + L".temp.linter.file.tmp";
+    std::wstring const tempFileName =
+        m_directory + L"/" + m_fileName + L".temp.linter.file.tmp";
 
     HandleWrapper fileHandle{CreateFile(
-        tempFileName.c_str(), GENERIC_WRITE, 0, nullptr, CREATE_ALWAYS, FILE_ATTRIBUTE_HIDDEN | FILE_ATTRIBUTE_TEMPORARY, nullptr)};
+        tempFileName.c_str(),
+        GENERIC_WRITE,
+        0,
+        nullptr,
+        CREATE_ALWAYS,
+        FILE_ATTRIBUTE_HIDDEN | FILE_ATTRIBUTE_TEMPORARY,
+        nullptr
+    )};
 
     fileHandle.writeFile(data);
 

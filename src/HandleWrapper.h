@@ -4,30 +4,32 @@
 
 namespace Linter
 {
-    class HandleWrapper
-    {
-      public:
-        explicit HandleWrapper(HANDLE h);
-        HandleWrapper(HandleWrapper const &) = delete;
-        HandleWrapper(HandleWrapper &&other) noexcept;
-        HandleWrapper &operator=(HandleWrapper const &) = delete;
-        HandleWrapper &operator=(HandleWrapper &&other) = delete;
-        ~HandleWrapper();
 
-        void close() const noexcept;
+class HandleWrapper
+{
+  public:
+    explicit HandleWrapper(HANDLE h);
+    HandleWrapper(HandleWrapper const &) = delete;
+    HandleWrapper(HandleWrapper &&other) noexcept;
+    HandleWrapper &operator=(HandleWrapper const &) = delete;
+    HandleWrapper &operator=(HandleWrapper &&other) = delete;
+    ~HandleWrapper();
 
-        operator HANDLE() const noexcept;
+    void close() const noexcept;
 
-        /** Write a string to the handle
-        *
-        * @param str - string to write
-        */
-        void writeFile(std::string const &str) const;
+    operator HANDLE() const noexcept;
 
-        /** Read the entire file */
-        std::string readFile() const;
+    /** Write a string to the handle
+     *
+     * @param str - string to write
+     */
+    void writeFile(std::string const &str) const;
 
-      private:
-        mutable HANDLE m_handle;
-    };
+    /** Read the entire file */
+    std::string readFile() const;
+
+  private:
+    mutable HANDLE m_handle;
+};
+
 }    // namespace Linter

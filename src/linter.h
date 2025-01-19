@@ -1,8 +1,13 @@
 #pragma once
 #include "Plugin/Plugin.h"
 
+#include <memory>
+
 namespace Linter
 {
+
+//Forward refs
+class Output_Dialogue;
 
 class Linter : public Plugin
 {
@@ -12,6 +17,11 @@ class Linter : public Plugin
     Linter(NppData const &);
 
     ~Linter();
+
+    Linter(Linter const &) = delete;
+    Linter(Linter &&) = delete;
+    Linter &operator=(Linter const &) = delete;
+    Linter &operator=(Linter &&) = delete;
 
     /** Return the plugin name */
     static wchar_t const *get_plugin_name() noexcept;
@@ -36,8 +46,20 @@ class Linter : public Plugin
     void select_next_lint() noexcept;
     void select_previous_lint() noexcept;
 
+    //Mark the current file changed and relint if necessary
+    void mark_file_changed() noexcept;
+
+    //Schedule lint of current file if necessary
+    void relint_current_file() noexcept;
+
     // xml file
     std::wstring const config_file_;
+
+    //Messages dockable box
+    std::unique_ptr<Output_Dialogue> output_dialogue_;
+
+    //Set once notepad is fully initialised
+    bool notepad_is_ready_ = false;
 };
 
 }    // namespace Linter

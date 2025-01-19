@@ -7,15 +7,14 @@
 
 namespace Linter
 {
-    class OutputDialog;
+class Output_Dialogue;
 }
+extern Linter::Output_Dialogue *output_dialogue;
 
-extern HANDLE timers;
-extern std::unique_ptr<Linter::OutputDialog> output_dialogue;
+struct NppData;
+void set_legacy_nppdata(NppData const &);
 
 int constexpr SCE_SQUIGGLE_UNDERLINE_RED = INDIC_CONTAINER + 2;
-
-void commandMenuCleanUp() noexcept;
 
 HWND getScintillaWindow() noexcept;
 

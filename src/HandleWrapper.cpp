@@ -1,4 +1,3 @@
-#include "stdafx.h"
 #include "HandleWrapper.h"
 
 #include "SystemError.h"
@@ -6,7 +5,8 @@
 #include <utility>
 #include <vector>
 
-using namespace Linter;
+namespace Linter
+{
 
 HandleWrapper::HandleWrapper(HANDLE h) : m_handle(h)
 {
@@ -16,7 +16,8 @@ HandleWrapper::HandleWrapper(HANDLE h) : m_handle(h)
     }
 }
 
-HandleWrapper::HandleWrapper(HandleWrapper &&other) noexcept : m_handle(std::exchange(other.m_handle, INVALID_HANDLE_VALUE))
+HandleWrapper::HandleWrapper(HandleWrapper &&other) noexcept :
+    m_handle(std::exchange(other.m_handle, INVALID_HANDLE_VALUE))
 {
 }
 
@@ -47,9 +48,12 @@ void HandleWrapper::writeFile(std::string const &str) const
     auto const end = str.end();
     while (start != end)
     {
-        const auto toWrite = static_cast<DWORD>(std::min(static_cast<std::ptrdiff_t>(std::numeric_limits<DWORD>::max()), end - start));
+        auto const toWrite = static_cast<DWORD>(std::min(
+            static_cast<std::ptrdiff_t>(std::numeric_limits<DWORD>::max()),
+            end - start
+        ));
         DWORD written;
-        if (!WriteFile(m_handle, &*start, toWrite, &written, nullptr))
+        if (! WriteFile(m_handle, &*start, toWrite, &written, nullptr))
         {
             throw SystemError();
         }
@@ -69,9 +73,9 @@ std::string HandleWrapper::readFile() const
     for (;;)
     {
         DWORD readBytes;
-        //The API suggests when the other end closes the pipe, you should get 0. What appears to happen
-        //is that you get broken pipe.
-        if (!ReadFile(m_handle, buff, BUFFSIZE, &readBytes, nullptr))
+        // The API suggests when the other end closes the pipe, you should get
+        // 0. What appears to happen is that you get broken pipe.
+        if (! ReadFile(m_handle, buff, BUFFSIZE, &readBytes, nullptr))
         {
             DWORD const err = GetLastError();
             if (err != ERROR_BROKEN_PIPE)
@@ -90,3 +94,5 @@ std::string HandleWrapper::readFile() const
 
     return result;
 }
+
+}    // namespace Linter

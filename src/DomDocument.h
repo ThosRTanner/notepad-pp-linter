@@ -7,38 +7,39 @@
 
 namespace Linter
 {
-    class DomDocument
-    {
-        /** Important note:
-         * The wstring constructor takes a filename.
-         * The string constructor takes an xml string.
-         */
 
-      public:
-        /** Creates an XML document from the supplied filename */
-        explicit DomDocument(std::wstring const &filename);
+class DomDocument
+{
+    /** Important note:
+     * The wstring constructor takes a filename.
+     * The string constructor takes an xml string.
+     */
 
-        /** Creates an XML document from the supplied UTF8 string */
-        explicit DomDocument(std::string const &xml);
+  public:
+    /** Creates an XML document from the supplied filename */
+    explicit DomDocument(std::wstring const &filename);
 
-        DomDocument(DomDocument const &) = delete;
-        DomDocument(DomDocument &&) = delete;
-        DomDocument &operator=(DomDocument const &) = delete;
-        DomDocument &operator=(DomDocument &&) = delete;
+    /** Creates an XML document from the supplied UTF8 string */
+    explicit DomDocument(std::string const &xml);
 
-        ~DomDocument();
+    DomDocument(DomDocument const &) = delete;
+    DomDocument(DomDocument &&) = delete;
+    DomDocument &operator=(DomDocument const &) = delete;
+    DomDocument &operator=(DomDocument &&) = delete;
 
-        /** Get list of nodes selected by supplied XPATH */
-        CComPtr<IXMLDOMNodeList> getNodeList(std::string const &xpath);
+    ~DomDocument();
 
-      private:
-        /** Set up the dom interface */
-        void init();
+    /** Get list of nodes selected by supplied XPATH */
+    CComPtr<IXMLDOMNodeList> getNodeList(std::string const &xpath);
 
-        /* Check the result of doing a load, die if it didn't complete */
-        void checkLoadResults(VARIANT_BOOL resultcode, HRESULT hr);
+  private:
+    /** Set up the dom interface */
+    void init();
 
-        CComPtr<IXMLDOMDocument2> m_document;
-    };
+    /* Check the result of doing a load, die if it didn't complete */
+    void checkLoadResults(VARIANT_BOOL resultcode, HRESULT hr);
+
+    CComPtr<IXMLDOMDocument2> m_document;
+};
 
 }    // namespace Linter

@@ -1,4 +1,3 @@
-#include "stdafx.h"
 #include "DockingDlgInterface.h"
 
 #include "SystemError.h"
@@ -13,43 +12,52 @@
 
 namespace
 {
-    std::wstring get_module_name(HINSTANCE module_instance)
-    {
-        TCHAR temp[MAX_PATH] = {0};
-        ::GetModuleFileName(module_instance, &temp[0], MAX_PATH);
-        return ::PathFindFileName(&temp[0]);
-    }
+std::wstring get_module_name(HINSTANCE module_instance)
+{
+    TCHAR temp[MAX_PATH] = {0};
+    ::GetModuleFileName(module_instance, &temp[0], MAX_PATH);
+    return ::PathFindFileName(&temp[0]);
+}
 
-    std::wstring get_plugin_name(HWND dialog_handle)
-    {
-        TCHAR temp[MAX_PATH] = {0};
-        ::GetWindowText(dialog_handle, &temp[0], MAX_PATH);
-        return &temp[0];
-    }
+std::wstring get_plugin_name(HWND dialog_handle)
+{
+    TCHAR temp[MAX_PATH] = {0};
+    ::GetWindowText(dialog_handle, &temp[0], MAX_PATH);
+    return &temp[0];
+}
 
 }    // namespace
 
-DockingDlgInterface::DockingDlgInterface(int dialogID, HINSTANCE hInst, HWND parent)
-    : module_instance_(hInst),
-      parent_window_(parent),
-      dialogue_window_(create_dialogue_window(dialogID)),
-      module_name_(get_module_name(hInst)),
-      plugin_name_(get_plugin_name(dialogue_window_))
+DockingDlgInterface::DockingDlgInterface(
+    int dialogID, HINSTANCE hInst, HWND parent
+) :
+    module_instance_(hInst),
+    parent_window_(parent),
+    dialogue_window_(create_dialogue_window(dialogID)),
+    module_name_(get_module_name(hInst)),
+    plugin_name_(get_plugin_name(dialogue_window_))
 {
-    ::SetWindowLongPtr(dialogue_window_, GWLP_USERDATA, cast_to<LONG_PTR, DockingDlgInterface *>(this));
+    ::SetWindowLongPtr(
+        dialogue_window_,
+        GWLP_USERDATA,
+        cast_to<LONG_PTR, DockingDlgInterface *>(this)
+    );
 
     SendDialogInfoToNPP(NPPM_MODELESSDIALOG, MODELESSDIALOGADD);
 }
 
 DockingDlgInterface::~DockingDlgInterface()
 {
-    // Stop dlgProc from doing anything, since it calls a virtual method which won't be there.
+    // Stop dlgProc from doing anything, since it calls a virtual method which
+    // won't be there.
     ::SetWindowLongPtr(dialogue_window_, GWLP_USERDATA, NULL);
     SendDialogInfoToNPP(NPPM_MODELESSDIALOG, MODELESSDIALOGREMOVE);
     ::DestroyWindow(dialogue_window_);
 }
 
-void DockingDlgInterface::register_dialogue(int dlg_num, Position pos, HICON icon, wchar_t const *extra) noexcept
+void DockingDlgInterface::register_dialogue(
+    int dlg_num, Position pos, HICON icon, wchar_t const *extra
+) noexcept
 {
     tTbData data{};
 
@@ -57,7 +65,8 @@ void DockingDlgInterface::register_dialogue(int dlg_num, Position pos, HICON ico
     data.pszName = plugin_name_.c_str();
     data.dlgID = dlg_num;
 
-    data.uMask = pos == Position::Floating ? DWS_DF_FLOATING : static_cast<int>(pos) << 28;
+    data.uMask = pos == Position::Floating ? DWS_DF_FLOATING
+                                           : static_cast<int>(pos) << 28;
     if (icon != nullptr)
     {
         data.uMask |= DWS_ICONTAB;
@@ -70,10 +79,16 @@ void DockingDlgInterface::register_dialogue(int dlg_num, Position pos, HICON ico
     }
     data.pszModuleName = module_name_.c_str();
 
-    ::SendMessage(parent_window_, NPPM_DMMREGASDCKDLG, 0, cast_to<LPARAM, tTbData *>(&data));
+    ::SendMessage(
+        parent_window_,
+        NPPM_DMMREGASDCKDLG,
+        0,
+        cast_to<LPARAM, tTbData *>(&data)
+    );
 
-    // I'm not sure why I need this. If I don't have it the dialogue opens up every time.
-    // If I do have it, the dialogue opens only if it was open when notepad++ was shut down...
+    // I'm not sure why I need this. If I don't have it the dialogue opens up
+    // every time. If I do have it, the dialogue opens only if it was open when
+    // notepad++ was shut down...
     hide();
 }
 
@@ -118,10 +133,12 @@ HWND DockingDlgInterface::GetDlgItem(int item) const noexcept
     return ::GetDlgItem(dialogue_window_, item);
 }
 
-//We can't make this noexcept as it'd mean child classes would unnecessarily need to be noexcept.
-//The caller will handle exceptions correctly.
+// We can't make this noexcept as it'd mean child classes would unnecessarily
+// need to be noexcept. The caller will handle exceptions correctly.
 #pragma warning(suppress : 26440)
-std::optional<LONG_PTR> DockingDlgInterface::run_dlgProc(UINT message, WPARAM, LPARAM lParam)
+std::optional<LONG_PTR> DockingDlgInterface::run_dlgProc(
+    UINT message, WPARAM, LPARAM lParam
+)
 {
     switch (message)
     {
@@ -146,8 +163,8 @@ std::optional<LONG_PTR> DockingDlgInterface::run_dlgProc(UINT message, WPARAM, L
                         is_floating_ = true;
                         return TRUE;
 
-                    //These are defined in DockingResource.h but I've not managed
-                    //to trigger them.
+                    // These are defined in DockingResource.h but I've not
+                    // managed to trigger them.
                     case DMN_SWITCHIN:
                     case DMN_SWITCHOFF:
                     case DMN_FLOATDROPPED:
@@ -159,7 +176,7 @@ std::optional<LONG_PTR> DockingDlgInterface::run_dlgProc(UINT message, WPARAM, L
         }
 
         case WM_PAINT:
-            //This must return FALSE (unhandled)
+            // This must return FALSE (unhandled)
             ::RedrawWindow(dialogue_window_, nullptr, nullptr, RDW_INVALIDATE);
             break;
 
@@ -172,12 +189,18 @@ std::optional<LONG_PTR> DockingDlgInterface::run_dlgProc(UINT message, WPARAM, L
 void DockingDlgInterface::SendDialogInfoToNPP(int msg, int wParam) noexcept
 {
 #pragma warning(suppress : 26490)
-    ::SendMessage(parent_window_, msg, wParam, reinterpret_cast<LPARAM>(dialogue_window_));
+    ::SendMessage(
+        parent_window_, msg, wParam, reinterpret_cast<LPARAM>(dialogue_window_)
+    );
 }
 
-INT_PTR CALLBACK DockingDlgInterface::dlgProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam) noexcept
+INT_PTR CALLBACK DockingDlgInterface::dlgProc(
+    HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam
+) noexcept
 {
-    auto *const instance = cast_to<DockingDlgInterface *, LONG_PTR>(::GetWindowLongPtr(hwnd, GWLP_USERDATA));
+    auto *const instance = cast_to<DockingDlgInterface *, LONG_PTR>(
+        ::GetWindowLongPtr(hwnd, GWLP_USERDATA)
+    );
     if (instance == nullptr)
     {
         return FALSE;
@@ -197,11 +220,20 @@ INT_PTR CALLBACK DockingDlgInterface::dlgProc(HWND hwnd, UINT message, WPARAM wP
         try
         {
             ::MessageBox(
-                hwnd, static_cast<wchar_t *>(static_cast<_bstr_t>(e.what())), instance->plugin_name_.c_str(), MB_OK | MB_ICONERROR);
+                hwnd,
+                static_cast<wchar_t *>(static_cast<_bstr_t>(e.what())),
+                instance->plugin_name_.c_str(),
+                MB_OK | MB_ICONERROR
+            );
         }
         catch (std::exception const &)
         {
-            ::MessageBox(hwnd, L"Caught exception but cannot get reason", instance->plugin_name_.c_str(), MB_OK | MB_ICONERROR);
+            ::MessageBox(
+                hwnd,
+                L"Caught exception but cannot get reason",
+                instance->plugin_name_.c_str(),
+                MB_OK | MB_ICONERROR
+            );
         }
         return FALSE;
     }
@@ -210,7 +242,12 @@ INT_PTR CALLBACK DockingDlgInterface::dlgProc(HWND hwnd, UINT message, WPARAM wP
 HWND DockingDlgInterface::create_dialogue_window(int dialogID)
 {
     HWND const dialogue_window{::CreateDialogParam(
-        module_instance_, MAKEINTRESOURCE(dialogID), parent_window_, dlgProc, cast_to<LPARAM, DockingDlgInterface *>(this))};
+        module_instance_,
+        MAKEINTRESOURCE(dialogID),
+        parent_window_,
+        dlgProc,
+        cast_to<LPARAM, DockingDlgInterface *>(this)
+    )};
     if (dialogue_window == nullptr)
     {
         throw Linter::SystemError("Could not create dialogue");

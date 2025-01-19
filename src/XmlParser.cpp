@@ -1,4 +1,3 @@
-#include "stdafx.h"
 #include "XmlParser.h"
 
 #include "DomDocument.h"
@@ -11,16 +10,18 @@
 
 using Linter::SystemError;
 
-std::vector<XmlParser::Error> XmlParser::getErrors(const std::string &xml)
+std::vector<XmlParser::Error> XmlParser::getErrors(std::string const &xml)
 {
     ::Linter::DomDocument XMLDocument(xml);
     // Sample errors:
     //
-    // <error line="12" column="19" severity="error" message="Unexpected identifier" source="jscs" />
-    // <error source="jshint.W101" message="Line is too long. (W101)" severity="warning" column="81" line="58" />
-    // <error source="eslint.rules.jsdoc/require-description-complete-sentence"
-    //        message="Sentences should start with an uppercase character. (jsdoc/require-description-complete-sentence)"
-    //        severity="warning" column="1" line="83" />
+    // <error line="12" column="19" severity="error" message="Unexpected
+    // identifier" source="jscs" /> <error source="jshint.W101" message="Line is
+    // too long. (W101)" severity="warning" column="81" line="58" /> <error
+    // source="eslint.rules.jsdoc/require-description-complete-sentence"
+    //        message="Sentences should start with an uppercase character.
+    //        (jsdoc/require-description-complete-sentence)" severity="warning"
+    //        column="1" line="83" />
     //
     // We currently ignore severity, and use the 1st word in source as the tool.
 
@@ -30,7 +31,7 @@ std::vector<XmlParser::Error> XmlParser::getErrors(const std::string &xml)
 
     LONG uLength;
     HRESULT hr = XMLNodeList->get_length(&uLength);
-    if (!SUCCEEDED(hr))
+    if (! SUCCEEDED(hr))
     {
         throw SystemError(hr, "Can't get XPath //error length");
     }
@@ -38,7 +39,7 @@ std::vector<XmlParser::Error> XmlParser::getErrors(const std::string &xml)
     {
         CComPtr<IXMLDOMNode> node;
         hr = XMLNodeList->nextNode(&node);
-        if (!SUCCEEDED(hr))
+        if (! SUCCEEDED(hr))
         {
             throw SystemError(hr, "Can't get next XPath element");
         }
@@ -64,11 +65,13 @@ std::vector<XmlParser::Error> XmlParser::getErrors(const std::string &xml)
         }
 
         element->getAttribute(static_cast<bstr_t>(L"message"), &value);
-#if __cplusplus >= 202002L
-        errors.push_back(Error{.m_line = line, .m_column = column, .m_message = value.bstrVal, .m_severity = severity, .m_tool = tool});
-#else
-        errors.push_back(Error{line, column, value.bstrVal, severity, tool});
-#endif
+        errors.push_back(Error{
+            .m_line = line,
+            .m_column = column,
+            .m_message = value.bstrVal,
+            .m_severity = severity,
+            .m_tool = tool
+        });
     }
 
     return errors;

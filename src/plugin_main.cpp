@@ -1,7 +1,6 @@
-#include "stdafx.h"
 #include "plugin_main.h"
 
-#include "OutputDialog.h"
+#include "Output_Dialogue.h"
 #include "linter.h"
 
 #include "notepad++/Notepad_plus_msgs.h"
@@ -18,27 +17,15 @@
 #pragma comment(lib, "msxml6.lib")
 #pragma comment(lib, "shlwapi.lib")
 
-HANDLE timers(0);
+Linter::Output_Dialogue *output_dialogue;
 
-std::unique_ptr<Linter::OutputDialog> output_dialogue;
-
-namespace
+NppData nppData;
+void set_legacy_nppdata(NppData const& data)
 {
-    HINSTANCE module_handle;
-    constexpr auto PLUGIN_NAME = L"Linter";
+    nppData = data;
+}
 
-    NppData nppData;
-
-    void pluginInit(HINSTANCE module) noexcept
-    {
-        module_handle = module;
-//        timers = CreateTimerQueue();
-    }
-
-    void pluginCleanUp() noexcept
-    {
-    }
-
+namespace {
     void ShowError(LRESULT start, LRESULT end, bool on) noexcept
     {
         LRESULT const oldid = SendEditor(SCI_GETINDICATORCURRENT);
@@ -48,31 +35,6 @@ namespace
     }
 
 }    // namespace
-
-int __stdcall DllMain(_In_ void *hModule, _In_ unsigned long reasonForCall, _In_opt_ void *) noexcept
-{
-    switch (reasonForCall)
-    {
-        case DLL_PROCESS_ATTACH:
-            pluginInit(static_cast<HINSTANCE>(hModule));
-            break;
-
-        case DLL_PROCESS_DETACH:
-            pluginCleanUp();
-            break;
-
-        case DLL_THREAD_ATTACH:
-        case DLL_THREAD_DETACH:
-        default:
-            break;
-    }
-
-    return TRUE;
-}
-
-void commandMenuCleanUp() noexcept
-{
-}
 
 HWND getScintillaWindow() noexcept
 {

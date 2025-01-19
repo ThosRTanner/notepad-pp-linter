@@ -4,25 +4,26 @@
 
 namespace Linter
 {
-    class Clipboard
-    {
-      public:
-        explicit Clipboard(HWND self);
 
-        Clipboard(Clipboard const &) = delete;
-        Clipboard(Clipboard &&) = delete;
+class Clipboard
+{
+  public:
+    explicit Clipboard(HWND self);
 
-        Clipboard operator=(Clipboard const &) = delete;
-        Clipboard operator=(Clipboard &&) = delete;
+    Clipboard(Clipboard const &) = delete;
+    Clipboard(Clipboard &&) = delete;
 
-        ~Clipboard();
+    Clipboard operator=(Clipboard const &) = delete;
+    Clipboard operator=(Clipboard &&) = delete;
 
-        void empty();
+    ~Clipboard();
 
-        void copy(std::wstring const &str);
+    void empty();
 
-      private:
-        HGLOBAL mem_handle_ = nullptr;
-    };
+    void copy(std::wstring const &str);
+
+  private:
+    HGLOBAL mem_handle_ = nullptr;
+};
 
 }    // namespace Linter

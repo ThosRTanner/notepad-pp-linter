@@ -1,17 +1,19 @@
-#include "stdafx.h"
 #include "Clipboard.h"
 
 #include "SystemError.h"
 
-Linter::Clipboard::Clipboard(HWND self)
+namespace Linter
 {
-    if (!::OpenClipboard(self))
+
+Clipboard::Clipboard(HWND self)
+{
+    if (! ::OpenClipboard(self))
     {
         throw SystemError("Cannot open the Clipboard");
     }
 }
 
-Linter::Clipboard::~Clipboard()
+Clipboard::~Clipboard()
 {
     if (mem_handle_ != nullptr)
     {
@@ -20,15 +22,15 @@ Linter::Clipboard::~Clipboard()
     ::CloseClipboard();
 }
 
-void Linter::Clipboard::empty()
+void Clipboard::empty()
 {
-    if (!::EmptyClipboard())
+    if (! ::EmptyClipboard())
     {
         throw SystemError("Cannot empty the Clipboard");
     }
 }
 
-void Linter::Clipboard::copy(std::wstring const &str)
+void Clipboard::copy(std::wstring const &str)
 {
     size_t const size = str.size() * sizeof(TCHAR);
     mem_handle_ = ::GlobalAlloc(GMEM_MOVEABLE, size);
@@ -54,3 +56,5 @@ void Linter::Clipboard::copy(std::wstring const &str)
 
     mem_handle_ = nullptr;
 }
+
+}    // namespace Linter
