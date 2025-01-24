@@ -44,9 +44,6 @@
     <ClCompile Include="src\Output_Dialogue.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\plugin_main.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="src\Settings.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -107,9 +104,6 @@
       <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="src\Output_Dialogue.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\plugin_main.h">
       <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="src\Settings.h">

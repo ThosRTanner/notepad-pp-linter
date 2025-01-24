@@ -12,6 +12,7 @@
 #include <cstddef>
 #include <sstream>
 #include <string>
+#include <type_traits>
 
 namespace Linter
 {
@@ -19,14 +20,22 @@ namespace Linter
 namespace
 {
 /** A slightly more explicit version of reinterpret_cast which
- * requires
- * both types to be specified, and disables the cast warning.
+ * requires both types to be specified, and disables the cast warning.
  */
 template <typename Target_Type, typename Orig_Type>
 Target_Type cast_to(Orig_Type val) noexcept
 {
 #pragma warning(suppress : 26490)
     return reinterpret_cast<Target_Type>(val);
+}
+
+/** A similar cast to wrap const_cast without the warnings. */
+template <typename Orig_Type>
+Orig_Type windows_const_cast(std::remove_pointer_t<Orig_Type> const *val
+) noexcept
+{
+#pragma warning(suppress : 26492)
+    return const_cast<Orig_Type>(val);
 }
 
 /** Columns in the error list */
@@ -158,7 +167,7 @@ void Output_Dialogue::initialise_dialogue() noexcept
 
     for (auto const &tab : tab_definitions_)
     {
-        tie.pszText = const_cast<wchar_t *>(tab.tab_name);
+        tie.pszText = windows_const_cast<wchar_t *>(tab.tab_name);
         TabCtrl_InsertItem(tab_bar_, tab.tab, &tie);
     }
 }
@@ -175,25 +184,25 @@ void Output_Dialogue::initialise_tab(TabDefinition &tab) noexcept
     lvc.mask = LVCF_FMT | LVCF_WIDTH | LVCF_TEXT | LVCF_SUBITEM;
 
     lvc.iSubItem = Column_Tool;
-    lvc.pszText = const_cast<wchar_t *>(L"Tool");
+    lvc.pszText = windows_const_cast<wchar_t *>(L"Tool");
     lvc.cx = 100;
     lvc.fmt = LVCFMT_LEFT;
     ListView_InsertColumn(list_view, lvc.iSubItem, &lvc);
 
     lvc.iSubItem = Column_Line;
-    lvc.pszText = const_cast<wchar_t *>(L"Line");
+    lvc.pszText = windows_const_cast<wchar_t *>(L"Line");
     lvc.cx = 50;
     lvc.fmt = LVCFMT_RIGHT;
     ListView_InsertColumn(list_view, lvc.iSubItem, &lvc);
 
     lvc.iSubItem = Column_Position;
-    lvc.pszText = const_cast<wchar_t *>(L"Col");
+    lvc.pszText = windows_const_cast<wchar_t *>(L"Col");
     lvc.cx = 50;
     lvc.fmt = LVCFMT_RIGHT;
     ListView_InsertColumn(list_view, lvc.iSubItem, &lvc);
 
     lvc.iSubItem = Column_Message;
-    lvc.pszText = const_cast<wchar_t *>(L"Reason");
+    lvc.pszText = windows_const_cast<wchar_t *>(L"Reason");
     lvc.cx = 500;
     lvc.fmt = LVCFMT_LEFT;
     ListView_InsertColumn(list_view, lvc.iSubItem, &lvc);
@@ -448,7 +457,7 @@ void Output_Dialogue::update_displayed_counts()
 
         TCITEM const tie{
             .mask = TCIF_TEXT,
-            .pszText = const_cast<wchar_t *>(strTabName.c_str())
+            .pszText = windows_const_cast<wchar_t *>(strTabName.c_str())
         };
         TabCtrl_SetItem(tab_bar_, tab.tab, &tie);
     }
@@ -469,7 +478,7 @@ void Output_Dialogue::add_errors(
         LVITEM const lvI{
             .mask = LVIF_TEXT | LVIF_STATE | LVIF_PARAM,
             .iItem = item,
-            .pszText = const_cast<wchar_t *>(L""),
+            .pszText = windows_const_cast<wchar_t *>(L""),
             .lParam = item
         };
         ListView_InsertItem(list_view, &lvI);
@@ -478,19 +487,19 @@ void Output_Dialogue::add_errors(
             list_view,
             item,
             Column_Message,
-            const_cast<wchar_t *>(lint.m_message.c_str())
+            windows_const_cast<wchar_t *>(lint.m_message.c_str())
         );
 
         std::wstring strFile = lint.m_tool;
         ListView_SetItemText(
-            list_view, item, Column_Tool, const_cast<wchar_t *>(strFile.c_str())
+            list_view, item, Column_Tool, windows_const_cast<wchar_t *>(strFile.c_str())
         );
 
         stream.str(L"");
         stream << lint.m_line;
         std::wstring strLine = stream.str();
         ListView_SetItemText(
-            list_view, item, Column_Line, const_cast<wchar_t *>(strLine.c_str())
+            list_view, item, Column_Line, windows_const_cast<wchar_t *>(strLine.c_str())
         );
 
         stream.str(L"");
@@ -500,7 +509,7 @@ void Output_Dialogue::add_errors(
             list_view,
             item,
             Column_Position,
-            const_cast<wchar_t *>(strColumn.c_str())
+            windows_const_cast<wchar_t *>(strColumn.c_str())
         );
 
         // Ensure the message column is as wide as the widest column.
