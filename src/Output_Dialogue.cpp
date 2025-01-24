@@ -3,7 +3,6 @@
 #include "Clipboard.h"
 #include "Linter.h"
 #include "SystemError.h"
-#include "plugin_main.h"
 #include "resource.h"
 
 #include <CommCtrl.h>
@@ -526,7 +525,7 @@ void Output_Dialogue::select_lint(int n) noexcept
     if (count == 0)
     {
         // no lints, set focus to editor
-        ::SetFocus(getScintillaWindow());
+        ::SetFocus(plugin()->get_scintilla_window());
         return;
     }
 
@@ -572,26 +571,27 @@ void Output_Dialogue::show_selected_lint(int selected_item) noexcept
         //  editConfig();
     }
 
-    SendEditor(SCI_GOTOLINE, line);
+    plugin()->send_to_editor(SCI_GOTOLINE, line);
 
     // since there is no SCI_GOTOCOLUMN, we move to the right until ...
     for (;;)
     {
-        SendEditor(SCI_CHARRIGHT);
-        LRESULT const curPos = SendEditor(SCI_GETCURRENTPOS);
-        LRESULT const curLine = SendEditor(SCI_LINEFROMPOSITION, curPos);
+        plugin()->send_to_editor(SCI_CHARRIGHT);
+        LRESULT const curPos = plugin()->send_to_editor(SCI_GETCURRENTPOS);
+        LRESULT const curLine =
+            plugin()->send_to_editor(SCI_LINEFROMPOSITION, curPos);
         if (curLine > line)
         {
             // ... current line is greater than desired line or ...
-            SendEditor(SCI_CHARLEFT);
+            plugin()->send_to_editor(SCI_CHARLEFT);
             break;
         }
 
-        LRESULT const curCol = SendEditor(SCI_GETCOLUMN, curPos);
+        LRESULT const curCol = plugin()->send_to_editor(SCI_GETCOLUMN, curPos);
         if (curCol > column)
         {
             // ... current column is greater than desired column or ...
-            SendEditor(SCI_CHARLEFT);
+            plugin()->send_to_editor(SCI_CHARLEFT);
             break;
         }
 

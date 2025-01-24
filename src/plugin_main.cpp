@@ -1,3 +1,4 @@
+#if 0
 #include "plugin_main.h"
 
 #include "Output_Dialogue.h"
@@ -24,17 +25,6 @@ void set_legacy_nppdata(NppData const& data)
 {
     nppData = data;
 }
-
-namespace {
-    void ShowError(LRESULT start, LRESULT end, bool on) noexcept
-    {
-        LRESULT const oldid = SendEditor(SCI_GETINDICATORCURRENT);
-        SendEditor(SCI_SETINDICATORCURRENT, SCE_SQUIGGLE_UNDERLINE_RED);
-        SendEditor(on ? SCI_INDICATORFILLRANGE : SCI_INDICATORCLEARRANGE, start, end - start);
-        SendEditor(SCI_SETINDICATORCURRENT, oldid);
-    }
-
-}    // namespace
 
 HWND getScintillaWindow() noexcept
 {
@@ -72,13 +62,4 @@ LRESULT getPositionForLine(int line) noexcept
 {
     return SendEditor(SCI_POSITIONFROMLINE, line);
 }
-
-void ShowError(LRESULT pos) noexcept
-{
-    ShowError(pos, pos + 1, true);
-}
-
-void HideErrors() noexcept
-{
-    ShowError(0, SendEditor(SCI_GETLENGTH), false);
-}
+#endif

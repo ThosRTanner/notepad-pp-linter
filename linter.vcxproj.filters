@@ -23,9 +23,6 @@
     <ClCompile Include="src\Clipboard.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\DockingDlgInterface.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="src\DomDocument.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -91,9 +88,6 @@
     <ClInclude Include="src\Clipboard.h">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\DockingDlgInterface.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
     <ClInclude Include="src\DomDocument.h">
       <Filter>Source Files</Filter>
     </ClInclude>
@@ -119,9 +113,6 @@
       <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="src\Settings.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\SourceLocation.h">
       <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="src\stdafx.h">
@@ -191,7 +182,6 @@
     </ResourceCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="cpp.hint" />
     <None Include=".clang-format" />
   </ItemGroup>
   <ItemGroup>

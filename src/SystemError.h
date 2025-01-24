@@ -1,7 +1,6 @@
 #pragma once
-#include "SourceLocation.h"
-
 #include <exception>
+#include <source_location>
 #include <string>
 
 namespace Linter
@@ -11,22 +10,45 @@ namespace Linter
 
       public:
         /** Creates an exception object from the current system error */
-        explicit SystemError(const SourceLocationCurrent &location = SourceLocation::current()) noexcept;
+        explicit SystemError(
+            std::source_location const &location =
+                std::source_location::current()
+        ) noexcept;
 
         /** Creates an exception object from the current system error, appends string */
-        explicit SystemError(std::string const &, const SourceLocationCurrent &location = SourceLocation::current()) noexcept;
+        explicit SystemError(
+            std::string const &,
+            std::source_location const &location =
+                std::source_location::current()
+        ) noexcept;
 
         /** Creates an exception object given a system error number */
-        explicit SystemError(DWORD err, const SourceLocationCurrent &location = SourceLocation::current()) noexcept;
+        explicit SystemError(
+            DWORD err,
+            std::source_location const &location =
+                std::source_location::current()
+        ) noexcept;
 
         /** Creates an exception object from specified error with addition information string */
-        SystemError(DWORD err, std::string const &, const SourceLocationCurrent &location = SourceLocation::current()) noexcept;
+        SystemError(
+            DWORD err, std::string const &,
+            std::source_location const &location =
+                std::source_location::current()
+        ) noexcept;
 
         /** Creates an exception object given an HRESULT */
-        explicit SystemError(HRESULT err, const SourceLocationCurrent &location = SourceLocation::current()) noexcept;
+        explicit SystemError(
+            HRESULT err,
+            std::source_location const &location =
+                std::source_location::current()
+        ) noexcept;
 
         /** Creates an exception object from specified error with addition information string */
-        SystemError(HRESULT err, std::string const &, const SourceLocationCurrent &location = SourceLocation::current()) noexcept;
+        SystemError(
+            HRESULT err, std::string const &,
+            std::source_location const &location =
+                std::source_location::current()
+        ) noexcept;
 
         SystemError(SystemError const &) noexcept;
         SystemError(SystemError &&) noexcept;
@@ -40,6 +62,7 @@ namespace Linter
       private:
         char m_buff[2048];
 
-        void addLocationToMessage(const SourceLocationCurrent &location) noexcept;
+        void addLocationToMessage(std::source_location const &location
+        ) noexcept;
     };
 }    // namespace Linter

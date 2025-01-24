@@ -23,10 +23,10 @@ std::unique_ptr<Npp_Plugin> plugin;
 
 extern "C" __declspec(dllexport) wchar_t const *getName()
 {
-    return Linter::Linter::get_plugin_name();
+    return Npp_Plugin::get_plugin_name();
 }
 
 extern "C" __declspec(dllexport) void setInfo(NppData data)
 {
-    plugin = std::make_unique<Linter::Linter>(data);
+    plugin = std::make_unique<Npp_Plugin>(data);
 }

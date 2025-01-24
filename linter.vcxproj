@@ -243,7 +243,6 @@
     <ClCompile Include="Docking_Dialogue_Interface\Plugin\Plugin.cpp" />
     <ClCompile Include="src\Clipboard.cpp" />
     <ClCompile Include="src\dllmain.cpp" />
-    <ClCompile Include="src\DockingDlgInterface.cpp" />
     <ClCompile Include="src\DomDocument.cpp" />
     <ClCompile Include="src\encoding.cpp" />
     <ClCompile Include="src\file.cpp" />
@@ -279,7 +278,6 @@
     <ClInclude Include="Docking_Dialogue_Interface\Plugin\Non_Modal_Dialogue_Interface.h" />
     <ClInclude Include="Docking_Dialogue_Interface\Plugin\Plugin.h" />
     <ClInclude Include="src\Clipboard.h" />
-    <ClInclude Include="src\DockingDlgInterface.h" />
     <ClInclude Include="src\DomDocument.h" />
     <ClInclude Include="src\encoding.h" />
     <ClInclude Include="src\file.h" />
@@ -290,7 +288,6 @@
     <ClInclude Include="src\plugin_main.h" />
     <ClInclude Include="src\resource.h" />
     <ClInclude Include="src\Settings.h" />
-    <ClInclude Include="src\SourceLocation.h" />
     <ClInclude Include="src\stdafx.h" />
     <ClInclude Include="src\SystemError.h" />
     <ClInclude Include="src\targetver.h" />
@@ -302,7 +299,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include=".clang-format" />
-    <None Include="cpp.hint" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="src\linter.ico" />

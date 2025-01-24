@@ -6,15 +6,20 @@
 #include "XmlParser.h"
 #include "encoding.h"
 #include "file.h"
-#include "plugin_main.h"
 
 #include "Plugin/Callback_Context.h"    // IWYU pragma: keep
-#include "notepad++/Notepad_plus_msgs.h"
 
+#include "notepad++/Notepad_plus_msgs.h"
+#include "notepad++/PluginInterface.h"
+#include "notepad++/Scintilla.h"
+
+#include <Shlwapi.h>
+#include <comutil.h>
 #include <handleapi.h>
 #include <process.h>
 #include <threadpoollegacyapiset.h>
 
+#include <exception>
 #include <map>
 #include <memory>
 #include <stdexcept>
@@ -22,58 +27,73 @@
 #include <tuple>
 #include <vector>
 
+#pragma comment(lib, "msxml6.lib")
+#pragma comment(lib, "shlwapi.lib")
+
 namespace
 {
 
-// Set if current file (buffer) has changed
-// FIXME should be class member
-bool file_changed = true;
+Linter::Output_Dialogue *output_dialogue;
 
-HANDLE timers{nullptr};
+NppData nppData;
+
+LRESULT SendApp(UINT Msg, WPARAM wParam = 0, LPARAM lParam = 0) noexcept
+{
+    return SendMessage(nppData._nppHandle, Msg, wParam, lParam);
+}
+
+LRESULT SendApp(UINT Msg, WPARAM wParam, void const *lParam) noexcept
+{
+#pragma warning(suppress : 26490)
+    return SendApp(Msg, wParam, reinterpret_cast<LPARAM>(lParam));
+}
+
+HWND getScintillaWindow() noexcept
+{
+    LRESULT const view = SendApp(NPPM_GETCURRENTVIEW);
+    return view == 0 ? nppData._scintillaMainHandle
+                     : nppData._scintillaSecondHandle;
+}
+
+LRESULT SendEditor(UINT Msg, WPARAM wParam = 0, LPARAM lParam = 0) noexcept
+{
+    return SendMessage(getScintillaWindow(), Msg, wParam, lParam);
+}
+
+LRESULT SendEditor(UINT Msg, WPARAM wParam, void const *lParam) noexcept
+{
+#pragma warning(suppress : 26490)
+    return SendEditor(Msg, wParam, reinterpret_cast<LPARAM>(lParam));
+}
+
+std::string getDocumentText()
+{
+    LRESULT const lengthDoc = SendEditor(SCI_GETLENGTH);
+    auto buff{std::make_unique_for_overwrite<char[]>(lengthDoc + 1)};
+    SendEditor(SCI_GETTEXT, lengthDoc, buff.get());
+    return std::string(buff.get(), lengthDoc);
+}
+
+std::string getLineText(int line)
+{
+    LRESULT const length = SendEditor(SCI_LINELENGTH, line);
+    auto buff{std::make_unique_for_overwrite<char[]>(length + 1)};
+    SendEditor(SCI_GETLINE, line, buff.get());
+    return std::string(buff.get(), length);
+}
+
+LRESULT getPositionForLine(int line) noexcept
+{
+    return SendEditor(SCI_POSITIONFROMLINE, line);
+}
+
 HANDLE timer{nullptr};
-HANDLE threadHandle{nullptr};
 
 std::vector<XmlParser::Error> errors;
 std::map<LRESULT, std::wstring> errorText;
-std::unique_ptr<Linter::Settings> settings;
+Linter::Settings *settings;
 
-void ClearErrors() noexcept
-{
-    HideErrors();
-    SendEditor(SCI_ANNOTATIONCLEARALL);
-}
-
-void InitErrors() noexcept
-{
-    // FIXME Make this configurable, because it is just strange.
-    SendEditor(
-        SCI_INDICSETSTYLE, SCE_SQUIGGLE_UNDERLINE_RED, INDIC_BOX
-    );    // INDIC_SQUIGGLE);
-    SendEditor(
-        SCI_INDICSETFORE, SCE_SQUIGGLE_UNDERLINE_RED, 0x0000ff
-    );    // Red (Reversed RGB)
-
-    if (settings->alpha() != -1 || settings->color() != -1)
-    {
-        SendEditor(
-            SCI_INDICSETSTYLE, SCE_SQUIGGLE_UNDERLINE_RED, INDIC_ROUNDBOX
-        );
-
-        if (settings->alpha() != -1)
-        {
-            SendEditor(
-                SCI_INDICSETALPHA, SCE_SQUIGGLE_UNDERLINE_RED, settings->alpha()
-            );
-        }
-
-        if (settings->color() != -1)
-        {
-            SendEditor(
-                SCI_INDICSETFORE, SCE_SQUIGGLE_UNDERLINE_RED, settings->color()
-            );
-        }
-    }
-}
+static int constexpr Error_Indicator = INDIC_CONTAINER + 2;
 
 std::wstring GetFilePart(unsigned int part)
 {
@@ -94,7 +114,7 @@ void showTooltip(std::wstring message = std::wstring())
     if (error != errorText.end())
     {
 #pragma warning(suppress : 26490)
-        SendMessage(
+        ::SendMessage(
             childHandle,
             WM_SETTEXT,
             0,
@@ -107,7 +127,7 @@ void showTooltip(std::wstring message = std::wstring())
     {
         wchar_t const title[256] = {0};
 #pragma warning(suppress : 26490)
-        SendMessage(
+        ::SendMessage(
             childHandle,
             WM_GETTEXT,
             sizeof(title) / sizeof(title[0]) - 1,
@@ -123,7 +143,7 @@ void showTooltip(std::wstring message = std::wstring())
         if (! message.empty())
         {
 #pragma warning(suppress : 26490)
-            SendMessage(
+            ::SendMessage(
                 childHandle,
                 WM_SETTEXT,
                 0,
@@ -161,14 +181,14 @@ void apply_linters()
     }
 
     std::vector<std::pair<std::wstring, bool>> commands;
-    bool useStdin = true;
+    bool needs_file = false;
     auto const extension = GetFilePart(NPPM_GETEXTPART);
     for (auto const &linter : *settings)
     {
         if (extension == linter.m_extension)
         {
             commands.emplace_back(linter.m_command, linter.m_useStdin);
-            useStdin = useStdin && linter.m_useStdin;
+            needs_file |= ! linter.m_useStdin;
         }
     }
 
@@ -183,7 +203,7 @@ void apply_linters()
     File file{
         GetFilePart(NPPM_GETFILENAME), GetFilePart(NPPM_GETCURRENTDIRECTORY)
     };
-    if (! useStdin)
+    if (needs_file)
     {
         file.write(text);
     }
@@ -218,7 +238,7 @@ void apply_linters()
 
 unsigned int __stdcall AsyncCheck(void *)
 {
-    std::ignore = CoInitialize(nullptr);
+    std::ignore = ::CoInitialize(nullptr);
     try
     {
         apply_linters();
@@ -234,40 +254,6 @@ unsigned int __stdcall AsyncCheck(void *)
     return 0;
 }
 
-void DrawBoxes()
-{
-    ClearErrors();
-    errorText.clear();
-    if (! errors.empty())
-    {
-        InitErrors();
-    }
-
-    for (XmlParser::Error const &error : errors)
-    {
-        auto position = getPositionForLine(error.m_line - 1);
-        position += Encoding::utfOffset(
-            getLineText(error.m_line - 1), error.m_column - 1
-        );
-        errorText[position] = error.m_message;
-        ShowError(position);
-    }
-}
-
-void CALLBACK
-RunThread(PVOID /*lpParam*/, BOOLEAN /*TimerOrWaitFired*/) noexcept
-{
-    if (threadHandle == nullptr)
-    {
-        unsigned threadID(0);
-#pragma warning(suppress : 26490)
-        threadHandle = reinterpret_cast<HANDLE>(
-            _beginthreadex(nullptr, 0, &AsyncCheck, nullptr, 0, &threadID)
-        );
-        file_changed = false;
-    }
-}
-
 }    // namespace
 
 DEFINE_PLUGIN_MENU_CALLBACKS(Linter::Linter);
@@ -278,26 +264,25 @@ namespace Linter
 Linter::Linter(NppData const &data) :
     Super(data, get_plugin_name()),
     config_file_(get_config_dir() + L"\\linter.xml"),
+    settings_(std::make_unique<Settings>(config_file_)),
     output_dialogue_(
         std::make_unique<Output_Dialogue>(Menu_Entry_Show_Results, *this)
-    )
-
+    ),
+    timer_queue_(::CreateTimerQueue())
 {
-    // FIXME should this be a member
-    timers = ::CreateTimerQueue();
-
-    // FIXME This should be a member?
-    settings = std::make_unique<Settings>(config_file_);
+    // FIXME Crock
+    settings = settings_.get();
 
     // FIXME crock
-    set_legacy_nppdata(data);
-        // FIXME Crock
-        output_dialogue = output_dialogue_.get();
+    nppData = data;
+
+    // FIXME Crock
+    output_dialogue = output_dialogue_.get();
 }
 
 Linter::~Linter()
 {
-    std::ignore = ::DeleteTimerQueueEx(timers, nullptr);
+    std::ignore = ::DeleteTimerQueueEx(timer_queue_, nullptr);
 }
 
 wchar_t const *Linter::get_plugin_name() noexcept
@@ -343,20 +328,19 @@ std::vector<FuncItem> &Linter::on_get_menu_entries()
 
 void Linter::on_notification(SCNotification const *notification)
 {
-    if (threadHandle != nullptr)
+    if (bg_linter_thread_handle_ != nullptr)
     {
-        if (::WaitForSingleObject(threadHandle, 0) == WAIT_OBJECT_0)
+        if (::WaitForSingleObject(bg_linter_thread_handle_, 0) == WAIT_OBJECT_0)
         {
-            ::CloseHandle(threadHandle);
-            DrawBoxes();
-            threadHandle = 0;
+            ::CloseHandle(bg_linter_thread_handle_);
+            bg_linter_thread_handle_ = nullptr;
+            highlight_errors();
             relint_current_file();
         }
     }
 
     // Don't do anything until notepad++ tells us it's ready.
-    // FIXME Why?
-    if (! notepad_is_ready_ && notification->nmhdr.code != NPPN_READY)
+    if (notification->nmhdr.code != NPPN_READY && not notepad_is_ready_)
     {
         return;
     }
@@ -424,17 +408,115 @@ void Linter::select_previous_lint() noexcept
 
 void Linter::mark_file_changed() noexcept
 {
-    file_changed = true;
+    file_changed_ = true;
     relint_current_file();
 }
 
 void Linter::relint_current_file() noexcept
 {
-    if (file_changed)
+    if (file_changed_)
     {
-        std::ignore = DeleteTimerQueueTimer(timers, timer, nullptr);
-        CreateTimerQueueTimer(&timer, timers, RunThread, nullptr, 300, 0, 0);
+        std::ignore = ::DeleteTimerQueueTimer(timer_queue_, timer, nullptr);
+        ::CreateTimerQueueTimer(
+            &timer, timer_queue_, relint_timer_callback, this, 300, 0, 0
+        );
     }
+}
+
+void Linter::highlight_errors()
+{
+    clear_error_highlights();
+    errorText.clear();
+    if (! errors.empty())
+    {
+        setup_error_indicator();
+    }
+
+    for (XmlParser::Error const &error : errors)
+    {
+        auto position = getPositionForLine(error.m_line - 1);
+        position += Encoding::utfOffset(
+            getLineText(error.m_line - 1), error.m_column - 1
+        );
+        errorText[position] = error.m_message;
+        highlight_error_at(position);
+    }
+}
+
+void Linter::highlight_error_at(LRESULT position) noexcept
+{
+    update_error_indicators(position, position + 1, true);
+}
+
+void Linter::clear_error_highlights() noexcept
+{
+    update_error_indicators(0, send_to_editor(SCI_GETLENGTH), false);
+    send_to_editor(SCI_ANNOTATIONCLEARALL);
+}
+
+void Linter::update_error_indicators(
+    LRESULT start, LRESULT end, bool on
+) noexcept
+{
+    LRESULT const oldid = SendEditor(SCI_GETINDICATORCURRENT);
+    send_to_editor(SCI_SETINDICATORCURRENT, Error_Indicator);
+    send_to_editor(
+        on ? SCI_INDICATORFILLRANGE : SCI_INDICATORCLEARRANGE,
+        start,
+        end - start
+    );
+    send_to_editor(SCI_SETINDICATORCURRENT, oldid);
+}
+
+void Linter::setup_error_indicator() noexcept
+{
+    // FIXME Why do we have to do this every time we want to use the indicator?
+    // FIXME Make all this configurable, because it is just strange.
+    send_to_editor(SCI_INDICSETSTYLE, Error_Indicator, INDIC_BOX);
+    // ^ could use INDIC_SQUIGGLE instead of INDIC_BOX
+    send_to_editor(SCI_INDICSETFORE, Error_Indicator, 0x0000ff);
+    // ^ Red (Reversed RGB)
+
+    if (settings->alpha() != -1 || settings->color() != -1)
+    {
+        // Magic happens. This isn't documented
+        send_to_editor(SCI_INDICSETSTYLE, Error_Indicator, INDIC_ROUNDBOX);
+
+        if (settings->alpha() != -1)
+        {
+            send_to_editor(
+                SCI_INDICSETALPHA, Error_Indicator, settings->alpha()
+            );
+        }
+
+        if (settings->color() != -1)
+        {
+            send_to_editor(
+                SCI_INDICSETFORE, Error_Indicator, settings->color()
+            );
+        }
+    }
+}
+
+void Linter::
+    relint_timer_callback(void *self, BOOLEAN /*TimerOrWaitFired*/) noexcept
+{
+    static_cast<Linter *>(self)->start_async_timer();
+}
+
+void Linter::start_async_timer() noexcept
+{
+    if (bg_linter_thread_handle_ != nullptr)
+    {
+        // The thread is doing something...
+        return;
+    }
+    unsigned thread_id(0);
+#pragma warning(suppress : 26490)
+    bg_linter_thread_handle_ = reinterpret_cast<HANDLE>(
+        _beginthreadex(nullptr, 0, &AsyncCheck, this, 0, &thread_id)
+    );
+    file_changed_ = false;
 }
 
 }    // namespace Linter

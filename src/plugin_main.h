@@ -1,5 +1,5 @@
 #pragma once
-
+#if 0
 #include "notepad++/Scintilla.h"
 
 #include <memory>
@@ -13,8 +13,6 @@ extern Linter::Output_Dialogue *output_dialogue;
 
 struct NppData;
 void set_legacy_nppdata(NppData const &);
-
-int constexpr SCE_SQUIGGLE_UNDERLINE_RED = INDIC_CONTAINER + 2;
 
 HWND getScintillaWindow() noexcept;
 
@@ -37,6 +35,4 @@ inline LRESULT SendApp(UINT Msg, WPARAM wParam, void const *lParam) noexcept
 std::string getDocumentText();
 std::string getLineText(int line);
 LRESULT getPositionForLine(int line) noexcept;
-
-void ShowError(LRESULT pos) noexcept;
-void HideErrors() noexcept;
+#endif

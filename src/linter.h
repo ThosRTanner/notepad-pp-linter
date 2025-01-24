@@ -8,6 +8,7 @@ namespace Linter
 
 //Forward refs
 class Output_Dialogue;
+class Settings;
 
 class Linter : public Plugin
 {
@@ -52,14 +53,43 @@ class Linter : public Plugin
     //Schedule lint of current file if necessary
     void relint_current_file() noexcept;
 
+    void highlight_errors();
+
+    void highlight_error_at(LRESULT pos) noexcept;
+
+    void clear_error_highlights() noexcept;
+
+    void update_error_indicators(LRESULT start, LRESULT end, bool on) noexcept;
+
+    void setup_error_indicator() noexcept;
+
+    static void __stdcall relint_timer_callback(void *, BOOLEAN) noexcept;
+
+    void start_async_timer() noexcept;
+
     // xml file
     std::wstring const config_file_;
 
     //Messages dockable box
     std::unique_ptr<Output_Dialogue> output_dialogue_;
 
-    //Set once notepad is fully initialised
-    bool notepad_is_ready_ = false;
+    //Settings
+    std::unique_ptr<Settings> settings_;
+
+    //Windows timer queue
+    HANDLE timer_queue_;
+
+    //Background thread that spawns linters and collects results.
+    HANDLE bg_linter_thread_handle_{nullptr};
+
+    // Set once notepad is fully initialised
+    bool notepad_is_ready_{false};
+
+    // Set if current file (buffer) has changed
+    bool file_changed_ = true;
+
+
+
 };
 
 }    // namespace Linter

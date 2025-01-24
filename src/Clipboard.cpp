@@ -7,7 +7,7 @@ namespace Linter
 
 Clipboard::Clipboard(HWND self)
 {
-    if (! ::OpenClipboard(self))
+    if (not ::OpenClipboard(self))
     {
         throw SystemError("Cannot open the Clipboard");
     }
@@ -24,7 +24,7 @@ Clipboard::~Clipboard()
 
 void Clipboard::empty()
 {
-    if (! ::EmptyClipboard())
+    if (not ::EmptyClipboard())
     {
         throw SystemError("Cannot empty the Clipboard");
     }
