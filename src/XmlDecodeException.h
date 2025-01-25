@@ -22,23 +22,23 @@ namespace Linter
         /** Line in xml file at which error occured */
         long line() const noexcept
         {
-            return m_line;
+            return line_;
         }
 
         /** Column in line in xml file at which error occured */
         long column() const noexcept
         {
-            return m_column;
+            return column_;
         }
 
       private:
         //value of what()
-        char m_buff[2048];
+        char what_string_[2048];
 
         //Line at which error detected
-        long m_line;
+        long line_;
 
         //Column at which error detected
-        long m_column;
+        long column_;
     };
 }    // namespace Linter

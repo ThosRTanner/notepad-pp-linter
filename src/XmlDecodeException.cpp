@@ -13,8 +13,8 @@ Linter::XmlDecodeException::XmlDecodeException(IXMLDOMParseError &error)
     // Note that this constructor does allocations. Sorry.
 
     // Get the error line and column for later.
-    error.get_line(&m_line);
-    error.get_linepos(&m_column);
+    error.get_line(&line_);
+    error.get_linepos(&column_);
 
     // We use the rest of the information to construct the what message.
     BSTR url;
@@ -23,7 +23,7 @@ Linter::XmlDecodeException::XmlDecodeException(IXMLDOMParseError &error)
     std::wostringstream msg;
     msg << "Invalid xml in "
         << (url == nullptr ? L"temporary linter output file" : url)
-        << " at line " << m_line << " col " << m_column;
+        << " at line " << line_ << " col " << column_;
 
     BSTR text;
     error.get_srcText(&text);
@@ -42,8 +42,8 @@ Linter::XmlDecodeException::XmlDecodeException(IXMLDOMParseError &error)
         << " " << reason;
 
     std::snprintf(
-        &m_buff[0],
-        sizeof(m_buff),
+        &what_string_[0],
+        sizeof(what_string_),
         "%s",
         static_cast<char *>(static_cast<bstr_t>(msg.str().c_str()))
     );
@@ -66,5 +66,5 @@ Linter::XmlDecodeException::~XmlDecodeException() = default;
 
 char const *Linter::XmlDecodeException::what() const noexcept
 {
-    return &m_buff[0];
+    return &what_string_[0];
 }
