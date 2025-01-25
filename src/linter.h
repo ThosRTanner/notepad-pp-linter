@@ -67,6 +67,10 @@ class Linter : public Plugin
 
     void start_async_timer() noexcept;
 
+    static unsigned int __stdcall async_lint_thread(void *) noexcept;
+
+    unsigned int run_linter() noexcept;
+
     // xml file
     std::wstring const config_file_;
 
@@ -79,7 +83,10 @@ class Linter : public Plugin
     //Windows timer queue
     HANDLE timer_queue_;
 
-    //Background thread that spawns linters and collects results.
+    //Timer for relinting
+    HANDLE relint_timer_{nullptr};
+
+    // Background thread that spawns linters and collects results.
     HANDLE bg_linter_thread_handle_{nullptr};
 
     // Set once notepad is fully initialised
@@ -87,8 +94,6 @@ class Linter : public Plugin
 
     // Set if current file (buffer) has changed
     bool file_changed_ = true;
-
-
 
 };
 

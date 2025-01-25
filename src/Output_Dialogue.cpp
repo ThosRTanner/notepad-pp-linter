@@ -29,7 +29,9 @@ Target_Type cast_to(Orig_Type val) noexcept
     return reinterpret_cast<Target_Type>(val);
 }
 
-/** A similar cast to wrap const_cast without the warnings. */
+/** A similar cast to wrap const_cast without the warnings.
+ * The windows APIs leave a lot to be desired in the area of const correctness.
+ */
 template <typename Orig_Type>
 Orig_Type windows_const_cast(std::remove_pointer_t<Orig_Type> const *val
 ) noexcept

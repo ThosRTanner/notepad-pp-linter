@@ -14,6 +14,7 @@
 #include "notepad++/Scintilla.h"
 
 #include <Shlwapi.h>
+#include <combaseapi.h>
 #include <comutil.h>
 #include <handleapi.h>
 #include <process.h>
@@ -87,8 +88,6 @@ LRESULT getPositionForLine(int line) noexcept
     return SendEditor(SCI_POSITIONFROMLINE, line);
 }
 
-HANDLE timer{nullptr};
-
 std::vector<XmlParser::Error> errors;
 std::map<LRESULT, std::wstring> errorText;
 Linter::Settings *settings;
@@ -157,22 +156,16 @@ void handle_exception(std::exception const &exc, int line = 0, int col = 0)
 {
     std::string const str(exc.what());
     std::wstring const wstr{str.begin(), str.end()};
-    if (output_dialogue)
-    {
-        output_dialogue->add_system_error(
-            XmlParser::Error{line, col, wstr, L"linter"}
-        );
-    }
+    output_dialogue->add_system_error(
+        XmlParser::Error{line, col, wstr, L"linter"}
+    );
     showTooltip(L"Linter: " + wstr);
 }
 
 void apply_linters()
 {
     errors.clear();
-    if (output_dialogue)
-    {
-        output_dialogue->clear_lint_info();
-    }
+    output_dialogue->clear_lint_info();
 
     settings->refresh();
     if (settings->empty())
@@ -234,24 +227,6 @@ void apply_linters()
             handle_exception(e);
         }
     }
-}
-
-unsigned int __stdcall AsyncCheck(void *)
-{
-    std::ignore = ::CoInitialize(nullptr);
-    try
-    {
-        apply_linters();
-    }
-    catch (::Linter::XmlDecodeException const &e)
-    {
-        handle_exception(e, e.line(), e.column());
-    }
-    catch (std::exception const &e)
-    {
-        handle_exception(e);
-    }
-    return 0;
 }
 
 }    // namespace
@@ -416,9 +391,10 @@ void Linter::relint_current_file() noexcept
 {
     if (file_changed_)
     {
-        std::ignore = ::DeleteTimerQueueTimer(timer_queue_, timer, nullptr);
+        std::ignore =
+            ::DeleteTimerQueueTimer(timer_queue_, relint_timer_, nullptr);
         ::CreateTimerQueueTimer(
-            &timer, timer_queue_, relint_timer_callback, this, 300, 0, 0
+            &relint_timer_, timer_queue_, relint_timer_callback, this, 300, 0, 0
         );
     }
 }
@@ -514,9 +490,53 @@ void Linter::start_async_timer() noexcept
     unsigned thread_id(0);
 #pragma warning(suppress : 26490)
     bg_linter_thread_handle_ = reinterpret_cast<HANDLE>(
-        _beginthreadex(nullptr, 0, &AsyncCheck, this, 0, &thread_id)
+        _beginthreadex(nullptr, 0, &async_lint_thread, this, 0, &thread_id)
     );
     file_changed_ = false;
+}
+
+unsigned int Linter::async_lint_thread(void *self) noexcept
+{
+    return static_cast<Linter *>(self)->run_linter();
+}
+
+unsigned int Linter::run_linter() noexcept
+{
+    std::ignore = ::CoInitialize(nullptr);
+    try
+    {
+        try
+        {
+            apply_linters();
+        }
+        catch (::Linter::XmlDecodeException const &e)
+        {
+            handle_exception(e, e.line(), e.column());
+        }
+        catch (std::exception const &e)
+        {
+            handle_exception(e);
+        }
+    }
+    catch (std::exception const &e)
+    {
+        try
+        {
+            message_box(
+                static_cast<wchar_t *>(static_cast<_bstr_t>(e.what())),
+                MB_OK | MB_ICONERROR
+            );
+        }
+        catch (std::exception const &)
+        {
+            message_box(
+                L"Caught exception but cannot get reason", MB_OK | MB_ICONERROR
+            );
+        }
+        return FALSE;
+    }
+    ::CoUninitialize();
+    return 0;
 }
 
 }    // namespace Linter
