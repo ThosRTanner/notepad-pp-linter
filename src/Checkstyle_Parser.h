@@ -3,7 +3,10 @@
 #include <string>
 #include <vector>
 
-class XmlParser
+namespace Linter
+{
+
+class Checkstyle_Parser
 {
   public:
     struct Error
@@ -15,5 +18,7 @@ class XmlParser
         std::wstring tool_;
     };
 
-    static std::vector<Error> getErrors(std::string const &xml);
+    static std::vector<Error> get_errors(std::string const &xml);
 };
+
+}    // namespace Linter

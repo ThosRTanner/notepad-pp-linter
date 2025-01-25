@@ -29,7 +29,7 @@
     <ClCompile Include="src\encoding.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\file.cpp">
+    <ClCompile Include="src\File.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\FilePipe.cpp">
@@ -56,7 +56,7 @@
     <ClCompile Include="src\XmlDecodeException.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\XmlParser.cpp">
+    <ClCompile Include="src\CheckStyle_Parser.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Docking_Dialogue_Interface\Plugin\Dialogue_Interface.cpp">
@@ -91,7 +91,7 @@
     <ClInclude Include="src\encoding.h">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\file.h">
+    <ClInclude Include="src\File.h">
       <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="src\FilePipe.h">
@@ -121,7 +121,7 @@
     <ClInclude Include="src\XmlDecodeException.h">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\XmlParser.h">
+    <ClInclude Include="src\Checkstyle_Parser.h">
       <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="src\resource.h">

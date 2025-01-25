@@ -8,7 +8,10 @@
 #include <ios>
 #include <sstream>
 
-Linter::XmlDecodeException::XmlDecodeException(IXMLDOMParseError &error)
+namespace Linter
+{
+
+XmlDecodeException::XmlDecodeException(IXMLDOMParseError &error)
 {
     // Note that this constructor does allocations. Sorry.
 
@@ -49,22 +52,23 @@ Linter::XmlDecodeException::XmlDecodeException(IXMLDOMParseError &error)
     );
 }
 
-Linter::XmlDecodeException::XmlDecodeException(XmlDecodeException const
-                                                   &) noexcept = default;
-
-Linter::XmlDecodeException::XmlDecodeException(XmlDecodeException &&) noexcept =
+XmlDecodeException::XmlDecodeException(XmlDecodeException const &) noexcept =
     default;
 
-Linter::XmlDecodeException &
-Linter::XmlDecodeException::operator=(XmlDecodeException const &) noexcept =
+XmlDecodeException::XmlDecodeException(XmlDecodeException &&) noexcept =
     default;
 
-Linter::XmlDecodeException &
-Linter::XmlDecodeException::operator=(XmlDecodeException &&) noexcept = default;
+XmlDecodeException &XmlDecodeException::operator=(XmlDecodeException const
+                                                      &) noexcept = default;
 
-Linter::XmlDecodeException::~XmlDecodeException() = default;
+XmlDecodeException &XmlDecodeException::operator=(XmlDecodeException
+                                                      &&) noexcept = default;
 
-char const *Linter::XmlDecodeException::what() const noexcept
+XmlDecodeException::~XmlDecodeException() = default;
+
+char const *XmlDecodeException::what() const noexcept
 {
     return &what_string_[0];
 }
+
+}    // namespace Linter

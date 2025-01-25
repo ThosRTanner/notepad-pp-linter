@@ -4,5 +4,5 @@
 class Encoding
 {
   public:
-    static int utfOffset(const std::string & utf8, int unicode_offset) noexcept;
+    static int utfOffset(std::string const &utf8, int unicode_offset) noexcept;
 };

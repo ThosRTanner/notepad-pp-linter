@@ -114,14 +114,14 @@ void Output_Dialogue::clear_lint_info()
     update_displayed_counts();
 }
 
-void Output_Dialogue::add_system_error(XmlParser::Error const &err)
+void Output_Dialogue::add_system_error(Checkstyle_Parser::Error const &err)
 {
-    std::vector<XmlParser::Error> errs;
+    std::vector<Checkstyle_Parser::Error> errs;
     errs.push_back(err);
     add_errors(Tab::System_Error, errs);
 }
 
-void Output_Dialogue::add_lint_errors(std::vector<XmlParser::Error> const &errs)
+void Output_Dialogue::add_lint_errors(std::vector<Checkstyle_Parser::Error> const &errs)
 {
     add_errors(Tab::Lint_Error, errs);
 }
@@ -466,7 +466,7 @@ void Output_Dialogue::update_displayed_counts()
 }
 
 void Output_Dialogue::add_errors(
-    Tab tab, std::vector<XmlParser::Error> const &lints
+    Tab tab, std::vector<Checkstyle_Parser::Error> const &lints
 )
 {
     auto &tab_def = tab_definitions_[tab];
@@ -494,14 +494,20 @@ void Output_Dialogue::add_errors(
 
         std::wstring strFile = lint.tool_;
         ListView_SetItemText(
-            list_view, item, Column_Tool, windows_const_cast<wchar_t *>(strFile.c_str())
+            list_view,
+            item,
+            Column_Tool,
+            windows_const_cast<wchar_t *>(strFile.c_str())
         );
 
         stream.str(L"");
         stream << lint.line_;
         std::wstring strLine = stream.str();
         ListView_SetItemText(
-            list_view, item, Column_Line, windows_const_cast<wchar_t *>(strLine.c_str())
+            list_view,
+            item,
+            Column_Line,
+            windows_const_cast<wchar_t *>(strLine.c_str())
         );
 
         stream.str(L"");
@@ -569,7 +575,7 @@ void Output_Dialogue::show_selected_lint(int selected_item) noexcept
     LVITEM const item{.mask = LVIF_PARAM, .iItem = selected_item};
     ListView_GetItem(current_list_view_, &item);
 
-    XmlParser::Error const &lint_error = current_tab_->errors[item.lParam];
+    Checkstyle_Parser::Error const &lint_error = current_tab_->errors[item.lParam];
 
     int const line = std::max(lint_error.line_ - 1, 0);
     int const column = std::max(lint_error.column_ - 1, 0);
@@ -664,7 +670,7 @@ int CALLBACK Output_Dialogue::sort_call_function(
 {
     // FIXME pass pointer to appropriate errors
     auto const &errs =
-        *cast_to<std::vector<XmlParser::Error> const *, LPARAM>(lParamSort);
+        *cast_to<std::vector<Checkstyle_Parser::Error> const *, LPARAM>(lParamSort);
     int res = errs[row1_index].line_ - errs[row2_index].line_;
     if (res == 0)
     {

@@ -1,12 +1,14 @@
 #pragma once
 #include "Plugin/Plugin.h"
 
+#include "Checkstyle_Parser.h"
+
 #include <memory>
 
 namespace Linter
 {
 
-//Forward refs
+// Forward refs
 class Output_Dialogue;
 class Settings;
 
@@ -47,10 +49,10 @@ class Linter : public Plugin
     void select_next_lint() noexcept;
     void select_previous_lint() noexcept;
 
-    //Mark the current file changed and relint if necessary
+    // Mark the current file changed and relint if necessary
     void mark_file_changed() noexcept;
 
-    //Schedule lint of current file if necessary
+    // Schedule lint of current file if necessary
     void relint_current_file() noexcept;
 
     void highlight_errors();
@@ -71,19 +73,21 @@ class Linter : public Plugin
 
     unsigned int run_linter() noexcept;
 
+    void apply_linters();
+
     // xml file
     std::wstring const config_file_;
 
-    //Messages dockable box
+    // Messages dockable box
     std::unique_ptr<Output_Dialogue> output_dialogue_;
 
-    //Settings
+    // Settings
     std::unique_ptr<Settings> settings_;
 
-    //Windows timer queue
+    // Windows timer queue
     HANDLE timer_queue_;
 
-    //Timer for relinting
+    // Timer for relinting
     HANDLE relint_timer_{nullptr};
 
     // Background thread that spawns linters and collects results.
@@ -95,6 +99,8 @@ class Linter : public Plugin
     // Set if current file (buffer) has changed
     bool file_changed_ = true;
 
+    // List of errors picked up in latest lint(s)
+    std::vector<Checkstyle_Parser::Error> errors_;
 };
 
 }    // namespace Linter

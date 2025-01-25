@@ -1,4 +1,4 @@
-#include "file.h"
+#include "File.h"
 
 #include "FilePipe.h"
 #include "SystemError.h"

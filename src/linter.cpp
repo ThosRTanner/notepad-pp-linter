@@ -1,11 +1,11 @@
 #include "Linter.h"
 
+#include "Checkstyle_Parser.h"
+#include "File.h"
 #include "Output_Dialogue.h"
 #include "Settings.h"
 #include "XmlDecodeException.h"
-#include "XmlParser.h"
 #include "encoding.h"
-#include "file.h"
 
 #include "Plugin/Callback_Context.h"    // IWYU pragma: keep
 
@@ -67,30 +67,7 @@ LRESULT SendEditor(UINT Msg, WPARAM wParam, void const *lParam) noexcept
     return SendEditor(Msg, wParam, reinterpret_cast<LPARAM>(lParam));
 }
 
-std::string getDocumentText()
-{
-    LRESULT const lengthDoc = SendEditor(SCI_GETLENGTH);
-    auto buff{std::make_unique_for_overwrite<char[]>(lengthDoc + 1)};
-    SendEditor(SCI_GETTEXT, lengthDoc, buff.get());
-    return std::string(buff.get(), lengthDoc);
-}
-
-std::string getLineText(int line)
-{
-    LRESULT const length = SendEditor(SCI_LINELENGTH, line);
-    auto buff{std::make_unique_for_overwrite<char[]>(length + 1)};
-    SendEditor(SCI_GETLINE, line, buff.get());
-    return std::string(buff.get(), length);
-}
-
-LRESULT getPositionForLine(int line) noexcept
-{
-    return SendEditor(SCI_POSITIONFROMLINE, line);
-}
-
-std::vector<XmlParser::Error> errors;
 std::map<LRESULT, std::wstring> errorText;
-Linter::Settings *settings;
 
 static int constexpr Error_Indicator = INDIC_CONTAINER + 2;
 
@@ -157,76 +134,9 @@ void handle_exception(std::exception const &exc, int line = 0, int col = 0)
     std::string const str(exc.what());
     std::wstring const wstr{str.begin(), str.end()};
     output_dialogue->add_system_error(
-        XmlParser::Error{line, col, wstr, L"linter"}
+        Linter::Checkstyle_Parser::Error{line, col, wstr, L"linter"}
     );
     showTooltip(L"Linter: " + wstr);
-}
-
-void apply_linters()
-{
-    errors.clear();
-    output_dialogue->clear_lint_info();
-
-    settings->refresh();
-    if (settings->empty())
-    {
-        throw std::runtime_error("Empty linters.xml");
-    }
-
-    std::vector<std::pair<std::wstring, bool>> commands;
-    bool needs_file = false;
-    auto const extension = GetFilePart(NPPM_GETEXTPART);
-    for (auto const &linter : *settings)
-    {
-        if (extension == linter.extension_)
-        {
-            commands.emplace_back(linter.command_, linter.use_stdin_);
-            needs_file |= ! linter.use_stdin_;
-        }
-    }
-
-    if (commands.empty())
-    {
-        return;
-    }
-
-    std::string const text = getDocumentText();
-
-    std::wstring const full_path{GetFilePart(NPPM_GETFULLCURRENTPATH)};
-    ::Linter::File file{
-        GetFilePart(NPPM_GETFILENAME), GetFilePart(NPPM_GETCURRENTDIRECTORY)
-    };
-    if (needs_file)
-    {
-        file.write(text);
-    }
-
-    for (auto const &command : commands)
-    {
-        // std::string xml =
-        // File::exec(L"C:\\Users\\deadem\\AppData\\Roaming\\npm\\jscs.cmd
-        // --reporter=checkstyle ", file);
-        try
-        {
-            auto output =
-                file.exec(command.first, command.second ? &text : nullptr);
-            std::vector<XmlParser::Error> parseError;
-            if (output.first.empty() && not output.second.empty())
-            {
-                throw std::runtime_error(output.second);
-            }
-            parseError = XmlParser::getErrors(output.first);
-            errors.insert(errors.end(), parseError.begin(), parseError.end());
-            if (output_dialogue)
-            {
-                output_dialogue->add_lint_errors(parseError);
-            }
-        }
-        catch (std::exception const &e)
-        {
-            handle_exception(e);
-        }
-    }
 }
 
 }    // namespace
@@ -245,9 +155,6 @@ Linter::Linter(NppData const &data) :
     ),
     timer_queue_(::CreateTimerQueue())
 {
-    // FIXME Crock
-    settings = settings_.get();
-
     // FIXME crock
     nppData = data;
 
@@ -262,7 +169,7 @@ Linter::~Linter()
 
 wchar_t const *Linter::get_plugin_name() noexcept
 {
-    return L"Linter";
+    return L"Linter++";
 }
 
 std::vector<FuncItem> &Linter::on_get_menu_entries()
@@ -270,6 +177,8 @@ std::vector<FuncItem> &Linter::on_get_menu_entries()
 #define MAKE_CALLBACK(entry, text, method, ...) \
     PLUGIN_MENU_MAKE_CALLBACK(Linter, entry, text, method, __VA_ARGS__)
 
+    //Note: These are ctrl-shift in jslint
+    //Put in settings
     static ShortcutKey prev_key{
         ._isAlt = true, ._isShift = true, ._key = VK_F7
     };
@@ -403,16 +312,16 @@ void Linter::highlight_errors()
 {
     clear_error_highlights();
     errorText.clear();
-    if (! errors.empty())
+    if (! errors_.empty())
     {
         setup_error_indicator();
     }
 
-    for (XmlParser::Error const &error : errors)
+    for (Checkstyle_Parser::Error const &error : errors_)
     {
-        auto position = getPositionForLine(error.line_ - 1);
+        auto position = send_to_editor(SCI_POSITIONFROMLINE, error.line_ - 1);
         position += Encoding::utfOffset(
-            getLineText(error.line_ - 1), error.column_ - 1
+            get_line_text(error.line_ - 1), error.column_ - 1
         );
         errorText[position] = error.message_;
         highlight_error_at(position);
@@ -434,7 +343,7 @@ void Linter::update_error_indicators(
     LRESULT start, LRESULT end, bool on
 ) noexcept
 {
-    LRESULT const oldid = SendEditor(SCI_GETINDICATORCURRENT);
+    LRESULT const oldid = send_to_editor(SCI_GETINDICATORCURRENT);
     send_to_editor(SCI_SETINDICATORCURRENT, Error_Indicator);
     send_to_editor(
         on ? SCI_INDICATORFILLRANGE : SCI_INDICATORCLEARRANGE,
@@ -453,30 +362,31 @@ void Linter::setup_error_indicator() noexcept
     send_to_editor(SCI_INDICSETFORE, Error_Indicator, 0x0000ff);
     // ^ Red (Reversed RGB)
 
-    if (settings->alpha() != -1 || settings->color() != -1)
+    if (settings_->alpha() != -1 || settings_->color() != -1)
     {
         // Magic happens. This isn't documented
         send_to_editor(SCI_INDICSETSTYLE, Error_Indicator, INDIC_ROUNDBOX);
 
-        if (settings->alpha() != -1)
+        if (settings_->alpha() != -1)
         {
             send_to_editor(
-                SCI_INDICSETALPHA, Error_Indicator, settings->alpha()
+                SCI_INDICSETALPHA, Error_Indicator, settings_->alpha()
             );
         }
 
-        if (settings->color() != -1)
+        if (settings_->color() != -1)
         {
             send_to_editor(
-                SCI_INDICSETFORE, Error_Indicator, settings->color()
+                SCI_INDICSETFORE, Error_Indicator, settings_->color()
             );
         }
     }
 }
 
 #pragma warning(suppress : 26429)
-void Linter::
-    relint_timer_callback(void *self, BOOLEAN /*TimerOrWaitFired*/) noexcept
+void Linter::relint_timer_callback(
+    void *self, BOOLEAN /*TimerOrWaitFired*/
+) noexcept
 {
     static_cast<Linter *>(self)->start_async_timer();
 }
@@ -539,6 +449,73 @@ unsigned int Linter::run_linter() noexcept
     }
     ::CoUninitialize();
     return 0;
+}
+
+void Linter::apply_linters()
+{
+    errors_.clear();
+    output_dialogue_->clear_lint_info();
+
+    settings_->refresh();
+    if (settings_->empty())
+    {
+        throw std::runtime_error("Empty linters.xml");
+    }
+
+    std::vector<std::pair<std::wstring, bool>> commands;
+    bool needs_file = false;
+    auto const extension = GetFilePart(NPPM_GETEXTPART);
+    for (auto const &linter : *settings_)
+    {
+        if (linter.extension_ == extension)
+        {
+            commands.emplace_back(linter.command_, linter.use_stdin_);
+            if (not linter.use_stdin_)
+            {
+                needs_file = true;
+            }
+        }
+    }
+
+    if (commands.empty())
+    {
+        return;
+    }
+
+    std::string const text = get_document_text();
+
+    std::wstring const full_path{GetFilePart(NPPM_GETFULLCURRENTPATH)};
+    ::Linter::File file{
+        GetFilePart(NPPM_GETFILENAME), GetFilePart(NPPM_GETCURRENTDIRECTORY)
+    };
+    if (needs_file)
+    {
+        file.write(text);
+    }
+
+    for (auto const &command : commands)
+    {
+        // std::string xml =
+        // File::exec(L"C:\\Users\\deadem\\AppData\\Roaming\\npm\\jscs.cmd
+        // --reporter=checkstyle ", file);
+        try
+        {
+            auto output =
+                file.exec(command.first, command.second ? &text : nullptr);
+            std::vector<Checkstyle_Parser::Error> parseError;
+            if (output.first.empty() && not output.second.empty())
+            {
+                throw std::runtime_error(output.second);
+            }
+            parseError = Checkstyle_Parser::get_errors(output.first);
+            errors_.insert(errors_.end(), parseError.begin(), parseError.end());
+            output_dialogue_->add_lint_errors(parseError);
+        }
+        catch (std::exception const &e)
+        {
+            handle_exception(e);
+        }
+    }
 }
 
 }    // namespace Linter

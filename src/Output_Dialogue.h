@@ -1,7 +1,8 @@
 #pragma once
+#include "Checkstyle_Parser.h"
+
 
 #include "Plugin/Docking_Dialogue_Interface.h"
-#include "XmlParser.h"
 
 #include <array>
 #include <vector>
@@ -39,10 +40,10 @@ class Output_Dialogue : protected Docking_Dialogue_Interface
     void clear_lint_info();
 
     /** Add an error to the system error list */
-    void add_system_error(XmlParser::Error const &);
+    void add_system_error(Checkstyle_Parser::Error const &);
 
     /** Add a list of lint errors to the lint error list */
-    void add_lint_errors(std::vector<XmlParser::Error> const &lints);
+    void add_lint_errors(std::vector<Checkstyle_Parser::Error> const &lints);
 
     /** Selects the next lint message */
     void select_next_lint() noexcept;
@@ -51,7 +52,6 @@ class Output_Dialogue : protected Docking_Dialogue_Interface
     void select_previous_lint() noexcept;
 
   private:
-
     enum Tab
     {
         Lint_Error,
@@ -73,7 +73,7 @@ class Output_Dialogue : protected Docking_Dialogue_Interface
         UINT list_view_id;
         Tab tab;
         HWND list_view;
-        std::vector<XmlParser::Error> errors;
+        std::vector<Checkstyle_Parser::Error> errors;
     };
 
     Message_Return on_dialogue_message(
@@ -108,7 +108,7 @@ class Output_Dialogue : protected Docking_Dialogue_Interface
     void update_displayed_counts();
 
     /** Add list of errors to the appropriate tab */
-    void add_errors(Tab tab, std::vector<XmlParser::Error> const &lints);
+    void add_errors(Tab tab, std::vector<Checkstyle_Parser::Error> const &lints);
 
     /** Skip to the n-th lint forward or backward */
     void select_lint(int n) noexcept;

@@ -32,20 +32,20 @@ void Clipboard::empty()
 
 void Clipboard::copy(std::wstring const &str)
 {
-    size_t const size = str.size() * sizeof(TCHAR);
+    size_t const size = str.size() * sizeof(str[0]);
     mem_handle_ = ::GlobalAlloc(GMEM_MOVEABLE, size);
     if (mem_handle_ == nullptr)
     {
         throw SystemError("Cannot allocate memory for clipboard");
     }
 
-    LPVOID lpsz = ::GlobalLock(mem_handle_);
-    if (lpsz == nullptr)
+    LPVOID mem_ptr_ = ::GlobalLock(mem_handle_);
+    if (mem_ptr_ == nullptr)
     {
         throw SystemError("Cannot lock memory for clipboard");
     }
 
-    std::memcpy(lpsz, str.c_str(), size);
+    std::memcpy(mem_ptr_, str.c_str(), size);
 
     ::GlobalUnlock(mem_handle_);
 

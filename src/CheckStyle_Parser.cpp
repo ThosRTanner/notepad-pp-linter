@@ -1,4 +1,4 @@
-#include "XmlParser.h"
+#include "Checkstyle_Parser.h"
 
 #include "DomDocument.h"
 #include "SystemError.h"
@@ -8,11 +8,13 @@
 
 #include <msxml.h>
 
-using Linter::SystemError;
-
-std::vector<XmlParser::Error> XmlParser::getErrors(std::string const &xml)
+namespace Linter
 {
-    ::Linter::DomDocument XMLDocument{xml};
+
+std::vector<Checkstyle_Parser::Error> Checkstyle_Parser::get_errors(std::string const &xml)
+{
+    DomDocument XMLDocument{xml};
+
     // Sample errors:
     //
     // <error line="12" column="19" severity="error" message="Unexpected
@@ -25,7 +27,7 @@ std::vector<XmlParser::Error> XmlParser::getErrors(std::string const &xml)
     //
     // We currently ignore severity, and use the 1st word in source as the tool.
 
-    std::vector<XmlParser::Error> errors;
+    std::vector<Checkstyle_Parser::Error> errors;
 
     CComPtr<IXMLDOMNodeList> XMLNodeList{XMLDocument.getNodeList("//error")};
 
@@ -76,3 +78,5 @@ std::vector<XmlParser::Error> XmlParser::getErrors(std::string const &xml)
 
     return errors;
 }
+
+}    // namespace Linter

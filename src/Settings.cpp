@@ -8,12 +8,15 @@
 
 #include <sstream>
 
-Linter::Settings::Settings(std::wstring const &settings_xml) :
+namespace Linter
+{
+
+Settings::Settings(std::wstring const &settings_xml) :
     settings_xml_(settings_xml)
 {
 }
 
-void Linter::Settings::refresh()
+void Settings::refresh()
 {
     auto const last_write_time{std::filesystem::last_write_time(settings_xml_)};
     if (last_write_time != last_update_time_)
@@ -23,7 +26,7 @@ void Linter::Settings::refresh()
     }
 }
 
-void Linter::Settings::read_settings()
+void Settings::read_settings()
 {
     alpha_ = -1;
     colour_ = -1;
@@ -118,3 +121,5 @@ void Linter::Settings::read_settings()
         }
     }
 }
+
+}    // namespace Linter

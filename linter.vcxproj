@@ -245,7 +245,7 @@
     <ClCompile Include="src\dllmain.cpp" />
     <ClCompile Include="src\DomDocument.cpp" />
     <ClCompile Include="src\encoding.cpp" />
-    <ClCompile Include="src\file.cpp" />
+    <ClCompile Include="src\File.cpp" />
     <ClCompile Include="src\FilePipe.cpp" />
     <ClCompile Include="src\HandleWrapper.cpp" />
     <ClCompile Include="src\Linter.cpp" />
@@ -259,7 +259,7 @@
     </ClCompile>
     <ClCompile Include="src\SystemError.cpp" />
     <ClCompile Include="src\XmlDecodeException.cpp" />
-    <ClCompile Include="src\XmlParser.cpp" />
+    <ClCompile Include="src\CheckStyle_Parser.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Docking_Dialogue_Interface\notepad++\DockingFeature\Docking.h" />
@@ -279,7 +279,7 @@
     <ClInclude Include="src\Clipboard.h" />
     <ClInclude Include="src\DomDocument.h" />
     <ClInclude Include="src\encoding.h" />
-    <ClInclude Include="src\file.h" />
+    <ClInclude Include="src\File.h" />
     <ClInclude Include="src\FilePipe.h" />
     <ClInclude Include="src\HandleWrapper.h" />
     <ClInclude Include="src\Linter.h" />
@@ -290,7 +290,7 @@
     <ClInclude Include="src\SystemError.h" />
     <ClInclude Include="src\targetver.h" />
     <ClInclude Include="src\XmlDecodeException.h" />
-    <ClInclude Include="src\XmlParser.h" />
+    <ClInclude Include="src\Checkstyle_Parser.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="src\Resource.rc" />
