@@ -13,9 +13,9 @@ namespace Linter
 
         struct Linter
         {
-            std::wstring m_extension;
-            std::wstring m_command;
-            bool m_useStdin = false;
+            std::wstring extension_;
+            std::wstring command_;
+            bool use_stdin_ = false;
         };
 
         /** Returns the alpha mask for the 'squiggle' or -1 if not set */

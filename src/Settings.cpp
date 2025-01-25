@@ -32,14 +32,14 @@ void Linter::Settings::read_settings()
     DomDocument XMLDocument(settings_xml_);
     CComPtr<IXMLDOMNodeList> styleNode{XMLDocument.getNodeList("//style")};
 
-    LONG uLength;
-    HRESULT hr = styleNode->get_length(&uLength);
+    LONG nodes;
+    HRESULT hr = styleNode->get_length(&nodes);
     if (! SUCCEEDED(hr))
     {
         throw SystemError(hr, "Can't get XPath style length");
     }
 
-    if (uLength != 0)
+    if (nodes != 0)
     {
         CComPtr<IXMLDOMNode> node;
         hr = styleNode->nextNode(&node);
@@ -89,13 +89,13 @@ void Linter::Settings::read_settings()
     // identifier" source="jscs" />
     CComPtr<IXMLDOMNodeList> XMLNodeList{XMLDocument.getNodeList("//linter")};
 
-    hr = XMLNodeList->get_length(&uLength);
+    hr = XMLNodeList->get_length(&nodes);
     if (! SUCCEEDED(hr))
     {
         throw SystemError(hr, "Can't get XPath length");
     }
 
-    for (int iIndex = 0; iIndex < uLength; iIndex++)
+    for (LONG entry = 0; entry < nodes; entry++)
     {
         CComPtr<IXMLDOMNode> node;
         hr = XMLNodeList->nextNode(&node);
@@ -106,14 +106,13 @@ void Linter::Settings::read_settings()
             CComVariant value;
 
             element->getAttribute(static_cast<bstr_t>(L"extension"), &value);
-            linter.m_extension = value.bstrVal;
+            linter.extension_ = value.bstrVal;
 
             element->getAttribute(static_cast<bstr_t>(L"command"), &value);
-            linter.m_command = value.bstrVal;
+            linter.command_ = value.bstrVal;
 
             element->getAttribute(static_cast<bstr_t>(L"stdin"), &value);
-            linter.m_useStdin =
-                value.boolVal != 0;    // Is that strictly necessary?
+            linter.use_stdin_ = value.boolVal;
 
             linters_.push_back(linter);
         }

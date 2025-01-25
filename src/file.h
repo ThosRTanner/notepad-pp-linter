@@ -2,10 +2,13 @@
 #include <string>
 #include <utility>
 
+namespace Linter
+{
+
 class File
 {
   public:
-    File(const std::wstring &fileName, const std::wstring &directory);
+    File(std::wstring const &filename, std::wstring const &directory);
 
     File(File const &) = delete;
     File(File &&) = delete;
@@ -13,11 +16,15 @@ class File
     File &operator=(File &&) = delete;
 
     ~File();
-    std::pair<std::string, std::string> exec(std::wstring commandLine, std::string const *str);
-    void write(const std::string &data);
+    std::pair<std::string, std::string> exec(
+        std::wstring command_line, std::string const *str
+    );
+    void write(std::string const &data);
 
   private:
-    std::wstring m_fileName;
-    std::wstring m_directory;
-    std::wstring m_file;
+    std::wstring filename_;
+    std::wstring directory_;
+    std::wstring file_;
 };
+
+}    // namespace Linter

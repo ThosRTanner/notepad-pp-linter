@@ -29,7 +29,7 @@ class HandleWrapper
     std::string readFile() const;
 
   private:
-    mutable HANDLE m_handle;
+    mutable HANDLE handle_;
 };
 
 }    // namespace Linter

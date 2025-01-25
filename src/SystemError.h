@@ -60,7 +60,7 @@ namespace Linter
         char const *what() const noexcept override;
 
       private:
-        char m_buff[2048];
+        char what_string_[2048];
 
         void addLocationToMessage(std::source_location const &location
         ) noexcept;

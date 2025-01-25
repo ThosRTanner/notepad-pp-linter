@@ -178,10 +178,10 @@ void apply_linters()
     auto const extension = GetFilePart(NPPM_GETEXTPART);
     for (auto const &linter : *settings)
     {
-        if (extension == linter.m_extension)
+        if (extension == linter.extension_)
         {
-            commands.emplace_back(linter.m_command, linter.m_useStdin);
-            needs_file |= ! linter.m_useStdin;
+            commands.emplace_back(linter.command_, linter.use_stdin_);
+            needs_file |= ! linter.use_stdin_;
         }
     }
 
@@ -193,7 +193,7 @@ void apply_linters()
     std::string const text = getDocumentText();
 
     std::wstring const full_path{GetFilePart(NPPM_GETFULLCURRENTPATH)};
-    File file{
+    ::Linter::File file{
         GetFilePart(NPPM_GETFILENAME), GetFilePart(NPPM_GETCURRENTDIRECTORY)
     };
     if (needs_file)
@@ -410,11 +410,11 @@ void Linter::highlight_errors()
 
     for (XmlParser::Error const &error : errors)
     {
-        auto position = getPositionForLine(error.m_line - 1);
+        auto position = getPositionForLine(error.line_ - 1);
         position += Encoding::utfOffset(
-            getLineText(error.m_line - 1), error.m_column - 1
+            getLineText(error.line_ - 1), error.column_ - 1
         );
-        errorText[position] = error.m_message;
+        errorText[position] = error.message_;
         highlight_error_at(position);
     }
 }
@@ -474,6 +474,7 @@ void Linter::setup_error_indicator() noexcept
     }
 }
 
+#pragma warning(suppress : 26429)
 void Linter::
     relint_timer_callback(void *self, BOOLEAN /*TimerOrWaitFired*/) noexcept
 {
@@ -487,7 +488,7 @@ void Linter::start_async_timer() noexcept
         // The thread is doing something...
         return;
     }
-    unsigned thread_id(0);
+    unsigned thread_id{0};
 #pragma warning(suppress : 26490)
     bg_linter_thread_handle_ = reinterpret_cast<HANDLE>(
         _beginthreadex(nullptr, 0, &async_lint_thread, this, 0, &thread_id)
@@ -495,6 +496,7 @@ void Linter::start_async_timer() noexcept
     file_changed_ = false;
 }
 
+#pragma warning(suppress : 26429)
 unsigned int Linter::async_lint_thread(void *self) noexcept
 {
     return static_cast<Linter *>(self)->run_linter();

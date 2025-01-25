@@ -10,8 +10,8 @@ class FilePipe
   public:
     struct Pipe
     {
-        HandleWrapper m_reader;
-        HandleWrapper m_writer;
+        HandleWrapper reader;
+        HandleWrapper writer;
     };
 
     static Pipe create();

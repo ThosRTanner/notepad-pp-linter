@@ -39,7 +39,7 @@ class DomDocument
     /* Check the result of doing a load, die if it didn't complete */
     void checkLoadResults(VARIANT_BOOL resultcode, HRESULT hr);
 
-    CComPtr<IXMLDOMDocument2> m_document;
+    CComPtr<IXMLDOMDocument2> document_;
 };
 
 }    // namespace Linter

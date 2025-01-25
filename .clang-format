@@ -90,7 +90,7 @@ PenaltyBreakComment: 300
 PenaltyBreakFirstLessLess: 120
 PenaltyBreakString: 1000
 PenaltyExcessCharacter: 1000000
-PenaltyReturnTypeOnItsOwnLine: 200
+PenaltyReturnTypeOnItsOwnLine: 500
 PointerAlignment: Right
 QualifierAlignment: Right
 ReferenceAlignment: Right
@@ -114,7 +114,7 @@ SpacesInContainerLiterals: true
 #SpacesInCStyleCastParentheses: false
 SpacesInParentheses: false
 SpacesInSquareBrackets: false
-Standard: c++17
+Standard: c++20
 TabWidth: 4
 UseCRLF: true
 UseTab: Never

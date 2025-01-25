@@ -30,8 +30,8 @@ SystemError::SystemError(
     try
     {
         std::snprintf(
-            &m_buff[0],
-            sizeof(m_buff),
+            &what_string_[0],
+            sizeof(what_string_),
             "%s",
             std::generic_category().message(err).c_str()
         );
@@ -40,8 +40,8 @@ SystemError::SystemError(
     {
 #pragma warning(suppress : 26447)    // MS Bug with e.what() decl
         std::snprintf(
-            &m_buff[0],
-            sizeof(m_buff),
+            &what_string_[0],
+            sizeof(what_string_),
             "Error code %08x then got %s",
             err,
             e.what()
@@ -57,8 +57,8 @@ SystemError::SystemError(
     try
     {
         std::snprintf(
-            &m_buff[0],
-            sizeof(m_buff),
+            &what_string_[0],
+            sizeof(what_string_),
             "%s - %s",
             info.c_str(),
             std::generic_category().message(err).c_str()
@@ -68,8 +68,8 @@ SystemError::SystemError(
     {
 #pragma warning(suppress : 26447)    // MS Bug with e.what() decl
         std::snprintf(
-            &m_buff[0],
-            sizeof(m_buff),
+            &what_string_[0],
+            sizeof(what_string_),
             "%s - Error code %08x then got %s",
             info.c_str(),
             err,
@@ -90,15 +90,15 @@ SystemError::SystemError(
     {
         _bstr_t const msg{error.ErrorMessage()};
         std::snprintf(
-            &m_buff[0], sizeof(m_buff), "%s", static_cast<char *>(msg)
+            &what_string_[0], sizeof(what_string_), "%s", static_cast<char *>(msg)
         );
     }
     catch (std::exception const &e)
     {
 #pragma warning(suppress : 26447)    // MS Bug with e.what() decl
         std::snprintf(
-            &m_buff[0],
-            sizeof(m_buff),
+            &what_string_[0],
+            sizeof(what_string_),
             "Got error %08x but couldn't decode because %s",
             err,
             e.what()
@@ -118,8 +118,8 @@ SystemError::SystemError(
     {
         _bstr_t const msg{error.ErrorMessage()};
         std::snprintf(
-            &m_buff[0],
-            sizeof(m_buff),
+            &what_string_[0],
+            sizeof(what_string_),
             "%s - %s",
             info.c_str(),
             static_cast<char *>(msg)
@@ -129,8 +129,8 @@ SystemError::SystemError(
     {
 #pragma warning(suppress : 26447)    // MS Bug with e.what() decl
         std::snprintf(
-            &m_buff[0],
-            sizeof(m_buff),
+            &what_string_[0],
+            sizeof(what_string_),
             "%s - Got error %08x but couldn't decode because %s",
             info.c_str(),
             err,
@@ -153,7 +153,7 @@ SystemError::~SystemError() = default;
 
 char const *Linter::SystemError::what() const noexcept
 {
-    return &m_buff[0];
+    return &what_string_[0];
 }
 
 void SystemError::addLocationToMessage(std::source_location const &location
@@ -161,10 +161,10 @@ void SystemError::addLocationToMessage(std::source_location const &location
 {
     char const *const fullPath = location.file_name();
     char const *const fileName = std::strrchr(fullPath, '\\');
-    std::size_t const used{std::strlen(&m_buff[0])};
+    std::size_t const used{std::strlen(&what_string_[0])};
     std::snprintf(
-        &m_buff[used],
-        sizeof(m_buff) - used,
+        &what_string_[used],
+        sizeof(what_string_) - used,
         " at %s:%ud %s",
         (fileName == nullptr ? fullPath : &fileName[1]),
         location.line(),

@@ -15,18 +15,19 @@
 #include <string>
 #include <utility>
 
-using namespace Linter;
+namespace Linter
+{
 
 std::pair<std::string, std::string> File::exec(
-    std::wstring commandLine, std::string const *text
+    std::wstring command_line, std::string const *text
 )
 {
-    if (! m_file.empty())
+    if (! file_.empty())
     {
-        commandLine += ' ';
-        commandLine += '"';
-        commandLine += m_file;
-        commandLine += '"';
+        command_line += ' ';
+        command_line += '"';
+        command_line += file_;
+        command_line += '"';
     }
 
     auto const stdoutpipe = FilePipe::create();
@@ -34,38 +35,36 @@ std::pair<std::string, std::string> File::exec(
     auto const stdinpipe = FilePipe::create();
 
     // Stop my handle being inherited by the child
-    FilePipe::detachFromParent(stdoutpipe.m_reader);
-    FilePipe::detachFromParent(stderrpipe.m_reader);
-    FilePipe::detachFromParent(stdinpipe.m_writer);
+    FilePipe::detachFromParent(stdoutpipe.reader);
+    FilePipe::detachFromParent(stderrpipe.reader);
+    FilePipe::detachFromParent(stdinpipe.writer);
 
     STARTUPINFO startInfo = {0};
     startInfo.cb = sizeof(STARTUPINFO);
-    startInfo.hStdError = stderrpipe.m_writer;
-    startInfo.hStdOutput = stdoutpipe.m_writer;
-    startInfo.hStdInput = stdinpipe.m_reader;
+    startInfo.hStdError = stderrpipe.writer;
+    startInfo.hStdOutput = stdoutpipe.writer;
+    startInfo.hStdInput = stdinpipe.reader;
     startInfo.dwFlags |= STARTF_USESTDHANDLES;
 
     PROCESS_INFORMATION procInfo = {0};
 
     // See https://devblogs.microsoft.com/oldnewthing/20090601-00/?p=18083
-    std::unique_ptr<wchar_t[]> const cmdline{wcsdup(commandLine.c_str())};
-    BOOL const isSuccess = CreateProcess(
-        nullptr,
-        cmdline.get(),          // command line
-        nullptr,                // process security attributes
-        nullptr,                // primary thread security attributes
-        TRUE,                   // handles are inherited
-        CREATE_NO_WINDOW,       // creation flags
-        nullptr,                // use parent's environment
-        m_directory.c_str(),    // use parent's current directory
-        &startInfo,             // STARTUPINFO pointer
-        &procInfo
-    );    // receives PROCESS_INFORMATION
-
-    if (! isSuccess)
+    std::unique_ptr<wchar_t[]> const cmdline{wcsdup(command_line.c_str())};
+    if (not CreateProcess(
+            nullptr,
+            cmdline.get(),         // command line
+            nullptr,               // process security attributes
+            nullptr,               // primary thread security attributes
+            TRUE,                  // handles are inherited
+            CREATE_NO_WINDOW,      // creation flags
+            nullptr,               // use parent's environment
+            directory_.c_str(),    // use parent's current directory
+            &startInfo,            // STARTUPINFO pointer
+            &procInfo
+        ))
     {
         DWORD const error{GetLastError()};
-        bstr_t const cmd{commandLine.c_str()};
+        bstr_t const cmd{command_line.c_str()};
         throw SystemError(
             error, "Can't execute command: " + static_cast<std::string>(cmd)
         );
@@ -73,7 +72,7 @@ std::pair<std::string, std::string> File::exec(
 
     if (text != nullptr)
     {
-        stdinpipe.m_writer.writeFile(*text);
+        stdinpipe.writer.writeFile(*text);
     }
 
     // We need to close all the handles for this end otherwise strange things
@@ -81,26 +80,26 @@ std::pair<std::string, std::string> File::exec(
     CloseHandle(procInfo.hProcess);
     CloseHandle(procInfo.hThread);
 
-    stdoutpipe.m_writer.close();
-    stderrpipe.m_writer.close();
-    stdinpipe.m_writer.close();
+    stdoutpipe.writer.close();
+    stderrpipe.writer.close();
+    stdinpipe.writer.close();
 
-    std::string out = stdoutpipe.m_reader.readFile();
-    std::string err = stderrpipe.m_reader.readFile();
+    std::string out = stdoutpipe.reader.readFile();
+    std::string err = stderrpipe.reader.readFile();
     return std::make_pair(out, err);
 }
 
-File::File(std::wstring const &fileName, std::wstring const &directory) :
-    m_fileName(fileName),
-    m_directory(directory)
+File::File(std::wstring const &filename, std::wstring const &directory) :
+    filename_(filename),
+    directory_(directory)
 {
 }
 
 File::~File()
 {
-    if (! m_file.empty())
+    if (! file_.empty())
     {
-        _wunlink(m_file.c_str());
+        _wunlink(file_.c_str());
     }
 }
 
@@ -111,11 +110,11 @@ void File::write(std::string const &data)
         return;
     }
 
-    std::wstring const tempFileName =
-        m_directory + L"/" + m_fileName + L".temp.linter.file.tmp";
+    std::wstring const tempfile =
+        directory_ + L"/" + filename_ + L".temp.linter.file.tmp";
 
-    HandleWrapper fileHandle{CreateFile(
-        tempFileName.c_str(),
+    HandleWrapper handle{CreateFile(
+        tempfile.c_str(),
         GENERIC_WRITE,
         0,
         nullptr,
@@ -124,7 +123,9 @@ void File::write(std::string const &data)
         nullptr
     )};
 
-    fileHandle.writeFile(data);
+    handle.writeFile(data);
 
-    m_file = tempFileName;
+    file_ = tempfile;
 }
+
+}    // namespace Linter

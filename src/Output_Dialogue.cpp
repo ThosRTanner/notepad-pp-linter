@@ -382,11 +382,11 @@ std::optional<LONG_PTR> Output_Dialogue::process_custom_draw(
 
                 // Now we colour the text according to the severity level.
                 auto const &lint_error = current_tab_->errors[item.lParam];
-                if (lint_error.m_severity == L"warning")
+                if (lint_error.severity_ == L"warning")
                 {
                     custom_draw->clrText = RGB(255, 127, 0);    // Orange
                 }
-                else if (lint_error.m_severity == L"error")
+                else if (lint_error.severity_ == L"error")
                 {
                     custom_draw->clrText = RGB(255, 0, 0);    // Red
                 }
@@ -489,23 +489,23 @@ void Output_Dialogue::add_errors(
             list_view,
             item,
             Column_Message,
-            windows_const_cast<wchar_t *>(lint.m_message.c_str())
+            windows_const_cast<wchar_t *>(lint.message_.c_str())
         );
 
-        std::wstring strFile = lint.m_tool;
+        std::wstring strFile = lint.tool_;
         ListView_SetItemText(
             list_view, item, Column_Tool, windows_const_cast<wchar_t *>(strFile.c_str())
         );
 
         stream.str(L"");
-        stream << lint.m_line;
+        stream << lint.line_;
         std::wstring strLine = stream.str();
         ListView_SetItemText(
             list_view, item, Column_Line, windows_const_cast<wchar_t *>(strLine.c_str())
         );
 
         stream.str(L"");
-        stream << lint.m_column;
+        stream << lint.column_;
         std::wstring strColumn = stream.str();
         ListView_SetItemText(
             list_view,
@@ -571,8 +571,8 @@ void Output_Dialogue::show_selected_lint(int selected_item) noexcept
 
     XmlParser::Error const &lint_error = current_tab_->errors[item.lParam];
 
-    int const line = std::max(lint_error.m_line - 1, 0);
-    int const column = std::max(lint_error.m_column - 1, 0);
+    int const line = std::max(lint_error.line_ - 1, 0);
+    int const column = std::max(lint_error.column_ - 1, 0);
 
     /* We only need to do this if we need to pop up linter.xml. The following
      * isn't ideal */
@@ -639,9 +639,9 @@ void Output_Dialogue::copy_to_clipboard()
             stream << L"\r\n";
         }
 
-        stream << L"Line " << lint_error.m_line << L", column "
-               << lint_error.m_column << L": " << L"\r\n\t"
-               << lint_error.m_message << L"\r\n";
+        stream << L"Line " << lint_error.line_ << L", column "
+               << lint_error.column_ << L": " << L"\r\n\t"
+               << lint_error.message_ << L"\r\n";
 
         row = ListView_GetNextItem(current_list_view_, row, LVNI_SELECTED);
     }
@@ -665,10 +665,10 @@ int CALLBACK Output_Dialogue::sort_call_function(
     // FIXME pass pointer to appropriate errors
     auto const &errs =
         *cast_to<std::vector<XmlParser::Error> const *, LPARAM>(lParamSort);
-    int res = errs[row1_index].m_line - errs[row2_index].m_line;
+    int res = errs[row1_index].line_ - errs[row2_index].line_;
     if (res == 0)
     {
-        res = errs[row1_index].m_column - errs[row2_index].m_column;
+        res = errs[row1_index].column_ - errs[row2_index].column_;
     }
     return res;
 }
