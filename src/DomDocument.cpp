@@ -75,7 +75,7 @@ void DomDocument::checkLoadResults(VARIANT_BOOL resultcode, HRESULT hr)
     {
         CComPtr<IXMLDOMParseError> error;
         m_document->get_parseError(&error);
-        throw XmlDecodeException(error);
+        throw XmlDecodeException(*(error.p));
     }
 }
 

@@ -8,7 +8,7 @@ namespace Linter
     class XmlDecodeException : public std::exception
     {
       public:
-        explicit XmlDecodeException(IXMLDOMParseError *);
+        XmlDecodeException(IXMLDOMParseError&);
 
         XmlDecodeException(XmlDecodeException const &) noexcept;
         XmlDecodeException(XmlDecodeException &&) noexcept;
