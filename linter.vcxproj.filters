@@ -177,6 +177,10 @@
   </ItemGroup>
   <ItemGroup>
     <None Include=".clang-format" />
+    <None Include="LICENSE" />
+    <None Include="post-build.ps1" />
+    <None Include="README.md" />
+    <None Include="TODO.md" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="src\linter.ico">

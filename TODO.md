@@ -1,8 +1,11 @@
 TODO
 
 1)
-* don't have 2 copies of lint list.
-* if window size changes, should scroll selected  line back into view.
+* don't have 2 copies of lint list - actually it's 3
+  * `Linter::errors_`
+  * `Linter::errors_by_position`
+  * `Output_Dialogue::Tab_Definition` 
+* if window size changes, should scroll selected line back into view.
 * don't clear everything and redisplay. it looks messy
   * https://learn.microsoft.com/en-us/windows/win32/gdi/wm-setredraw
 * unclear why but sometimes adjusting column titles seems to needs a window redisplay. check jshint code.
@@ -25,7 +28,6 @@ TODO
 
 4)
 * configurable squiggle/box
-*
 
 5)
 * Capture error output from command. May be of use when get null xml output.
@@ -33,10 +35,12 @@ TODO
 "If the anonymous write pipe handle has been closed and ReadFile
 attempts to read using the corresponding anonymous read pipe handle, the
 function returns FALSE and GetLastError returns ERROR_BROKEN_PIPE."
-* possible use 'waitformultipleobjects'?
+* possibly use `WaitForMultipleObjects`?
 
+6) Replace all filesystem stuff with `std::filesystem::path`
 
 PRs todo:
-1 - split out Settings class and reload config file.
-2 - fix 'run twice on change' bug.
-3 - pass copy of command line string before passing to createprocess
+1. split out Settings class and reload config file.
+2. fix 'run twice on change' bug.
+3. pass copy of command line string before passing to createprocess
+

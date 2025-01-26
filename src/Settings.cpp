@@ -11,7 +11,7 @@
 namespace Linter
 {
 
-Settings::Settings(std::wstring const &settings_xml) :
+Settings::Settings(std::filesystem::path const &settings_xml) :
     settings_xml_(settings_xml)
 {
 }
@@ -32,8 +32,8 @@ void Settings::read_settings()
     colour_ = -1;
     linters_.clear();
 
-    DomDocument XMLDocument(settings_xml_);
-    CComPtr<IXMLDOMNodeList> styleNode{XMLDocument.getNodeList("//style")};
+    DomDocument settings{settings_xml_};
+    CComPtr<IXMLDOMNodeList> styleNode{settings.getNodeList("//style")};
 
     LONG nodes;
     HRESULT hr = styleNode->get_length(&nodes);
@@ -90,7 +90,7 @@ void Settings::read_settings()
 
     // <error line="12" column="19" severity="error" message="Unexpected
     // identifier" source="jscs" />
-    CComPtr<IXMLDOMNodeList> XMLNodeList{XMLDocument.getNodeList("//linter")};
+    CComPtr<IXMLDOMNodeList> XMLNodeList{settings.getNodeList("//linter")};
 
     hr = XMLNodeList->get_length(&nodes);
     if (! SUCCEEDED(hr))

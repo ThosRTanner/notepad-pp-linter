@@ -18,6 +18,20 @@
 namespace Linter
 {
 
+File::File(std::wstring const &filename, std::wstring const &directory) :
+    filename_(filename),
+    directory_(directory)
+{
+}
+
+File::~File()
+{
+    if (! file_.empty())
+    {
+        _wunlink(file_.c_str());
+    }
+}
+
 std::pair<std::string, std::string> File::exec(
     std::wstring command_line, std::string const *text
 )
@@ -87,20 +101,6 @@ std::pair<std::string, std::string> File::exec(
     std::string out = stdoutpipe.reader.readFile();
     std::string err = stderrpipe.reader.readFile();
     return std::make_pair(out, err);
-}
-
-File::File(std::wstring const &filename, std::wstring const &directory) :
-    filename_(filename),
-    directory_(directory)
-{
-}
-
-File::~File()
-{
-    if (! file_.empty())
-    {
-        _wunlink(file_.c_str());
-    }
 }
 
 void File::write(std::string const &data)

@@ -3,6 +3,8 @@
 
 #include "Checkstyle_Parser.h"
 
+#include <exception>
+#include <map>
 #include <memory>
 
 namespace Linter
@@ -69,20 +71,32 @@ class Linter : public Plugin
 
     void start_async_timer() noexcept;
 
-    static unsigned int __stdcall async_lint_thread(void *) noexcept;
+    //Wrapper to call run_linter from ::beginthread
+    static unsigned int __stdcall run_linter_thread(void *) noexcept;
 
+    //Called by thread that runs apply_linters and handles exceptions.
     unsigned int run_linter() noexcept;
 
+    //Apply all the applicable linters to the current buffer.
     void apply_linters();
 
-    // xml file
-    std::wstring const config_file_;
+    //Pop up a message on an exception caught when running linters
+    void handle_exception(std::exception const &exc, int line = 0, int col = 0);
 
-    // Messages dockable box
-    std::unique_ptr<Output_Dialogue> output_dialogue_;
+    //Shows tooltip in notepad++ window.
+    void show_tooltip();
+
+    //Ditto with optional message
+    void show_tooltip(std::wstring message);
+
+    // configuration file
+    std::filesystem::path const config_file_;
 
     // Settings
     std::unique_ptr<Settings> settings_;
+
+    // Messages dockable box
+    std::unique_ptr<Output_Dialogue> output_dialogue_;
 
     // Windows timer queue
     HANDLE timer_queue_;
@@ -101,6 +115,9 @@ class Linter : public Plugin
 
     // List of errors picked up in latest lint(s)
     std::vector<Checkstyle_Parser::Error> errors_;
+
+    // Same but by position in window
+    std::map<LRESULT, std::wstring> errors_by_position_;
 };
 
 }    // namespace Linter

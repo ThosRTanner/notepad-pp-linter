@@ -34,9 +34,9 @@
 namespace
 {
 
-Linter::Output_Dialogue *output_dialogue;
-
 NppData nppData;
+
+static int constexpr Error_Indicator = INDIC_CONTAINER + 2;
 
 LRESULT SendApp(UINT Msg, WPARAM wParam = 0, LPARAM lParam = 0) noexcept
 {
@@ -49,96 +49,12 @@ LRESULT SendApp(UINT Msg, WPARAM wParam, void const *lParam) noexcept
     return SendApp(Msg, wParam, reinterpret_cast<LPARAM>(lParam));
 }
 
-HWND getScintillaWindow() noexcept
-{
-    LRESULT const view = SendApp(NPPM_GETCURRENTVIEW);
-    return view == 0 ? nppData._scintillaMainHandle
-                     : nppData._scintillaSecondHandle;
-}
-
-LRESULT SendEditor(UINT Msg, WPARAM wParam = 0, LPARAM lParam = 0) noexcept
-{
-    return SendMessage(getScintillaWindow(), Msg, wParam, lParam);
-}
-
-LRESULT SendEditor(UINT Msg, WPARAM wParam, void const *lParam) noexcept
-{
-#pragma warning(suppress : 26490)
-    return SendEditor(Msg, wParam, reinterpret_cast<LPARAM>(lParam));
-}
-
-std::map<LRESULT, std::wstring> errorText;
-
-static int constexpr Error_Indicator = INDIC_CONTAINER + 2;
-
 std::wstring GetFilePart(unsigned int part)
 {
     auto buff{std::make_unique_for_overwrite<wchar_t[]>(MAX_PATH + 1)};
     SendApp(part, MAX_PATH, buff.get());
     return buff.get();
 }
-
-void showTooltip(std::wstring message = std::wstring())
-{
-    const LRESULT position = SendEditor(SCI_GETCURRENTPOS);
-
-    HWND main = GetParent(getScintillaWindow());
-    HWND childHandle =
-        FindWindowEx(main, nullptr, L"msctls_statusbar32", nullptr);
-
-    auto const error = errorText.find(position);
-    if (error != errorText.end())
-    {
-#pragma warning(suppress : 26490)
-        ::SendMessage(
-            childHandle,
-            WM_SETTEXT,
-            0,
-            reinterpret_cast<LPARAM>(
-                (std::wstring(L" - ") + error->second).c_str()
-            )
-        );
-    }
-    else
-    {
-        wchar_t const title[256] = {0};
-#pragma warning(suppress : 26490)
-        ::SendMessage(
-            childHandle,
-            WM_GETTEXT,
-            sizeof(title) / sizeof(title[0]) - 1,
-            reinterpret_cast<LPARAM>(title)
-        );
-
-        std::wstring str(&title[0]);
-        if (message.empty() && str.find(L" - ") == 0)
-        {
-            message = L" - ";
-        }
-
-        if (! message.empty())
-        {
-#pragma warning(suppress : 26490)
-            ::SendMessage(
-                childHandle,
-                WM_SETTEXT,
-                0,
-                reinterpret_cast<LPARAM>(message.c_str())
-            );
-        }
-    }
-}
-
-void handle_exception(std::exception const &exc, int line = 0, int col = 0)
-{
-    std::string const str(exc.what());
-    std::wstring const wstr{str.begin(), str.end()};
-    output_dialogue->add_system_error(
-        Linter::Checkstyle_Parser::Error{line, col, wstr, L"linter"}
-    );
-    showTooltip(L"Linter: " + wstr);
-}
-
 }    // namespace
 
 DEFINE_PLUGIN_MENU_CALLBACKS(Linter::Linter);
@@ -148,7 +64,7 @@ namespace Linter
 
 Linter::Linter(NppData const &data) :
     Super(data, get_plugin_name()),
-    config_file_(get_config_dir() + L"\\linter.xml"),
+    config_file_(get_plugin_config_dir().append(L"linter.xml")),
     settings_(std::make_unique<Settings>(config_file_)),
     output_dialogue_(
         std::make_unique<Output_Dialogue>(Menu_Entry_Show_Results, *this)
@@ -157,9 +73,6 @@ Linter::Linter(NppData const &data) :
 {
     // FIXME crock
     nppData = data;
-
-    // FIXME Crock
-    output_dialogue = output_dialogue_.get();
 }
 
 Linter::~Linter()
@@ -177,8 +90,8 @@ std::vector<FuncItem> &Linter::on_get_menu_entries()
 #define MAKE_CALLBACK(entry, text, method, ...) \
     PLUGIN_MENU_MAKE_CALLBACK(Linter, entry, text, method, __VA_ARGS__)
 
-    //Note: These are ctrl-shift in jslint
-    //Put in settings
+    // Note: These are ctrl-shift in jslint
+    // Put in settings
     static ShortcutKey prev_key{
         ._isAlt = true, ._isShift = true, ._key = VK_F7
     };
@@ -258,7 +171,7 @@ void Linter::on_notification(SCNotification const *notification)
             break;
 
         case SCN_UPDATEUI:
-            showTooltip();
+            show_tooltip();
             break;
 
         case NPPN_SHUTDOWN:
@@ -311,7 +224,7 @@ void Linter::relint_current_file() noexcept
 void Linter::highlight_errors()
 {
     clear_error_highlights();
-    errorText.clear();
+    errors_by_position_.clear();
     if (! errors_.empty())
     {
         setup_error_indicator();
@@ -323,7 +236,7 @@ void Linter::highlight_errors()
         position += Encoding::utfOffset(
             get_line_text(error.line_ - 1), error.column_ - 1
         );
-        errorText[position] = error.message_;
+        errors_by_position_[position] = error.message_;
         highlight_error_at(position);
     }
 }
@@ -401,20 +314,37 @@ void Linter::start_async_timer() noexcept
     unsigned thread_id{0};
 #pragma warning(suppress : 26490)
     bg_linter_thread_handle_ = reinterpret_cast<HANDLE>(
-        _beginthreadex(nullptr, 0, &async_lint_thread, this, 0, &thread_id)
+        _beginthreadex(nullptr, 0, &run_linter_thread, this, 0, &thread_id)
     );
     file_changed_ = false;
 }
 
 #pragma warning(suppress : 26429)
-unsigned int Linter::async_lint_thread(void *self) noexcept
+unsigned int Linter::run_linter_thread(void *self) noexcept
 {
+    struct Thread_Wrapper
+    {
+        Thread_Wrapper() noexcept
+        {
+            std::ignore = ::CoInitialize(nullptr);
+        }
+
+        Thread_Wrapper(Thread_Wrapper const &) = delete;
+        Thread_Wrapper(Thread_Wrapper &&) = delete;
+        Thread_Wrapper &operator=(Thread_Wrapper const &) = delete;
+        Thread_Wrapper &operator=(Thread_Wrapper &&) = delete;
+
+        ~Thread_Wrapper()
+        {
+            ::CoUninitialize();
+        }
+
+    } wrapper;
     return static_cast<Linter *>(self)->run_linter();
 }
 
 unsigned int Linter::run_linter() noexcept
 {
-    std::ignore = ::CoInitialize(nullptr);
     try
     {
         try
@@ -445,9 +375,7 @@ unsigned int Linter::run_linter() noexcept
                 L"Caught exception but cannot get reason", MB_OK | MB_ICONERROR
             );
         }
-        return FALSE;
     }
-    ::CoUninitialize();
     return 0;
 }
 
@@ -464,7 +392,9 @@ void Linter::apply_linters()
 
     std::vector<std::pair<std::wstring, bool>> commands;
     bool needs_file = false;
-    auto const extension = GetFilePart(NPPM_GETEXTPART);
+    auto const full_path = get_document_path();
+
+    auto const extension = full_path.extension();
     for (auto const &linter : *settings_)
     {
         if (linter.extension_ == extension)
@@ -482,12 +412,10 @@ void Linter::apply_linters()
         return;
     }
 
-    std::string const text = get_document_text();
+    auto const text = get_document_text();
 
-    std::wstring const full_path{GetFilePart(NPPM_GETFULLCURRENTPATH)};
-    ::Linter::File file{
-        GetFilePart(NPPM_GETFILENAME), GetFilePart(NPPM_GETCURRENTDIRECTORY)
-    };
+    // Why do we need to construct file like this?
+    File file{full_path.filename(), full_path.parent_path()};
     if (needs_file)
     {
         file.write(text);
@@ -514,6 +442,72 @@ void Linter::apply_linters()
         catch (std::exception const &e)
         {
             handle_exception(e);
+        }
+    }
+}
+
+void Linter::handle_exception(std::exception const &exc, int line, int col)
+{
+    std::string const str(exc.what());
+    std::wstring const wstr{str.begin(), str.end()};
+    output_dialogue_->add_system_error(
+        Checkstyle_Parser::Error{line, col, wstr, get_plugin_name()}
+    );
+    show_tooltip(get_plugin_name() + wstr);
+}
+
+void Linter::show_tooltip()
+{
+    show_tooltip(L"");
+}
+
+void Linter::show_tooltip(std::wstring message)
+{
+    const LRESULT position = send_to_editor(SCI_GETCURRENTPOS);
+
+    auto childHandle = FindWindowEx(
+        get_notepad_window(), nullptr, L"msctls_statusbar32", nullptr
+    );
+
+    auto const error = errors_by_position_.find(position);
+    if (error != errors_by_position_.end())
+    {
+#pragma warning(suppress : 26490)
+        ::SendMessage(
+            childHandle,
+            WM_SETTEXT,
+            0,
+            reinterpret_cast<LPARAM>(
+                (std::wstring(L" - ") + error->second).c_str()
+            )
+        );
+    }
+    else
+    {
+        wchar_t const title[256] = {0};
+#pragma warning(suppress : 26490)
+        ::SendMessage(
+            childHandle,
+            WM_GETTEXT,
+            sizeof(title) / sizeof(title[0]) - 1,
+            reinterpret_cast<LPARAM>(title)
+        );
+
+        std::wstring str(&title[0]);
+        if (message.empty() && str.find(L" - ") == 0)
+        {
+            message = L" - ";
+        }
+
+        if (! message.empty())
+        {
+#pragma warning(suppress : 26490)
+            ::SendMessage(
+                childHandle,
+                WM_SETTEXT,
+                0,
+                reinterpret_cast<LPARAM>(message.c_str())
+            );
         }
     }
 }

@@ -16,9 +16,11 @@ class File
     File &operator=(File &&) = delete;
 
     ~File();
+
     std::pair<std::string, std::string> exec(
         std::wstring command_line, std::string const *str
     );
+
     void write(std::string const &data);
 
   private:
