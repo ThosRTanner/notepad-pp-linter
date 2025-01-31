@@ -3,15 +3,21 @@
 #include "DomDocument.h"
 #include "SystemError.h"
 
+#include <atlcomcli.h>
+#include <comutil.h>
+#include <intsafe.h>
+#include <msxml.h>
+
+#include <cstddef>
 #include <string>
 #include <vector>
-
-#include <msxml.h>
 
 namespace Linter
 {
 
-std::vector<Checkstyle_Parser::Error> Checkstyle_Parser::get_errors(std::string const &xml)
+std::vector<Checkstyle_Parser::Error> Checkstyle_Parser::get_errors(
+    std::string const &xml
+)
 {
     DomDocument XMLDocument{xml};
 

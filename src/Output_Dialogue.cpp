@@ -1,18 +1,22 @@
 #include "Output_Dialogue.h"
 
+#include "Plugin/Plugin.h"
+
+#include "Checkstyle_Parser.h"
 #include "Clipboard.h"
 #include "Linter.h"
 #include "SystemError.h"
 #include "resource.h"
 
 #include <CommCtrl.h>
-#include <WinUser.h>
+#include <intsafe.h>
 
-#include <algorithm>
 #include <cstddef>
 #include <sstream>
 #include <string>
 #include <type_traits>
+#include <utility>
+#include <vector>
 
 namespace Linter
 {
@@ -64,11 +68,11 @@ enum Context_Menu_Entry
 Output_Dialogue::Output_Dialogue(int menu_entry, Linter const &plugin) :
     Super(IDD_OUTPUT, plugin),
     tab_bar_(GetDlgItem(IDC_TABBAR)),
-    current_tab_(&tab_definitions_.at(0)),
     tab_definitions_({
         TabDefinition{L"Lint Errors",   IDC_LIST_LINTS,  Lint_Error,   *this},
         TabDefinition{L"System Errors", IDC_LIST_OUTPUT, System_Error, *this}
-})
+}),
+    current_tab_(&tab_definitions_.at(0))
 {
     initialise_dialogue();
     for (auto &tab : tab_definitions_)
@@ -121,7 +125,9 @@ void Output_Dialogue::add_system_error(Checkstyle_Parser::Error const &err)
     add_errors(Tab::System_Error, errs);
 }
 
-void Output_Dialogue::add_lint_errors(std::vector<Checkstyle_Parser::Error> const &errs)
+void Output_Dialogue::add_lint_errors(
+    std::vector<Checkstyle_Parser::Error> const &errs
+)
 {
     add_errors(Tab::Lint_Error, errs);
 }
@@ -575,7 +581,8 @@ void Output_Dialogue::show_selected_lint(int selected_item) noexcept
     LVITEM const item{.mask = LVIF_PARAM, .iItem = selected_item};
     ListView_GetItem(current_list_view_, &item);
 
-    Checkstyle_Parser::Error const &lint_error = current_tab_->errors[item.lParam];
+    Checkstyle_Parser::Error const &lint_error =
+        current_tab_->errors[item.lParam];
 
     int const line = std::max(lint_error.line_ - 1, 0);
     int const column = std::max(lint_error.column_ - 1, 0);
@@ -670,7 +677,9 @@ int CALLBACK Output_Dialogue::sort_call_function(
 {
     // FIXME pass pointer to appropriate errors
     auto const &errs =
-        *cast_to<std::vector<Checkstyle_Parser::Error> const *, LPARAM>(lParamSort);
+        *cast_to<std::vector<Checkstyle_Parser::Error> const *, LPARAM>(
+            lParamSort
+        );
     int res = errs[row1_index].line_ - errs[row2_index].line_;
     if (res == 0)
     {

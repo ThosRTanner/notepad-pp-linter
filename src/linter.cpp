@@ -8,16 +8,19 @@
 #include "encoding.h"
 
 #include "Plugin/Callback_Context.h"    // IWYU pragma: keep
+// IWYU requires Plugin/Min_Win_Defs.h because it doesn't understand
+// inheritance.
 
 #include "notepad++/Notepad_plus_msgs.h"
 #include "notepad++/PluginInterface.h"
 #include "notepad++/Scintilla.h"
 
-#include <Shlwapi.h>
 #include <combaseapi.h>
 #include <comutil.h>
 #include <handleapi.h>
+#include <objbase.h>
 #include <process.h>
+#include <synchapi.h>
 #include <threadpoollegacyapiset.h>
 
 #include <exception>
@@ -25,37 +28,13 @@
 #include <memory>
 #include <stdexcept>
 #include <string>
-#include <tuple>
+#include <utility>
 #include <vector>
 
 #pragma comment(lib, "msxml6.lib")
 #pragma comment(lib, "shlwapi.lib")
 
-namespace
-{
-
-NppData nppData;
-
 static int constexpr Error_Indicator = INDIC_CONTAINER + 2;
-
-LRESULT SendApp(UINT Msg, WPARAM wParam = 0, LPARAM lParam = 0) noexcept
-{
-    return SendMessage(nppData._nppHandle, Msg, wParam, lParam);
-}
-
-LRESULT SendApp(UINT Msg, WPARAM wParam, void const *lParam) noexcept
-{
-#pragma warning(suppress : 26490)
-    return SendApp(Msg, wParam, reinterpret_cast<LPARAM>(lParam));
-}
-
-std::wstring GetFilePart(unsigned int part)
-{
-    auto buff{std::make_unique_for_overwrite<wchar_t[]>(MAX_PATH + 1)};
-    SendApp(part, MAX_PATH, buff.get());
-    return buff.get();
-}
-}    // namespace
 
 DEFINE_PLUGIN_MENU_CALLBACKS(Linter::Linter);
 
@@ -71,8 +50,6 @@ Linter::Linter(NppData const &data) :
     ),
     timer_queue_(::CreateTimerQueue())
 {
-    // FIXME crock
-    nppData = data;
 }
 
 Linter::~Linter()
@@ -415,7 +392,7 @@ void Linter::apply_linters()
     auto const text = get_document_text();
 
     // Why do we need to construct file like this?
-    File file{full_path.filename(), full_path.parent_path()};
+    File file{full_path};
     if (needs_file)
     {
         file.write(text);

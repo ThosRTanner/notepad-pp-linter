@@ -1,11 +1,16 @@
 #include "Settings.h"
 
 #include "DomDocument.h"
-#include "HandleWrapper.h"
 #include "SystemError.h"
 
-#include <filesystem>
+#include <atlcomcli.h>
+#include <comutil.h>
+#include <intsafe.h>
+#include <msxml.h>
+#include <oleauto.h>
 
+#include <chrono>
+#include <filesystem>
 #include <sstream>
 
 namespace Linter

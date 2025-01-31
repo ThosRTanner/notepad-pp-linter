@@ -181,9 +181,14 @@
     <None Include="post-build.ps1" />
     <None Include="README.md" />
     <None Include="TODO.md" />
+    <None Include="iwyu.bat" />
+    <None Include="vs2022cpp20.imp" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="src\linter.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="img\1.jpg">
       <Filter>Resource Files</Filter>
     </Image>
   </ItemGroup>

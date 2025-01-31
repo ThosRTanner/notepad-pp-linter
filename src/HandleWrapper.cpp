@@ -2,6 +2,15 @@
 
 #include "SystemError.h"
 
+#include <errhandlingapi.h>
+#include <fileapi.h>
+#include <handleapi.h>
+#include <intsafe.h>
+#include <winerror.h>
+
+#include <cstddef>
+#include <limits>
+#include <string>
 #include <utility>
 #include <vector>
 

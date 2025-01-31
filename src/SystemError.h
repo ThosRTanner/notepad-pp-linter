@@ -1,4 +1,7 @@
 #pragma once
+
+#include <intsafe.h>
+
 #include <exception>
 #include <source_location>
 #include <string>

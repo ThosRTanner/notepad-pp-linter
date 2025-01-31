@@ -1,11 +1,17 @@
 #pragma once
+
+// iwyu wants forward references for FuncItem, NppData, SCNotification because
+// it doesn't understand inheritance
 #include "Plugin/Plugin.h"
 
 #include "Checkstyle_Parser.h"
 
 #include <exception>
+#include <filesystem>
 #include <map>
 #include <memory>
+#include <string>
+#include <vector>
 
 namespace Linter
 {
@@ -71,22 +77,22 @@ class Linter : public Plugin
 
     void start_async_timer() noexcept;
 
-    //Wrapper to call run_linter from ::beginthread
+    // Wrapper to call run_linter from ::beginthread
     static unsigned int __stdcall run_linter_thread(void *) noexcept;
 
-    //Called by thread that runs apply_linters and handles exceptions.
+    // Called by thread that runs apply_linters and handles exceptions.
     unsigned int run_linter() noexcept;
 
-    //Apply all the applicable linters to the current buffer.
+    // Apply all the applicable linters to the current buffer.
     void apply_linters();
 
-    //Pop up a message on an exception caught when running linters
+    // Pop up a message on an exception caught when running linters
     void handle_exception(std::exception const &exc, int line = 0, int col = 0);
 
-    //Shows tooltip in notepad++ window.
+    // Shows tooltip in notepad++ window.
     void show_tooltip();
 
-    //Ditto with optional message
+    // Ditto with optional message
     void show_tooltip(std::wstring message);
 
     // configuration file

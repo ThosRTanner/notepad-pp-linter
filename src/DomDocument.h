@@ -2,7 +2,10 @@
 
 #include <string>
 
+#include <atlcomcli.h>
+#include <msxml.h>
 #include <msxml6.h>
+#include <winnt.h>    //For HRESULT
 #include <wtypes.h>
 
 namespace Linter

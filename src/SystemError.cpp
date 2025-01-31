@@ -1,13 +1,19 @@
 #include "SystemError.h"
 
-// #include "encoding.h"
+#include <comdef.h>
+#include <comutil.h>
+#include <errhandlingapi.h>
+#include <intsafe.h>
+#include <oaidl.h>
+#include <oleauto.h>
 
 #include <cstdio>
 #include <cstring>
+#include <exception>
+#include <source_location>
+#include <string>
 #include <system_error>
-#include <tuple>
-
-#include <comdef.h>
+#include <utility>
 
 namespace Linter
 {
@@ -43,7 +49,7 @@ SystemError::SystemError(
         std::snprintf(
             &what_string_[0],
             sizeof(what_string_),
-            "Error code %08x then got %s",
+            "Error code %08lx then got %s",
             err,
             e.what()
         );
@@ -71,7 +77,7 @@ SystemError::SystemError(
         std::snprintf(
             &what_string_[0],
             sizeof(what_string_),
-            "%s - Error code %08x then got %s",
+            "%s - Error code %08lx then got %s",
             info.c_str(),
             err,
             e.what()
@@ -103,7 +109,7 @@ SystemError::SystemError(
         std::snprintf(
             &what_string_[0],
             sizeof(what_string_),
-            "Got error %08x but couldn't decode because %s",
+            "Got error %08lx but couldn't decode because %s",
             err,
             e.what()
         );
@@ -135,7 +141,7 @@ SystemError::SystemError(
         std::snprintf(
             &what_string_[0],
             sizeof(what_string_),
-            "%s - Got error %08x but couldn't decode because %s",
+            "%s - Got error %08lx but couldn't decode because %s",
             info.c_str(),
             err,
             e.what()
@@ -162,17 +168,18 @@ char const *SystemError::what() const noexcept
 void SystemError::addLocationToMessage(std::source_location const &location
 ) noexcept
 {
-    char const *const fullPath = location.file_name();
-    char const *const fileName = std::strrchr(fullPath, '\\');
+    auto const full_path = location.file_name();
+    char const *const file_name = std::strrchr(full_path, '\\');
     std::size_t const used{std::strlen(&what_string_[0])};
     std::snprintf(
         &what_string_[used],
         sizeof(what_string_) - used,
-        " at %s:%ud %s",
-        (fileName == nullptr ? fullPath : &fileName[1]),
+        " at %s:%u %s",
+        (file_name == nullptr ? full_path : &file_name[1]),
         location.line(),
         location.function_name()
     );
+    what_string_[sizeof(what_string_) - 1] = 0;
 }
 
 }    // namespace Linter

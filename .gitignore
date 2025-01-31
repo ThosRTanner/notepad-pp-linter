@@ -7,3 +7,4 @@ ipch
 *.aps
 linter.vcxproj.user
 enc_temp_folder/
+compile_commands.json

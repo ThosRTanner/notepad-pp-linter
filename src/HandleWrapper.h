@@ -1,5 +1,7 @@
 #pragma once
 
+#include <winnt.h>    // For HANDLE
+
 #include <string>
 
 namespace Linter

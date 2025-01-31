@@ -2,6 +2,12 @@
 
 #include "SystemError.h"
 
+#include <winbase.h>
+#include <winuser.h>
+
+#include <cstring>
+#include <string>
+
 namespace Linter
 {
 

@@ -2,6 +2,7 @@
 
 #include <comutil.h>
 #include <msxml.h>
+#include <wtypes.h>
 
 #include <cstdio>
 #include <iomanip>

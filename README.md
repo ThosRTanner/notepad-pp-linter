@@ -1,14 +1,26 @@
 # Notepad++ Linter
 
-A Notepad++ plugin that allows realtime code check against any checkstyle-compatible linter: jshint, eslint, jscs, phpcs, csslint etc.
+This is a fork of the 'linter' plugin for notepad++ from deadem which provides realtime code checks of a file with any checkstyle-compatible linter: jshint, eslint, jscs, phpcs, csslint etc.
 
 ![](/img/1.jpg?raw=true)
 
 ## Installation
 
- - Copy bin/linter.dll to your Notepad++ plugins directory
- - Plugins -> Linter -> Edit config
- - Restart Notepad++
+- See https://npp-user-manual.org/docs/plugins/
+- Use the plugin manager. No, seriously.
+- If you must install manually, run notepad++ in administrator mode and
+  - Go to Settings -> Import -> import plugin(s)...
+  - This pops up a filer window. Find where you put linter++.dll and 'open' it.
+  - You should get a popup telling you to restart notepad++. If you don't, you probably forgot to run in admin mode.
+  - Restart notepad++ in normal mode.
+- Go to Plugins -> Linter++ -> Edit config.
+  -	This will give you a blank configuration file. Edit to taste.
+
+## Changes from the linter plugin.
+
+1. It has a docking window similar to that provided by the jslint plugin, which displays a list of all the detected errors in the file (by default sorted by line), and the tool which detected the issue.
+1. The window will also display (in a separate tab) any messages resulting from failures to execute checker programs.
+1. It is no longer necessary to restart notepad++ after changing the configuration.
 
 ## Config example
 

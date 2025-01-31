@@ -1,6 +1,15 @@
 #include "FilePipe.h"
 
+#include "HandleWrapper.h"
 #include "SystemError.h"
+
+#include <errhandlingapi.h>
+#include <handleapi.h>
+#include <minwinbase.h>
+#include <minwindef.h>
+#include <namedpipeapi.h>
+#include <winbase.h>
+#include <winnt.h>
 
 namespace Linter
 {

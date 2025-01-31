@@ -1,4 +1,6 @@
 #pragma once
+
+#include <filesystem>
 #include <string>
 #include <utility>
 
@@ -8,7 +10,7 @@ namespace Linter
 class File
 {
   public:
-    File(std::wstring const &filename, std::wstring const &directory);
+    explicit File(std::filesystem::path const &);
 
     File(File const &) = delete;
     File(File &&) = delete;
@@ -24,9 +26,8 @@ class File
     void write(std::string const &data);
 
   private:
-    std::wstring filename_;
-    std::wstring directory_;
-    std::wstring file_;
+    std::filesystem::path path_;
+    std::filesystem::path temp_file_;
 };
 
 }    // namespace Linter

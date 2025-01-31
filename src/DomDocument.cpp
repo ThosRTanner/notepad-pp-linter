@@ -5,9 +5,9 @@
 
 #include <atlcomcli.h>
 #include <comutil.h>
+#include <intsafe.h>
+#include <minwindef.h>    //For FALSE
 #include <msxml.h>
-#include <winerror.h>
-#include <wtypes.h>
 
 #include <string>
 
@@ -71,7 +71,7 @@ void DomDocument::checkLoadResults(VARIANT_BOOL resultcode, HRESULT hr)
     {
         throw SystemError(hr);
     }
-    if (resultcode != VARIANT_TRUE)
+    if (resultcode == VARIANT_FALSE)
     {
         CComPtr<IXMLDOMParseError> error;
         document_->get_parseError(&error);

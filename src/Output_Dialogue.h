@@ -1,12 +1,15 @@
 #pragma once
 #include "Checkstyle_Parser.h"
 
-
 #include "Plugin/Docking_Dialogue_Interface.h"
 
+#include <intsafe.h>
+
 #include <array>
+#include <optional>
 #include <vector>
 
+// IWYU says you need commtrl.h for this, but it's a forward reference.
 typedef struct tagNMLVCUSTOMDRAW NMLVCUSTOMDRAW;
 
 namespace Linter
@@ -108,7 +111,9 @@ class Output_Dialogue : protected Docking_Dialogue_Interface
     void update_displayed_counts();
 
     /** Add list of errors to the appropriate tab */
-    void add_errors(Tab tab, std::vector<Checkstyle_Parser::Error> const &lints);
+    void add_errors(
+        Tab tab, std::vector<Checkstyle_Parser::Error> const &lints
+    );
 
     /** Skip to the n-th lint forward or backward */
     void select_lint(int n) noexcept;

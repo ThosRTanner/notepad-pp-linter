@@ -1,34 +1,38 @@
 #include "File.h"
 
 #include "FilePipe.h"
+#include "HandleWrapper.h"
 #include "SystemError.h"
 
 #include <comutil.h>
 #include <errhandlingapi.h>
 #include <fileapi.h>
 #include <handleapi.h>
-#include <io.h>
+#include <intsafe.h>
+#include <minwindef.h>
 #include <processthreadsapi.h>
+#include <winbase.h>
+#include <winnt.h>
 
-#include <cstring>
+#include <filesystem>
 #include <memory>
 #include <string>
+#include <system_error>
 #include <utility>
 
 namespace Linter
 {
 
-File::File(std::wstring const &filename, std::wstring const &directory) :
-    filename_(filename),
-    directory_(directory)
+Linter::File::File(std::filesystem::path const &path) : path_(path)
 {
 }
 
 File::~File()
 {
-    if (! file_.empty())
+    if (! temp_file_.empty())
     {
-        _wunlink(file_.c_str());
+        std::error_code errcode;
+        std::filesystem::remove(temp_file_, errcode);
     }
 }
 
@@ -36,11 +40,11 @@ std::pair<std::string, std::string> File::exec(
     std::wstring command_line, std::string const *text
 )
 {
-    if (! file_.empty())
+    if (! temp_file_.empty())
     {
         command_line += ' ';
         command_line += '"';
-        command_line += file_;
+        command_line += temp_file_;
         command_line += '"';
     }
 
@@ -53,12 +57,13 @@ std::pair<std::string, std::string> File::exec(
     FilePipe::detachFromParent(stderrpipe.reader);
     FilePipe::detachFromParent(stdinpipe.writer);
 
-    STARTUPINFO startInfo = {0};
-    startInfo.cb = sizeof(STARTUPINFO);
-    startInfo.hStdError = stderrpipe.writer;
-    startInfo.hStdOutput = stdoutpipe.writer;
-    startInfo.hStdInput = stdinpipe.reader;
-    startInfo.dwFlags |= STARTF_USESTDHANDLES;
+    STARTUPINFO startInfo = {
+        .cb = sizeof(STARTUPINFO),
+        .dwFlags = STARTF_USESTDHANDLES,
+        .hStdInput = stdinpipe.reader,
+        .hStdOutput = stdoutpipe.writer,
+        .hStdError = stderrpipe.writer
+    };
 
     PROCESS_INFORMATION procInfo = {0};
 
@@ -66,14 +71,14 @@ std::pair<std::string, std::string> File::exec(
     std::unique_ptr<wchar_t[]> const cmdline{wcsdup(command_line.c_str())};
     if (not CreateProcess(
             nullptr,
-            cmdline.get(),         // command line
-            nullptr,               // process security attributes
-            nullptr,               // primary thread security attributes
-            TRUE,                  // handles are inherited
-            CREATE_NO_WINDOW,      // creation flags
-            nullptr,               // use parent's environment
-            directory_.c_str(),    // use parent's current directory
-            &startInfo,            // STARTUPINFO pointer
+            cmdline.get(),       // command line
+            nullptr,             // process security attributes
+            nullptr,             // primary thread security attributes
+            TRUE,                // handles are inherited
+            CREATE_NO_WINDOW,    // creation flags
+            nullptr,             // use parent's environment
+            path_.parent_path().c_str(),    // use parent's current directory
+            &startInfo,                     // STARTUPINFO pointer
             &procInfo
         ))
     {
@@ -110,22 +115,21 @@ void File::write(std::string const &data)
         return;
     }
 
-    std::wstring const tempfile =
-        directory_ + L"/" + filename_ + L".temp.linter.file.tmp";
+    temp_file_ = std::filesystem::temp_directory_path()
+                     .append(path_.filename().string())
+                     .concat(".linter");
 
     HandleWrapper handle{CreateFile(
-        tempfile.c_str(),
+        temp_file_.c_str(),
         GENERIC_WRITE,
         0,
         nullptr,
         CREATE_ALWAYS,
-        FILE_ATTRIBUTE_HIDDEN | FILE_ATTRIBUTE_TEMPORARY,
+        FILE_ATTRIBUTE_TEMPORARY,
         nullptr
     )};
 
     handle.writeFile(data);
-
-    file_ = tempfile;
 }
 
 }    // namespace Linter

@@ -1,5 +1,8 @@
 #pragma once
 
+#include <minwindef.h>
+#include <windef.h>
+
 #include <string>
 
 namespace Linter
