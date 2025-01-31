@@ -4,7 +4,7 @@
 #include "File.h"
 #include "Output_Dialogue.h"
 #include "Settings.h"
-#include "XmlDecodeException.h"
+#include "XML_Decode_Error.h"
 #include "encoding.h"
 
 #include "Plugin/Callback_Context.h"    // IWYU pragma: keep
@@ -328,7 +328,7 @@ unsigned int Linter::run_linter() noexcept
         {
             apply_linters();
         }
-        catch (::Linter::XmlDecodeException const &e)
+        catch (::Linter::XML_Decode_Error const &e)
         {
             handle_exception(e, e.line(), e.column());
         }
@@ -442,7 +442,7 @@ void Linter::show_tooltip(std::wstring message)
 {
     const LRESULT position = send_to_editor(SCI_GETCURRENTPOS);
 
-    auto childHandle = FindWindowEx(
+    auto npp_statusbar = FindWindowEx(
         get_notepad_window(), nullptr, L"msctls_statusbar32", nullptr
     );
 
@@ -451,7 +451,7 @@ void Linter::show_tooltip(std::wstring message)
     {
 #pragma warning(suppress : 26490)
         ::SendMessage(
-            childHandle,
+            npp_statusbar,
             WM_SETTEXT,
             0,
             reinterpret_cast<LPARAM>(
@@ -464,7 +464,7 @@ void Linter::show_tooltip(std::wstring message)
         wchar_t const title[256] = {0};
 #pragma warning(suppress : 26490)
         ::SendMessage(
-            childHandle,
+            npp_statusbar,
             WM_GETTEXT,
             sizeof(title) / sizeof(title[0]) - 1,
             reinterpret_cast<LPARAM>(title)
@@ -480,7 +480,7 @@ void Linter::show_tooltip(std::wstring message)
         {
 #pragma warning(suppress : 26490)
             ::SendMessage(
-                childHandle,
+                npp_statusbar,
                 WM_SETTEXT,
                 0,
                 reinterpret_cast<LPARAM>(message.c_str())

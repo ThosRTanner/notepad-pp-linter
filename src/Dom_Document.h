@@ -11,7 +11,7 @@
 namespace Linter
 {
 
-class DomDocument
+class Dom_Document
 {
     /** Important note:
      * The wstring constructor takes a filename.
@@ -20,17 +20,17 @@ class DomDocument
 
   public:
     /** Creates an XML document from the supplied filename */
-    explicit DomDocument(std::wstring const &filename);
+    explicit Dom_Document(std::wstring const &filename);
 
     /** Creates an XML document from the supplied UTF8 string */
-    explicit DomDocument(std::string const &xml);
+    explicit Dom_Document(std::string const &xml);
 
-    DomDocument(DomDocument const &) = delete;
-    DomDocument(DomDocument &&) = delete;
-    DomDocument &operator=(DomDocument const &) = delete;
-    DomDocument &operator=(DomDocument &&) = delete;
+    Dom_Document(Dom_Document const &) = delete;
+    Dom_Document(Dom_Document &&) = delete;
+    Dom_Document &operator=(Dom_Document const &) = delete;
+    Dom_Document &operator=(Dom_Document &&) = delete;
 
-    ~DomDocument();
+    ~Dom_Document();
 
     /** Get list of nodes selected by supplied XPATH */
     CComPtr<IXMLDOMNodeList> getNodeList(std::string const &xpath);

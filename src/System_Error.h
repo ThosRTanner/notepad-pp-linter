@@ -9,53 +9,53 @@
 namespace Linter
 {
 
-class SystemError : public std::exception
+class System_Error : public std::exception
 {
   public:
     /** Creates an exception object from the current system error */
-    explicit SystemError(
+    explicit System_Error(
         std::source_location const &location = std::source_location::current()
     ) noexcept;
 
     /** Creates an exception object from the current system error, appends
      * string */
-    explicit SystemError(
+    explicit System_Error(
         std::string const &,
         std::source_location const &location = std::source_location::current()
     ) noexcept;
 
     /** Creates an exception object given a system error number */
-    explicit SystemError(
+    explicit System_Error(
         DWORD err,
         std::source_location const &location = std::source_location::current()
     ) noexcept;
 
     /** Creates an exception object from specified error with addition
      * information string */
-    SystemError(
+    System_Error(
         DWORD err, std::string const &,
         std::source_location const &location = std::source_location::current()
     ) noexcept;
 
     /** Creates an exception object given an HRESULT */
-    explicit SystemError(
+    explicit System_Error(
         HRESULT err,
         std::source_location const &location = std::source_location::current()
     ) noexcept;
 
     /** Creates an exception object from specified error with addition
      * information string */
-    SystemError(
+    System_Error(
         HRESULT err, std::string const &,
         std::source_location const &location = std::source_location::current()
     ) noexcept;
 
-    SystemError(SystemError const &) noexcept;
-    SystemError(SystemError &&) noexcept;
-    SystemError &operator=(SystemError const &) noexcept;
-    SystemError &operator=(SystemError &&) noexcept;
+    System_Error(System_Error const &) noexcept;
+    System_Error(System_Error &&) noexcept;
+    System_Error &operator=(System_Error const &) noexcept;
+    System_Error &operator=(System_Error &&) noexcept;
 
-    ~SystemError();
+    ~System_Error();
 
     char const *what() const noexcept override;
 

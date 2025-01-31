@@ -1,4 +1,4 @@
-#include "SystemError.h"
+#include "System_Error.h"
 
 #include <comdef.h>
 #include <comutil.h>
@@ -18,19 +18,19 @@
 namespace Linter
 {
 
-SystemError::SystemError(std::source_location const &location) noexcept :
-    SystemError(GetLastError(), location)
+System_Error::System_Error(std::source_location const &location) noexcept :
+    System_Error(GetLastError(), location)
 {
 }
 
-SystemError::SystemError(
+System_Error::System_Error(
     std::string const &info, std::source_location const &location
 ) noexcept :
-    SystemError(GetLastError(), info, location)
+    System_Error(GetLastError(), info, location)
 {
 }
 
-SystemError::SystemError(
+System_Error::System_Error(
     DWORD err, std::source_location const &location
 ) noexcept
 {
@@ -57,7 +57,7 @@ SystemError::SystemError(
     addLocationToMessage(location);
 }
 
-SystemError::SystemError(
+System_Error::System_Error(
     DWORD err, std::string const &info, std::source_location const &location
 ) noexcept
 {
@@ -86,7 +86,7 @@ SystemError::SystemError(
     addLocationToMessage(location);
 }
 
-SystemError::SystemError(
+System_Error::System_Error(
     HRESULT err, std::source_location const &location
 ) noexcept
 {
@@ -117,7 +117,7 @@ SystemError::SystemError(
     addLocationToMessage(location);
 }
 
-SystemError::SystemError(
+System_Error::System_Error(
     HRESULT err, std::string const &info, std::source_location const &location
 ) noexcept
 {
@@ -150,22 +150,22 @@ SystemError::SystemError(
     addLocationToMessage(location);
 }
 
-SystemError::SystemError(SystemError const &) noexcept = default;
+System_Error::System_Error(System_Error const &) noexcept = default;
 
-SystemError::SystemError(SystemError &&) noexcept = default;
+System_Error::System_Error(System_Error &&) noexcept = default;
 
-SystemError &SystemError::operator=(SystemError const &) noexcept = default;
+System_Error &System_Error::operator=(System_Error const &) noexcept = default;
 
-SystemError &SystemError::operator=(SystemError &&) noexcept = default;
+System_Error &System_Error::operator=(System_Error &&) noexcept = default;
 
-SystemError::~SystemError() = default;
+System_Error::~System_Error() = default;
 
-char const *SystemError::what() const noexcept
+char const *System_Error::what() const noexcept
 {
     return &what_string_[0];
 }
 
-void SystemError::addLocationToMessage(std::source_location const &location
+void System_Error::addLocationToMessage(std::source_location const &location
 ) noexcept
 {
     auto const full_path = location.file_name();

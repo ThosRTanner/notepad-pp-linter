@@ -1,7 +1,7 @@
 #include "Settings.h"
 
-#include "DomDocument.h"
-#include "SystemError.h"
+#include "Dom_Document.h"
+#include "System_Error.h"
 
 #include <atlcomcli.h>
 #include <comutil.h>
@@ -37,14 +37,14 @@ void Settings::read_settings()
     colour_ = -1;
     linters_.clear();
 
-    DomDocument settings{settings_xml_};
+    Dom_Document settings{settings_xml_};
     CComPtr<IXMLDOMNodeList> styleNode{settings.getNodeList("//style")};
 
     LONG nodes;
     HRESULT hr = styleNode->get_length(&nodes);
     if (! SUCCEEDED(hr))
     {
-        throw SystemError(hr, "Can't get XPath style length");
+        throw System_Error(hr, "Can't get XPath style length");
     }
 
     if (nodes != 0)
@@ -53,7 +53,7 @@ void Settings::read_settings()
         hr = styleNode->nextNode(&node);
         if (! SUCCEEDED(hr))
         {
-            throw SystemError(hr, "Can't read style node");
+            throw System_Error(hr, "Can't read style node");
         }
         CComQIPtr<IXMLDOMElement> element(node);
         CComVariant value;
@@ -100,7 +100,7 @@ void Settings::read_settings()
     hr = XMLNodeList->get_length(&nodes);
     if (! SUCCEEDED(hr))
     {
-        throw SystemError(hr, "Can't get XPath length");
+        throw System_Error(hr, "Can't get XPath length");
     }
 
     for (LONG entry = 0; entry < nodes; entry++)

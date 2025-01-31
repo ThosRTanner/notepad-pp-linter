@@ -1,7 +1,7 @@
 #include "FilePipe.h"
 
-#include "HandleWrapper.h"
-#include "SystemError.h"
+#include "Handle_Wrapper.h"
+#include "System_Error.h"
 
 #include <errhandlingapi.h>
 #include <handleapi.h>
@@ -14,7 +14,7 @@
 namespace Linter
 {
 
-FilePipe::Pipe Linter::FilePipe::create()
+FilePipe::Pipe FilePipe::create()
 {
     SECURITY_ATTRIBUTES security = {
         .nLength = sizeof(SECURITY_ATTRIBUTES),
@@ -26,17 +26,17 @@ FilePipe::Pipe Linter::FilePipe::create()
     HANDLE child;
     if (! CreatePipe(&parent, &child, &security, 0))
     {
-        throw SystemError(GetLastError());
+        throw System_Error(GetLastError());
     }
 
-    return {HandleWrapper(parent), HandleWrapper(child)};
+    return {Handle_Wrapper(parent), Handle_Wrapper(child)};
 }
 
-void FilePipe::detachFromParent(HandleWrapper const &handle)
+void FilePipe::detachFromParent(Handle_Wrapper const &handle)
 {
     if (! SetHandleInformation(handle, HANDLE_FLAG_INHERIT, 0))
     {
-        throw SystemError(GetLastError());
+        throw System_Error(GetLastError());
     }
 }
 

@@ -268,11 +268,11 @@
     <ClCompile Include="Docking_Dialogue_Interface\Plugin\Plugin.cpp" />
     <ClCompile Include="src\Clipboard.cpp" />
     <ClCompile Include="src\dllmain.cpp" />
-    <ClCompile Include="src\DomDocument.cpp" />
+    <ClCompile Include="src\Dom_Document.cpp" />
     <ClCompile Include="src\encoding.cpp" />
     <ClCompile Include="src\File.cpp" />
     <ClCompile Include="src\FilePipe.cpp" />
-    <ClCompile Include="src\HandleWrapper.cpp" />
+    <ClCompile Include="src\Handle_Wrapper.cpp" />
     <ClCompile Include="src\Linter.cpp" />
     <ClCompile Include="src\Output_Dialogue.cpp" />
     <ClCompile Include="src\Settings.cpp" />
@@ -282,8 +282,8 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="src\SystemError.cpp" />
-    <ClCompile Include="src\XmlDecodeException.cpp" />
+    <ClCompile Include="src\System_Error.cpp" />
+    <ClCompile Include="src\XML_Decode_Error.cpp" />
     <ClCompile Include="src\CheckStyle_Parser.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -302,19 +302,19 @@
     <ClInclude Include="Docking_Dialogue_Interface\Plugin\Non_Modal_Dialogue_Interface.h" />
     <ClInclude Include="Docking_Dialogue_Interface\Plugin\Plugin.h" />
     <ClInclude Include="src\Clipboard.h" />
-    <ClInclude Include="src\DomDocument.h" />
+    <ClInclude Include="src\Dom_Document.h" />
     <ClInclude Include="src\encoding.h" />
     <ClInclude Include="src\File.h" />
     <ClInclude Include="src\FilePipe.h" />
-    <ClInclude Include="src\HandleWrapper.h" />
+    <ClInclude Include="src\Handle_Wrapper.h" />
     <ClInclude Include="src\Linter.h" />
     <ClInclude Include="src\Output_Dialogue.h" />
     <ClInclude Include="src\resource.h" />
     <ClInclude Include="src\Settings.h" />
     <ClInclude Include="src\stdafx.h" />
-    <ClInclude Include="src\SystemError.h" />
+    <ClInclude Include="src\System_Error.h" />
     <ClInclude Include="src\targetver.h" />
-    <ClInclude Include="src\XmlDecodeException.h" />
+    <ClInclude Include="src\XML_Decode_Error.h" />
     <ClInclude Include="src\Checkstyle_Parser.h" />
   </ItemGroup>
   <ItemGroup>
@@ -323,7 +323,6 @@
   <ItemGroup>
     <None Include=".clang-format" />
     <None Include="iwyu.bat" />
-    <None Include="LICENSE" />
     <None Include="post-build.ps1" />
     <None Include="README.md" />
     <None Include="TODO.md" />

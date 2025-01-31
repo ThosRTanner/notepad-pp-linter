@@ -7,15 +7,15 @@
 namespace Linter
 {
 
-class HandleWrapper
+class Handle_Wrapper
 {
   public:
-    explicit HandleWrapper(HANDLE h);
-    HandleWrapper(HandleWrapper const &) = delete;
-    HandleWrapper(HandleWrapper &&other) noexcept;
-    HandleWrapper &operator=(HandleWrapper const &) = delete;
-    HandleWrapper &operator=(HandleWrapper &&other) = delete;
-    ~HandleWrapper();
+    explicit Handle_Wrapper(HANDLE h);
+    Handle_Wrapper(Handle_Wrapper const &) = delete;
+    Handle_Wrapper(Handle_Wrapper &&other) noexcept;
+    Handle_Wrapper &operator=(Handle_Wrapper const &) = delete;
+    Handle_Wrapper &operator=(Handle_Wrapper &&other) = delete;
+    ~Handle_Wrapper();
 
     void close() const noexcept;
 

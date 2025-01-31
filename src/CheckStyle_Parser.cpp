@@ -1,7 +1,7 @@
 #include "Checkstyle_Parser.h"
 
-#include "DomDocument.h"
-#include "SystemError.h"
+#include "Dom_Document.h"
+#include "System_Error.h"
 
 #include <atlcomcli.h>
 #include <comutil.h>
@@ -19,7 +19,7 @@ std::vector<Checkstyle_Parser::Error> Checkstyle_Parser::get_errors(
     std::string const &xml
 )
 {
-    DomDocument XMLDocument{xml};
+    Dom_Document XMLDocument{xml};
 
     // Sample errors:
     //
@@ -41,7 +41,7 @@ std::vector<Checkstyle_Parser::Error> Checkstyle_Parser::get_errors(
     HRESULT hr = XMLNodeList->get_length(&num_errors);
     if (! SUCCEEDED(hr))
     {
-        throw SystemError(hr, "Can't get XPath //error length");
+        throw System_Error(hr, "Can't get XPath //error length");
     }
     for (LONG error = 0; error < num_errors; error++)
     {
@@ -49,7 +49,7 @@ std::vector<Checkstyle_Parser::Error> Checkstyle_Parser::get_errors(
         hr = XMLNodeList->get_item(error, &node);
         if (! SUCCEEDED(hr))
         {
-            throw SystemError(hr, "Can't get next XPath element");
+            throw System_Error(hr, "Can't get next XPath element");
         }
 
         CComQIPtr<IXMLDOMElement> element(node);

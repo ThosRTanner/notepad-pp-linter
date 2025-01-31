@@ -1,4 +1,4 @@
-#include "XmlDecodeException.h"
+#include "XML_Decode_Error.h"
 
 #include <comutil.h>
 #include <msxml.h>
@@ -12,7 +12,7 @@
 namespace Linter
 {
 
-XmlDecodeException::XmlDecodeException(IXMLDOMParseError &error)
+XML_Decode_Error::XML_Decode_Error(IXMLDOMParseError &error)
 {
     // Note that this constructor does allocations. Sorry.
 
@@ -53,21 +53,21 @@ XmlDecodeException::XmlDecodeException(IXMLDOMParseError &error)
     );
 }
 
-XmlDecodeException::XmlDecodeException(XmlDecodeException const &) noexcept =
+XML_Decode_Error::XML_Decode_Error(XML_Decode_Error const &) noexcept =
     default;
 
-XmlDecodeException::XmlDecodeException(XmlDecodeException &&) noexcept =
+XML_Decode_Error::XML_Decode_Error(XML_Decode_Error &&) noexcept =
     default;
 
-XmlDecodeException &XmlDecodeException::operator=(XmlDecodeException const
+XML_Decode_Error &XML_Decode_Error::operator=(XML_Decode_Error const
                                                       &) noexcept = default;
 
-XmlDecodeException &XmlDecodeException::operator=(XmlDecodeException
+XML_Decode_Error &XML_Decode_Error::operator=(XML_Decode_Error
                                                       &&) noexcept = default;
 
-XmlDecodeException::~XmlDecodeException() = default;
+XML_Decode_Error::~XML_Decode_Error() = default;
 
-char const *XmlDecodeException::what() const noexcept
+char const *XML_Decode_Error::what() const noexcept
 {
     return &what_string_[0];
 }

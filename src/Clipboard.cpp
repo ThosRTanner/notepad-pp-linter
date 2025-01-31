@@ -1,6 +1,6 @@
 #include "Clipboard.h"
 
-#include "SystemError.h"
+#include "System_Error.h"
 
 #include <winbase.h>
 #include <winuser.h>
@@ -15,7 +15,7 @@ Clipboard::Clipboard(HWND self)
 {
     if (not ::OpenClipboard(self))
     {
-        throw SystemError("Cannot open the Clipboard");
+        throw System_Error("Cannot open the Clipboard");
     }
 }
 
@@ -32,7 +32,7 @@ void Clipboard::empty()
 {
     if (not ::EmptyClipboard())
     {
-        throw SystemError("Cannot empty the Clipboard");
+        throw System_Error("Cannot empty the Clipboard");
     }
 }
 
@@ -42,13 +42,13 @@ void Clipboard::copy(std::wstring const &str)
     mem_handle_ = ::GlobalAlloc(GMEM_MOVEABLE, size);
     if (mem_handle_ == nullptr)
     {
-        throw SystemError("Cannot allocate memory for clipboard");
+        throw System_Error("Cannot allocate memory for clipboard");
     }
 
     LPVOID mem_ptr_ = ::GlobalLock(mem_handle_);
     if (mem_ptr_ == nullptr)
     {
-        throw SystemError("Cannot lock memory for clipboard");
+        throw System_Error("Cannot lock memory for clipboard");
     }
 
     std::memcpy(mem_ptr_, str.c_str(), size);
@@ -57,7 +57,7 @@ void Clipboard::copy(std::wstring const &str)
 
     if (::SetClipboardData(CF_UNICODETEXT, mem_handle_) == nullptr)
     {
-        throw SystemError("Unable to set Clipboard data");
+        throw System_Error("Unable to set Clipboard data");
     }
 
     mem_handle_ = nullptr;

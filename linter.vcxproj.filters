@@ -23,7 +23,7 @@
     <ClCompile Include="src\Clipboard.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\DomDocument.cpp">
+    <ClCompile Include="src\Dom_Document.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\encoding.cpp">
@@ -35,7 +35,7 @@
     <ClCompile Include="src\FilePipe.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\HandleWrapper.cpp">
+    <ClCompile Include="src\Handle_Wrapper.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\Linter.cpp">
@@ -50,10 +50,10 @@
     <ClCompile Include="src\stdafx.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\SystemError.cpp">
+    <ClCompile Include="src\System_Error.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\XmlDecodeException.cpp">
+    <ClCompile Include="src\XML_Decode_Error.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\CheckStyle_Parser.cpp">
@@ -85,7 +85,7 @@
     <ClInclude Include="src\Clipboard.h">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\DomDocument.h">
+    <ClInclude Include="src\Dom_Document.h">
       <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="src\encoding.h">
@@ -97,7 +97,7 @@
     <ClInclude Include="src\FilePipe.h">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\HandleWrapper.h">
+    <ClInclude Include="src\Handle_Wrapper.h">
       <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="src\Linter.h">
@@ -112,13 +112,13 @@
     <ClInclude Include="src\stdafx.h">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\SystemError.h">
+    <ClInclude Include="src\System_Error.h">
       <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="src\targetver.h">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\XmlDecodeException.h">
+    <ClInclude Include="src\XML_Decode_Error.h">
       <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="src\Checkstyle_Parser.h">
@@ -177,7 +177,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include=".clang-format" />
-    <None Include="LICENSE" />
     <None Include="post-build.ps1" />
     <None Include="README.md" />
     <None Include="TODO.md" />

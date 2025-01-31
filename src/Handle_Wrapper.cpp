@@ -1,6 +1,6 @@
-#include "HandleWrapper.h"
+#include "Handle_Wrapper.h"
 
-#include "SystemError.h"
+#include "System_Error.h"
 
 #include <errhandlingapi.h>
 #include <fileapi.h>
@@ -17,20 +17,20 @@
 namespace Linter
 {
 
-HandleWrapper::HandleWrapper(HANDLE h) : handle_(h)
+Handle_Wrapper::Handle_Wrapper(HANDLE h) : handle_(h)
 {
     if (h == INVALID_HANDLE_VALUE)
     {
-        throw SystemError();
+        throw System_Error();
     }
 }
 
-HandleWrapper::HandleWrapper(HandleWrapper &&other) noexcept :
+Handle_Wrapper::Handle_Wrapper(Handle_Wrapper &&other) noexcept :
     handle_(std::exchange(other.handle_, INVALID_HANDLE_VALUE))
 {
 }
 
-void HandleWrapper::close() const noexcept
+void Handle_Wrapper::close() const noexcept
 {
     if (handle_ != INVALID_HANDLE_VALUE)
     {
@@ -39,17 +39,17 @@ void HandleWrapper::close() const noexcept
     }
 }
 
-HandleWrapper::operator HANDLE() const noexcept
+Handle_Wrapper::operator HANDLE() const noexcept
 {
     return handle_;
 }
 
-HandleWrapper::~HandleWrapper()
+Handle_Wrapper::~Handle_Wrapper()
 {
     close();
 }
 
-void HandleWrapper::writeFile(std::string const &str) const
+void Handle_Wrapper::writeFile(std::string const &str) const
 {
     static_assert(sizeof(str[0]) == 1, "Invalid byte size");
 
@@ -64,13 +64,13 @@ void HandleWrapper::writeFile(std::string const &str) const
         DWORD written;
         if (! WriteFile(handle_, &*start, toWrite, &written, nullptr))
         {
-            throw SystemError();
+            throw System_Error();
         }
         start += written;
     }
 }
 
-std::string HandleWrapper::readFile() const
+std::string Handle_Wrapper::readFile() const
 {
     std::string result;
 
@@ -89,7 +89,7 @@ std::string HandleWrapper::readFile() const
             DWORD const err = GetLastError();
             if (err != ERROR_BROKEN_PIPE)
             {
-                throw SystemError(err);
+                throw System_Error(err);
             }
         }
 

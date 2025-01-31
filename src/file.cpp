@@ -1,8 +1,8 @@
 #include "File.h"
 
 #include "FilePipe.h"
-#include "HandleWrapper.h"
-#include "SystemError.h"
+#include "Handle_Wrapper.h"
+#include "System_Error.h"
 
 #include <comutil.h>
 #include <errhandlingapi.h>
@@ -23,7 +23,7 @@
 namespace Linter
 {
 
-Linter::File::File(std::filesystem::path const &path) : path_(path)
+File::File(std::filesystem::path const &path) : path_(path)
 {
 }
 
@@ -84,7 +84,7 @@ std::pair<std::string, std::string> File::exec(
     {
         DWORD const error{GetLastError()};
         bstr_t const cmd{command_line.c_str()};
-        throw SystemError(
+        throw System_Error(
             error, "Can't execute command: " + static_cast<std::string>(cmd)
         );
     }
@@ -119,7 +119,7 @@ void File::write(std::string const &data)
                      .append(path_.filename().string())
                      .concat(".linter");
 
-    HandleWrapper handle{CreateFile(
+    Handle_Wrapper handle{CreateFile(
         temp_file_.c_str(),
         GENERIC_WRITE,
         0,

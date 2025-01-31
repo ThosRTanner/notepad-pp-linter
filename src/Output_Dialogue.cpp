@@ -5,7 +5,8 @@
 #include "Checkstyle_Parser.h"
 #include "Clipboard.h"
 #include "Linter.h"
-#include "SystemError.h"
+#include "System_Error.h"
+
 #include "resource.h"
 
 #include <CommCtrl.h>
@@ -698,7 +699,7 @@ Output_Dialogue::TabDefinition::TabDefinition(
 {
     if (list_view == nullptr)
     {
-        throw ::Linter::SystemError("Could not create list box");
+        throw ::Linter::System_Error("Could not create list box");
     }
 }
 
