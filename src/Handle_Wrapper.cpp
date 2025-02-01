@@ -30,6 +30,11 @@ Handle_Wrapper::Handle_Wrapper(Handle_Wrapper &&other) noexcept :
 {
 }
 
+Handle_Wrapper::~Handle_Wrapper()
+{
+    close();
+}
+
 void Handle_Wrapper::close() const noexcept
 {
     if (handle_ != INVALID_HANDLE_VALUE)
@@ -42,11 +47,6 @@ void Handle_Wrapper::close() const noexcept
 Handle_Wrapper::operator HANDLE() const noexcept
 {
     return handle_;
-}
-
-Handle_Wrapper::~Handle_Wrapper()
-{
-    close();
 }
 
 void Handle_Wrapper::writeFile(std::string const &str) const
@@ -81,10 +81,10 @@ std::string Handle_Wrapper::readFile() const
 
     for (;;)
     {
-        DWORD readBytes;
+        DWORD bytes_read;
         // The API suggests when the other end closes the pipe, you should get
         // 0. What appears to happen is that you get broken pipe.
-        if (! ReadFile(handle_, buff, BUFFSIZE, &readBytes, nullptr))
+        if (! ReadFile(handle_, buff, BUFFSIZE, &bytes_read, nullptr))
         {
             DWORD const err = GetLastError();
             if (err != ERROR_BROKEN_PIPE)
@@ -93,12 +93,12 @@ std::string Handle_Wrapper::readFile() const
             }
         }
 
-        if (readBytes == 0)
+        if (bytes_read == 0)
         {
             break;
         }
 
-        result.append(buff, readBytes);
+        result.append(buff, bytes_read);
     }
 
     return result;

@@ -271,7 +271,7 @@
     <ClCompile Include="src\Dom_Document.cpp" />
     <ClCompile Include="src\encoding.cpp" />
     <ClCompile Include="src\File.cpp" />
-    <ClCompile Include="src\FilePipe.cpp" />
+    <ClCompile Include="src\Child_Pipe.cpp" />
     <ClCompile Include="src\Handle_Wrapper.cpp" />
     <ClCompile Include="src\Linter.cpp" />
     <ClCompile Include="src\Output_Dialogue.cpp" />
@@ -305,7 +305,7 @@
     <ClInclude Include="src\Dom_Document.h" />
     <ClInclude Include="src\encoding.h" />
     <ClInclude Include="src\File.h" />
-    <ClInclude Include="src\FilePipe.h" />
+    <ClInclude Include="src\Child_Pipe.h" />
     <ClInclude Include="src\Handle_Wrapper.h" />
     <ClInclude Include="src\Linter.h" />
     <ClInclude Include="src\Output_Dialogue.h" />

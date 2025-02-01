@@ -32,7 +32,7 @@
     <ClCompile Include="src\File.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\FilePipe.cpp">
+    <ClCompile Include="src\Child_Pipe.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\Handle_Wrapper.cpp">
@@ -94,7 +94,7 @@
     <ClInclude Include="src\File.h">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\FilePipe.h">
+    <ClInclude Include="src\Child_Pipe.h">
       <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="src\Handle_Wrapper.h">

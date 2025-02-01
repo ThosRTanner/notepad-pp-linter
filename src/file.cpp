@@ -1,6 +1,6 @@
 #include "File.h"
 
-#include "FilePipe.h"
+#include "Child_Pipe.h"
 #include "Handle_Wrapper.h"
 #include "System_Error.h"
 
@@ -48,21 +48,16 @@ std::pair<std::string, std::string> File::exec(
         command_line += '"';
     }
 
-    auto const stdoutpipe = FilePipe::create();
-    auto const stderrpipe = FilePipe::create();
-    auto const stdinpipe = FilePipe::create();
-
-    // Stop my handle being inherited by the child
-    FilePipe::detachFromParent(stdoutpipe.reader);
-    FilePipe::detachFromParent(stderrpipe.reader);
-    FilePipe::detachFromParent(stdinpipe.writer);
+    auto const stdoutpipe = Child_Pipe::create_output_pipe();
+    auto const stderrpipe = Child_Pipe::create_output_pipe();
+    auto const stdinpipe = Child_Pipe::create_input_pipe();
 
     STARTUPINFO startInfo = {
         .cb = sizeof(STARTUPINFO),
         .dwFlags = STARTF_USESTDHANDLES,
-        .hStdInput = stdinpipe.reader,
-        .hStdOutput = stdoutpipe.writer,
-        .hStdError = stderrpipe.writer
+        .hStdInput = stdinpipe.reader(),
+        .hStdOutput = stdoutpipe.writer(),
+        .hStdError = stderrpipe.writer()
     };
 
     PROCESS_INFORMATION procInfo = {0};
@@ -91,20 +86,21 @@ std::pair<std::string, std::string> File::exec(
 
     if (text != nullptr)
     {
-        stdinpipe.writer.writeFile(*text);
+        stdinpipe.writer().writeFile(*text);
     }
+    stdinpipe.writer().close();
 
     // We need to close all the handles for this end otherwise strange things
     // happen.
     CloseHandle(procInfo.hProcess);
     CloseHandle(procInfo.hThread);
 
-    stdoutpipe.writer.close();
-    stderrpipe.writer.close();
-    stdinpipe.writer.close();
+    stdoutpipe.writer().close();
+    stderrpipe.writer().close();
+    stdinpipe.reader().close();
 
-    std::string out = stdoutpipe.reader.readFile();
-    std::string err = stderrpipe.reader.readFile();
+    std::string out = stdoutpipe.reader().readFile();
+    std::string err = stderrpipe.reader().readFile();
     return std::make_pair(out, err);
 }
 
@@ -115,9 +111,14 @@ void File::write(std::string const &data)
         return;
     }
 
-    temp_file_ = std::filesystem::temp_directory_path()
-                     .append(path_.filename().string())
-                     .concat(".linter");
+    // We cannot put these files in temp dir because the tools search for
+    // configuration in the directory the file is being processed. Therefore we
+    // create the file in the same directory but mark it hidden.
+    {
+        std::filesystem::path temp = path_;
+        temp.concat(".tmp.linter.tmp");
+        temp_file_ = temp;
+    }
 
     Handle_Wrapper handle{CreateFile(
         temp_file_.c_str(),
@@ -125,7 +126,7 @@ void File::write(std::string const &data)
         0,
         nullptr,
         CREATE_ALWAYS,
-        FILE_ATTRIBUTE_TEMPORARY,
+        FILE_ATTRIBUTE_HIDDEN,
         nullptr
     )};
 
