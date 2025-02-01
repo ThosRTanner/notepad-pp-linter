@@ -90,16 +90,16 @@ class Output_Dialogue : protected Docking_Dialogue_Interface
     void initialise_tab(TabDefinition &tab) noexcept;
 
     /** Process WM_COMMAND message */
-    std::optional<LONG_PTR> process_dlg_command(WPARAM wParam);
+    Message_Return process_dlg_command(WPARAM wParam);
 
     /** Process WM_CONTEXTMENU message */
-    std::optional<LONG_PTR> process_dlg_context_menu(LPARAM lParam) noexcept;
+    Message_Return process_dlg_context_menu(LPARAM lParam) noexcept;
 
     /** Process WM_NOTIFY message */
-    std::optional<LONG_PTR> process_dlg_notify(LPARAM lParam);
+    Message_Return process_dlg_notify(LPARAM lParam);
 
     /** Process NM_CUSTOMDRAW notification */
-    std::optional<LONG_PTR> process_custom_draw(NMLVCUSTOMDRAW *) noexcept;
+    Message_Return process_custom_draw(NMLVCUSTOMDRAW *) noexcept;
 
     /** Selected tab has been changed. Display new one */
     void selected_tab_changed() noexcept;

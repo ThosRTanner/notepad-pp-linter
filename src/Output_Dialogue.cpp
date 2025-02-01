@@ -217,7 +217,9 @@ void Output_Dialogue::initialise_tab(TabDefinition &tab) noexcept
     ListView_InsertColumn(list_view, lvc.iSubItem, &lvc);
 }
 
-std::optional<LONG_PTR> Output_Dialogue::process_dlg_command(WPARAM wParam)
+Output_Dialogue::Message_Return Output_Dialogue::process_dlg_command(
+    WPARAM wParam
+)
 {
     switch (LOWORD(wParam))
     {
@@ -249,7 +251,8 @@ std::optional<LONG_PTR> Output_Dialogue::process_dlg_command(WPARAM wParam)
     return std::nullopt;
 }
 
-std::optional<LONG_PTR> Output_Dialogue::process_dlg_context_menu(LPARAM lParam
+Output_Dialogue::Message_Return Output_Dialogue::process_dlg_context_menu(
+    LPARAM lParam
 ) noexcept
 {
     // Right click in docked window.
@@ -295,7 +298,9 @@ std::optional<LONG_PTR> Output_Dialogue::process_dlg_context_menu(LPARAM lParam
     return TRUE;
 }
 
-std::optional<LONG_PTR> Output_Dialogue::process_dlg_notify(LPARAM lParam)
+Output_Dialogue::Message_Return Output_Dialogue::process_dlg_notify(
+    LPARAM lParam
+)
 {
     auto const notify_header = cast_to<NMHDR const *, LPARAM>(lParam);
     switch (notify_header->code)
@@ -359,7 +364,7 @@ std::optional<LONG_PTR> Output_Dialogue::process_dlg_notify(LPARAM lParam)
     return std::nullopt;
 }
 
-std::optional<LONG_PTR> Output_Dialogue::process_custom_draw(
+Output_Dialogue::Message_Return Output_Dialogue::process_custom_draw(
     NMLVCUSTOMDRAW *custom_draw
 ) noexcept
 {
