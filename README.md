@@ -6,7 +6,7 @@ This is a fork of the 'linter' plugin for notepad++ from deadem which provides r
 
 ## Installation
 
-- See https://npp-user-manual.org/docs/plugins/
+- See <https://npp-user-manual.org/docs/plugins/>
 - Use the plugin manager. No, seriously.
 - If you must install manually, run notepad++ in administrator mode and
   - Go to Settings -> Import -> import plugin(s)...
@@ -14,9 +14,9 @@ This is a fork of the 'linter' plugin for notepad++ from deadem which provides r
   - You should get a popup telling you to restart notepad++. If you don't, you probably forgot to run in admin mode.
   - Restart notepad++ in normal mode.
 - Go to Plugins -> Linter++ -> Edit config.
-  -	This will give you a blank configuration file. Edit to taste.
+  - This will give you a blank configuration file. Edit to taste.
 
-## Changes from the linter plugin.
+## Changes from the linter plugin
 
 1. It has a docking window similar to that provided by the jslint plugin, which displays a list of all the detected errors in the file (by default sorted by line), and the tool which detected the issue.
 1. The window will also display (in a separate tab) any messages resulting from failures to execute checker programs.
@@ -35,7 +35,7 @@ This is a fork of the 'linter' plugin for notepad++ from deadem which provides r
 </NotepadPlus>
 ```
 
-Optional attribute `stdin`="1" can be used to lint from stdin instead of temp file. i.e: 
+Optional attribute `stdin`="1" can be used to lint from stdin instead of temp file. i.e:
 ```xml
   <linter stdin="1" extension=".js" command="C:\Users\deadem\AppData\Roaming\npm\eslint.cmd --stdin --format checkstyle"/>
 ```
@@ -46,7 +46,7 @@ To handle spaces in names, you should use the &quot; quote character, as follows
   <linter extension=".none" command="&quot;C:\a command with spaces\thing&quot; --stuff" />
 ```
 
-Optional parameter 
+Optional parameter
 
 You can change default colors by an optional "style" tag. "color" attribute is a RGB hex color value, "alpha" value can range from 0 (completely transparent) to 255 (no transparency).
 

@@ -322,6 +322,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include=".clang-format" />
+    <None Include=".github\dependabot.yml" />
+    <None Include=".github\workflows\CI_build.yml" />
+    <None Include=".github\workflows\codeql-analysis.yml" />
     <None Include="iwyu.bat" />
     <None Include="post-build.ps1" />
     <None Include="README.md" />

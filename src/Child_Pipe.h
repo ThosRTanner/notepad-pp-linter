@@ -33,7 +33,6 @@ class Child_Pipe
     static void detach(Handle_Wrapper const &);
 
     Pipes pipes_;
-
 };
 
 }    // namespace Linter

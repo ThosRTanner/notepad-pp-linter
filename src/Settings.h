@@ -10,7 +10,7 @@ namespace Linter
 class Settings
 {
   public:
-    Settings(std::filesystem::path const & settings_xml);
+    Settings(std::filesystem::path const &settings_xml);
 
     struct Linter
     {

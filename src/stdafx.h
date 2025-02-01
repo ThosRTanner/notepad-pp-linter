@@ -15,7 +15,8 @@
 // Windows Header Files:
 #include <windows.h>
 
-#define _ATL_CSTRING_EXPLICIT_CONSTRUCTORS    // some CString constructors will be explicit
+#define _ATL_CSTRING_EXPLICIT_CONSTRUCTORS    // some CString constructors will
+                                              // be explicit
 
-//#include <atlcomcli.h>
-//#include <comdef.h>
+// #include <atlcomcli.h>
+// #include <comdef.h>

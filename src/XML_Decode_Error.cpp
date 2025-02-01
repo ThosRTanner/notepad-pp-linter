@@ -53,17 +53,15 @@ XML_Decode_Error::XML_Decode_Error(IXMLDOMParseError &error)
     );
 }
 
-XML_Decode_Error::XML_Decode_Error(XML_Decode_Error const &) noexcept =
-    default;
+XML_Decode_Error::XML_Decode_Error(XML_Decode_Error const &) noexcept = default;
 
-XML_Decode_Error::XML_Decode_Error(XML_Decode_Error &&) noexcept =
-    default;
+XML_Decode_Error::XML_Decode_Error(XML_Decode_Error &&) noexcept = default;
 
 XML_Decode_Error &XML_Decode_Error::operator=(XML_Decode_Error const
-                                                      &) noexcept = default;
+                                                  &) noexcept = default;
 
-XML_Decode_Error &XML_Decode_Error::operator=(XML_Decode_Error
-                                                      &&) noexcept = default;
+XML_Decode_Error &XML_Decode_Error::operator=(XML_Decode_Error &&) noexcept =
+    default;
 
 XML_Decode_Error::~XML_Decode_Error() = default;
 

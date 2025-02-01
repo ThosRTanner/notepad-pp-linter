@@ -10,7 +10,7 @@ jobs:
       matrix:
         build_configuration: [Release, Debug]
         build_platform: [x64, Win32]
-        
+
     steps:
     - name: Checkout repo
       uses: actions/checkout@v4

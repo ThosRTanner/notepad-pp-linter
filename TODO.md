@@ -1,12 +1,12 @@
-# TODO
+# Things to do before release
 
 1. don't have 2 copies of lint list - actually there's 3 now
    * `Linter::errors_`
    * `Linter::errors_by_position`
-   * `Output_Dialogue::Tab_Definition` 
+   * `Output_Dialogue::Tab_Definition`
 1. if window size changes, should scroll selected line back into view.
 1. don't clear everything and redisplay. it looks messy
-   * https://learn.microsoft.com/en-us/windows/win32/gdi/wm-setredraw
+   * <https://learn.microsoft.com/en-us/windows/win32/gdi/wm-setredraw>
 1. unclear why but sometimes adjusting column titles seems to needs a window redisplay. check jshint code.
    * especially you lose the scrollbar when double clicking on tool
 1. configuration window

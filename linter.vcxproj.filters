@@ -18,6 +18,12 @@
     <Filter Include="Notepad++\DockingFeature">
       <UniqueIdentifier>{920caa76-4406-4c90-b6a5-d9fc88287be5}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Github">
+      <UniqueIdentifier>{eda482d2-691b-4114-be75-a291c26e485e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Github\Workflows">
+      <UniqueIdentifier>{b77a3c65-5fce-479d-9189-7c962375a179}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Clipboard.cpp">
@@ -182,6 +188,15 @@
     <None Include="TODO.md" />
     <None Include="iwyu.bat" />
     <None Include="vs2022cpp20.imp" />
+    <None Include=".github\dependabot.yml">
+      <Filter>Github</Filter>
+    </None>
+    <None Include=".github\workflows\CI_build.yml">
+      <Filter>Github\Workflows</Filter>
+    </None>
+    <None Include=".github\workflows\codeql-analysis.yml">
+      <Filter>Github\Workflows</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Image Include="src\linter.ico">
