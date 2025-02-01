@@ -143,7 +143,7 @@ void Output_Dialogue::select_previous_lint() noexcept
     select_lint(-1);
 }
 
-std::optional<LONG_PTR> Output_Dialogue::on_dialogue_message(
+Output_Dialogue::Message_Return Output_Dialogue::on_dialogue_message(
     UINT message, WPARAM wParam, LPARAM lParam
 )
 {
