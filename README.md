@@ -24,9 +24,9 @@ eslint, jscs, phpcs, csslint etc.
 1. It has a docking window similar to that provided by the jslint plugin, which
    displays a list of all the detected errors in the file (by default sorted by
    line), and the tool which detected the issue.
-1. The window will also display (in a separate tab) any messages resulting from
+2. The window will also display (in a separate tab) any messages resulting from
    failures to execute checker programs.
-1. It is no longer necessary to restart notepad++ after changing the
+3. It is no longer necessary to restart notepad++ after changing the
    configuration.
 
 ## Config example
@@ -46,8 +46,8 @@ eslint, jscs, phpcs, csslint etc.
 </NotepadPlus>
 ```
 
-Optional attribute `stdin="1"` can be used to lint from stdin instead of temp
-file. i.e:
+Set attribute `stdin` to `1` when the linter expects input from stdin instead
+of from a file. i.e:
 
 ```xml
   <linter stdin="1" extension=".js"

@@ -27,9 +27,9 @@
 1. configurable squiggle/box
 1. Capture error output from command. May be of use when get null xml output.
    * Documentation: "If the anonymous write pipe handle has been closed and
-	 ReadFile attempts to read using the corresponding anonymous read pipe
-	 handle, the function returns FALSE and GetLastError returns
-	 ERROR_BROKEN_PIPE."
+     ReadFile attempts to read using the corresponding anonymous read pipe
+     handle, the function returns FALSE and GetLastError returns
+     ERROR_BROKEN_PIPE."
    * possibly use `WaitForMultipleObjects`?
 1. Replace all filesystem stuff with `std::filesystem::path`
 1. configurable shortcut keys
