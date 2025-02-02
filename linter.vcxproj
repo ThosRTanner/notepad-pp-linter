@@ -23,31 +23,32 @@
     <RootNamespace>linter</RootNamespace>
     <Keyword>Win32Proj</Keyword>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+    <ProjectName>linter++</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
-    <PlatformToolset>v142</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
     <WholeProgramOptimization>true</WholeProgramOptimization>
+    <PlatformToolset>v143</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
-    <PlatformToolset>v142</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
     <WholeProgramOptimization>true</WholeProgramOptimization>
+    <PlatformToolset>v143</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
-    <PlatformToolset>v142</PlatformToolset>
     <UseOfAtl>Static</UseOfAtl>
     <CharacterSet>Unicode</CharacterSet>
+    <PlatformToolset>v143</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
-    <PlatformToolset>v142</PlatformToolset>
     <UseOfAtl>Static</UseOfAtl>
     <CharacterSet>Unicode</CharacterSet>
+    <PlatformToolset>v143</PlatformToolset>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
@@ -72,22 +73,30 @@
     <OutDir>$(SolutionDir)$(Configuration)\</OutDir>
     <IntDir>$(Configuration)\</IntDir>
     <LinkIncremental>true</LinkIncremental>
+    <RunCodeAnalysis>true</RunCodeAnalysis>
+    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
+    <RunCodeAnalysis>true</RunCodeAnalysis>
+    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <OutDir>$(SolutionDir)$(Configuration)\</OutDir>
     <IntDir>$(Configuration)\</IntDir>
     <LinkIncremental>false</LinkIncremental>
+    <RunCodeAnalysis>true</RunCodeAnalysis>
+    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
+    <RunCodeAnalysis>true</RunCodeAnalysis>
+    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;LINTER_EXPORTS;_CRT_NONSTDC_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_DEBUG;_WINDOWS;_USRDLL;LINTER_EXPORTS;_CRT_NONSTDC_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <PrecompiledHeader>Use</PrecompiledHeader>
@@ -97,37 +106,79 @@
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <TreatWarningAsError>true</TreatWarningAsError>
       <AdditionalOptions> /Zc:__cplusplus</AdditionalOptions>
+      <EnforceTypeConversionRules>true</EnforceTypeConversionRules>
+      <EnablePREfast>true</EnablePREfast>
+      <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+      <AdditionalIncludeDirectories>.;Docking_Dialogue_Interface;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
+      <ForcedIncludeFiles>stdafx.h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
       <TargetMachine>MachineX86</TargetMachine>
+      <AssemblyDebug>true</AssemblyDebug>
     </Link>
+    <PostBuildEvent>
+      <Command>
+      </Command>
+    </PostBuildEvent>
+    <PostBuildEvent>
+      <Message>
+      </Message>
+    </PostBuildEvent>
+    <PreLinkEvent>
+      <Command>iwyu.bat</Command>
+    </PreLinkEvent>
+    <PreLinkEvent>
+      <Message>Include what you use checks</Message>
+    </PreLinkEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;LINTER_EXPORTS;_CRT_NONSTDC_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_DEBUG;_WINDOWS;_USRDLL;LINTER_EXPORTS;_CRT_NONSTDC_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <WarningLevel>Level4</WarningLevel>
-      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
       <SDLCheck>true</SDLCheck>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <TreatWarningAsError>true</TreatWarningAsError>
       <AdditionalOptions> /Zc:__cplusplus</AdditionalOptions>
+      <EnforceTypeConversionRules>true</EnforceTypeConversionRules>
+      <EnablePREfast>true</EnablePREfast>
+      <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+      <AdditionalIncludeDirectories>.;Docking_Dialogue_Interface;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
+      <ForcedIncludeFiles>stdafx.h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
+      <AssemblyDebug>true</AssemblyDebug>
     </Link>
+    <PostBuildEvent>
+      <Command>powershell.exe -ExecutionPolicy Bypass -NoProfile -NonInteractive -File post-build.ps1  $(OutDir)</Command>
+    </PostBuildEvent>
+    <PostBuildEvent>
+      <Message>Copy dll to notepad++ plugin directory</Message>
+    </PostBuildEvent>
+    <PreLinkEvent>
+      <Command>iwyu.bat</Command>
+    </PreLinkEvent>
+    <PreLinkEvent>
+      <Message>Include what you use checks</Message>
+    </PreLinkEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
       <Optimization>MaxSpeed</Optimization>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;LINTER_EXPORTS;_CRT_NONSTDC_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NDEBUG;_WINDOWS;_USRDLL;LINTER_EXPORTS;_CRT_NONSTDC_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <PrecompiledHeader>Use</PrecompiledHeader>
@@ -137,6 +188,13 @@
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <TreatWarningAsError>true</TreatWarningAsError>
       <AdditionalOptions> /Zc:__cplusplus</AdditionalOptions>
+      <EnforceTypeConversionRules>true</EnforceTypeConversionRules>
+      <EnablePREfast>true</EnablePREfast>
+      <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+      <AdditionalIncludeDirectories>.;Docking_Dialogue_Interface;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
+      <ForcedIncludeFiles>stdafx.h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -145,12 +203,26 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <TargetMachine>MachineX86</TargetMachine>
     </Link>
+    <PostBuildEvent>
+      <Command>
+      </Command>
+    </PostBuildEvent>
+    <PostBuildEvent>
+      <Message>
+      </Message>
+    </PostBuildEvent>
+    <PreLinkEvent>
+      <Command>iwyu.bat</Command>
+    </PreLinkEvent>
+    <PreLinkEvent>
+      <Message>Include what you use checks</Message>
+    </PreLinkEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
       <Optimization>MaxSpeed</Optimization>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;LINTER_EXPORTS;_CRT_NONSTDC_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NDEBUG;_WINDOWS;_USRDLL;LINTER_EXPORTS;_CRT_NONSTDC_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <PrecompiledHeader>Use</PrecompiledHeader>
@@ -160,6 +232,13 @@
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <TreatWarningAsError>true</TreatWarningAsError>
       <AdditionalOptions> /Zc:__cplusplus</AdditionalOptions>
+      <EnforceTypeConversionRules>true</EnforceTypeConversionRules>
+      <EnablePREfast>true</EnablePREfast>
+      <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+      <AdditionalIncludeDirectories>.;Docking_Dialogue_Interface;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
+      <ForcedIncludeFiles>stdafx.h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -167,43 +246,94 @@
       <OptimizeReferences>true</OptimizeReferences>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
     </Link>
+    <PostBuildEvent>
+      <Command>powershell.exe -ExecutionPolicy Bypass -NoProfile -NonInteractive -File post-build.ps1  $(OutDir)</Command>
+    </PostBuildEvent>
+    <PostBuildEvent>
+      <Message>Copy dll to notepad++ plugin directory</Message>
+    </PostBuildEvent>
+    <PreLinkEvent>
+      <Command>iwyu.bat</Command>
+    </PreLinkEvent>
+    <PreLinkEvent>
+      <Message>Include what you use checks</Message>
+    </PreLinkEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="encoding.cpp" />
-    <ClCompile Include="file.cpp" />
-    <ClCompile Include="FilePipe.cpp" />
-    <ClCompile Include="HandleWrapper.cpp" />
-    <ClCompile Include="linter.cpp" />
-    <ClCompile Include="plugin.cpp" />
-    <ClCompile Include="stdafx.cpp">
+    <ClCompile Include="Docking_Dialogue_Interface\Plugin\Dialogue_Interface.cpp" />
+    <ClCompile Include="Docking_Dialogue_Interface\Plugin\Docking_Dialogue_Interface.cpp" />
+    <ClCompile Include="Docking_Dialogue_Interface\Plugin\Modal_Dialogue_Interface.cpp" />
+    <ClCompile Include="Docking_Dialogue_Interface\Plugin\Non_Modal_Dialogue_Base.cpp" />
+    <ClCompile Include="Docking_Dialogue_Interface\Plugin\Non_Modal_Dialogue_Interface.cpp" />
+    <ClCompile Include="Docking_Dialogue_Interface\Plugin\Plugin.cpp" />
+    <ClCompile Include="src\Clipboard.cpp" />
+    <ClCompile Include="src\dllmain.cpp" />
+    <ClCompile Include="src\Dom_Document.cpp" />
+    <ClCompile Include="src\encoding.cpp" />
+    <ClCompile Include="src\File.cpp" />
+    <ClCompile Include="src\Child_Pipe.cpp" />
+    <ClCompile Include="src\Handle_Wrapper.cpp" />
+    <ClCompile Include="src\Linter.cpp" />
+    <ClCompile Include="src\Output_Dialogue.cpp" />
+    <ClCompile Include="src\Settings.cpp" />
+    <ClCompile Include="src\stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="SystemError.cpp" />
-    <ClCompile Include="XmlParser.cpp" />
+    <ClCompile Include="src\System_Error.cpp" />
+    <ClCompile Include="src\XML_Decode_Error.cpp" />
+    <ClCompile Include="src\CheckStyle_Parser.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="encoding.h" />
-    <ClInclude Include="file.h" />
-    <ClInclude Include="FilePipe.h" />
-    <ClInclude Include="HandleWrapper.h" />
-    <ClInclude Include="linter.h" />
-    <ClInclude Include="notepad\menuCmdID.h" />
-    <ClInclude Include="notepad\Notepad_plus_msgs.h" />
-    <ClInclude Include="notepad\PluginInterface.h" />
-    <ClInclude Include="notepad\Scintilla.h" />
-    <ClInclude Include="plugin.h" />
-    <ClInclude Include="resource.h" />
-    <ClInclude Include="SourceLocation.h" />
-    <ClInclude Include="stdafx.h" />
-    <ClInclude Include="SystemError.h" />
-    <ClInclude Include="targetver.h" />
-    <ClInclude Include="XmlParser.h" />
+    <ClInclude Include="Docking_Dialogue_Interface\notepad++\DockingFeature\Docking.h" />
+    <ClInclude Include="Docking_Dialogue_Interface\notepad++\DockingFeature\dockingResource.h" />
+    <ClInclude Include="Docking_Dialogue_Interface\notepad++\menuCmdID.h" />
+    <ClInclude Include="Docking_Dialogue_Interface\notepad++\Notepad_plus_msgs.h" />
+    <ClInclude Include="Docking_Dialogue_Interface\notepad++\PluginInterface.h" />
+    <ClInclude Include="Docking_Dialogue_Interface\notepad++\Scintilla.h" />
+    <ClInclude Include="Docking_Dialogue_Interface\Plugin\Callback_Context.h" />
+    <ClInclude Include="Docking_Dialogue_Interface\Plugin\Dialogue_Interface.h" />
+    <ClInclude Include="Docking_Dialogue_Interface\Plugin\Docking_Dialogue_Interface.h" />
+    <ClInclude Include="Docking_Dialogue_Interface\Plugin\Min_Win_Defs.h" />
+    <ClInclude Include="Docking_Dialogue_Interface\Plugin\Modal_Dialogue_Interface.h" />
+    <ClInclude Include="Docking_Dialogue_Interface\Plugin\Non_Modal_Dialogue_Base.h" />
+    <ClInclude Include="Docking_Dialogue_Interface\Plugin\Non_Modal_Dialogue_Interface.h" />
+    <ClInclude Include="Docking_Dialogue_Interface\Plugin\Plugin.h" />
+    <ClInclude Include="src\Clipboard.h" />
+    <ClInclude Include="src\Dom_Document.h" />
+    <ClInclude Include="src\encoding.h" />
+    <ClInclude Include="src\File.h" />
+    <ClInclude Include="src\Child_Pipe.h" />
+    <ClInclude Include="src\Handle_Wrapper.h" />
+    <ClInclude Include="src\Linter.h" />
+    <ClInclude Include="src\Output_Dialogue.h" />
+    <ClInclude Include="src\resource.h" />
+    <ClInclude Include="src\Settings.h" />
+    <ClInclude Include="src\stdafx.h" />
+    <ClInclude Include="src\System_Error.h" />
+    <ClInclude Include="src\targetver.h" />
+    <ClInclude Include="src\XML_Decode_Error.h" />
+    <ClInclude Include="src\Checkstyle_Parser.h" />
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="Resource.rc" />
+    <ResourceCompile Include="src\Resource.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include=".clang-format" />
+    <None Include=".github\dependabot.yml" />
+    <None Include=".github\workflows\CI_build.yml" />
+    <None Include=".github\workflows\codeql-analysis.yml" />
+    <None Include="iwyu.bat" />
+    <None Include="post-build.ps1" />
+    <None Include="README.md" />
+    <None Include="TODO.md" />
+    <None Include="vs2022cpp20.imp" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="img\1.jpg" />
+    <Image Include="src\linter.ico" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
