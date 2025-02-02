@@ -9,7 +9,7 @@ on:
   schedule:
     - cron: '0 6 * * 4'
 
-# permissions: read-all
+permissions: read-all
 
 jobs:
   analyze:
