@@ -1,0 +1,13 @@
+[
+	{ include: ["<Windows.h>", "private", "<windows.h>", "public"] },
+	{ include: ["<corecrt_wstring.h>", "private", "<cwchar>", "public"] },
+	{ include: ["<vcruntime_exception.h>", "private", "<exception>", "public"] },
+	{ include: ["<vcruntime_string.h>", "private", "<cstring>", "public"] },
+	{ include: ["<xstring>", "private", "<string>", "public"] },
+	{ include: ["<__msvc_ostream.hpp>", "private", "<ostream>", "public"] },
+	{ include: ["<__msvc_chrono.hpp>", "private", "<chrono>", "public"] },
+	{ symbol: ["memcpy", "private", "<string.h>", "public"] },
+	{ symbol: ["std::string_view", "private", "<string_view>", "public"] },
+	{ symbol: ["std::wstring_view", "private", "<string_view>", "public"] },
+	{ symbol: ["_countof", "private", "<vcruntime.h>", "public" ] }
+]
