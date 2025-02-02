@@ -2,7 +2,7 @@ name: CI_build
 
 on: [push, pull_request]
 
-permissions: read-all
+# permissions: read-all
 
 jobs:
   build:
