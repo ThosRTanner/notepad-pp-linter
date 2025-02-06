@@ -333,6 +333,7 @@
   </ItemGroup>
   <ItemGroup>
     <Image Include="img\1.jpg" />
+    <Image Include="img\2.png" />
     <Image Include="src\linter.ico" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

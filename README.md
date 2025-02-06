@@ -4,7 +4,9 @@ This is a fork of the 'linter' plugin for notepad++ from deadem which provides
 realtime code checks of a file with any checkstyle-compatible linter: jshint,
 eslint, jscs, phpcs, csslint etc.
 
-![](/img/1.jpg?raw=true)
+![Document window](/img/1.jpg?raw=true)
+
+![Dockable error window](/img/2.png?raw=true)
 
 ## Installation
 
