@@ -1,10 +1,8 @@
-Debug/
-Release/
-*.db
-*.opendb
-ipch
-.vs/
+.vs
+.vscode
+linter++
+compile_commands.json
 *.aps
 linter.vcxproj.user
-enc_temp_folder/
-compile_commands.json
+linter.log
+
