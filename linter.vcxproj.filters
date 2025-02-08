@@ -205,5 +205,8 @@
     <Image Include="img\1.jpg">
       <Filter>Resource Files</Filter>
     </Image>
+    <Image Include="img\2.png">
+      <Filter>Resource Files</Filter>
+    </Image>
   </ItemGroup>
 </Project>
