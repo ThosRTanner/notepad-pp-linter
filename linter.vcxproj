@@ -464,7 +464,6 @@
     <None Include="iwyu.bat" />
     <None Include="post-build.ps1" />
     <None Include="README.md" />
-    <None Include="TODO.md" />
     <None Include="vs2022cpp20.imp" />
   </ItemGroup>
   <ItemGroup>

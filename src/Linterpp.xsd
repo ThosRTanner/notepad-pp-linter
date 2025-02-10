@@ -1,0 +1,53 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xs:schema id="Linterpp" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <!-- file extension (with the ".") -->
+  <xs:simpleType name="extension">
+    <xs:restriction base="xs:string">
+      <xs:pattern value="[.][^.]*"/>
+    </xs:restriction>    
+  </xs:simpleType>
+  
+  <xs:complexType name="extensions">
+    <xs:sequence>
+      <xs:element maxOccurs="unbounded" name="extension" type="extension"/>
+    </xs:sequence>
+  </xs:complexType>    
+
+  <!-- Command to execute -->
+  <xs:complexType name="command">
+    <xs:sequence>
+      <xs:element name="program" type="xs:normalizedString" />
+      <xs:element name="args" type="xs:normalizedString" />
+    </xs:sequence>    
+  </xs:complexType>
+  
+  <xs:complexType name="commands">
+    <xs:sequence>
+      <xs:element maxOccurs="unbounded" name="command" type="command"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <!-- A linter consists of a list of extensions and the command to run
+       to lint the matching files-->
+  <xs:complexType name="linter">
+    <xs:sequence>
+      <xs:element name="extensions" type="extensions"/>
+      <xs:element name="commands" type="commands"/>
+    </xs:sequence>    
+  </xs:complexType>
+  
+  <xs:complexType name="linters">
+    <xs:sequence>
+      <xs:element maxOccurs="unbounded" name="linter" type="linter"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <!-- And putting them all together -->
+  <xs:element name="LinterPP">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="linters" type="linters"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+</xs:schema>

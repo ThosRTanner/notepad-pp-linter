@@ -252,22 +252,22 @@ void Linter::setup_error_indicator() noexcept
     send_to_editor(SCI_INDICSETFORE, Error_Indicator, 0x0000ff);
     // ^ Red (Reversed RGB)
 
-    if (settings_->alpha() != -1 || settings_->color() != -1)
+    if (settings_->fill_alpha() != -1 || settings_->fg_colour() != -1)
     {
         // Magic happens. This isn't documented
         send_to_editor(SCI_INDICSETSTYLE, Error_Indicator, INDIC_ROUNDBOX);
 
-        if (settings_->alpha() != -1)
+        if (settings_->fill_alpha() != -1)
         {
             send_to_editor(
-                SCI_INDICSETALPHA, Error_Indicator, settings_->alpha()
+                SCI_INDICSETALPHA, Error_Indicator, settings_->fill_alpha()
             );
         }
 
-        if (settings_->color() != -1)
+        if (settings_->fg_colour() != -1)
         {
             send_to_editor(
-                SCI_INDICSETFORE, Error_Indicator, settings_->color()
+                SCI_INDICSETFORE, Error_Indicator, settings_->fg_colour()
             );
         }
     }

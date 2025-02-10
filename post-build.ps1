@@ -13,6 +13,7 @@ try {
 	# seem to work well if you try to get exotic with filters.
 	$dest_folder.CopyHere($dll, 16)
 	$dest_folder.CopyHere($pdb, 16)
+	# Note - given i've cleaned out the build output directory, I could copy everything now?
 }
 catch {
 	echo "An error occurred at $_.ScriptStackTrace"

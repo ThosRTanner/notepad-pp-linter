@@ -33,8 +33,8 @@ void Settings::refresh()
 
 void Settings::read_settings()
 {
-    alpha_ = -1;
-    colour_ = -1;
+    fill_alpha_ = -1;
+    fg_colour_ = -1;
     linters_.clear();
 
     Dom_Document settings{settings_xml_};
@@ -68,7 +68,7 @@ void Settings::read_settings()
                 };
                 data >> alphaVal;
             }
-            alpha_ = alphaVal;
+            fill_alpha_ = alphaVal;
         }
 
         if (element->getAttribute(static_cast<bstr_t>(L"color"), &value)
@@ -84,17 +84,15 @@ void Settings::read_settings()
             }
 
             // reverse colors for scintilla's LE order
-            colour_ = 0;
+            fg_colour_ = 0;
             for (int i = 0; i < 3; i += 1)
             {
-                colour_ = (colour_ << 8) | (colorVal & 0xff);
+                fg_colour_ = (fg_colour_ << 8) | (colorVal & 0xff);
                 colorVal >>= 8;
             }
         }
     }
 
-    // <error line="12" column="19" severity="error" message="Unexpected
-    // identifier" source="jscs" />
     CComPtr<IXMLDOMNodeList> XMLNodeList{settings.getNodeList("//linter")};
 
     hr = XMLNodeList->get_length(&nodes);

@@ -9,20 +9,23 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav</Extensions>
     </Filter>
-    <Filter Include="Notepad++">
-      <UniqueIdentifier>{e41639c8-40b9-4510-beb9-a9532e3042df}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Docking Dialogue Interface">
-      <UniqueIdentifier>{661a6974-3605-4667-a753-e1031d8e0d5d}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Notepad++\DockingFeature">
-      <UniqueIdentifier>{920caa76-4406-4c90-b6a5-d9fc88287be5}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Github">
       <UniqueIdentifier>{eda482d2-691b-4114-be75-a291c26e485e}</UniqueIdentifier>
     </Filter>
     <Filter Include="Github\Workflows">
       <UniqueIdentifier>{b77a3c65-5fce-479d-9189-7c962375a179}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Git Submodules">
+      <UniqueIdentifier>{b1a584e4-f783-45ee-a49c-0d03932d9bbe}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Git Submodules\Docking Dialogue Interface">
+      <UniqueIdentifier>{661a6974-3605-4667-a753-e1031d8e0d5d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Git Submodules\Notepad++">
+      <UniqueIdentifier>{e41639c8-40b9-4510-beb9-a9532e3042df}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Git Submodules\Notepad++\DockingFeature">
+      <UniqueIdentifier>{920caa76-4406-4c90-b6a5-d9fc88287be5}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -66,22 +69,22 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Docking_Dialogue_Interface\Plugin\Dialogue_Interface.cpp">
-      <Filter>Docking Dialogue Interface</Filter>
+      <Filter>Git Submodules\Docking Dialogue Interface</Filter>
     </ClCompile>
     <ClCompile Include="Docking_Dialogue_Interface\Plugin\Docking_Dialogue_Interface.cpp">
-      <Filter>Docking Dialogue Interface</Filter>
+      <Filter>Git Submodules\Docking Dialogue Interface</Filter>
     </ClCompile>
     <ClCompile Include="Docking_Dialogue_Interface\Plugin\Modal_Dialogue_Interface.cpp">
-      <Filter>Docking Dialogue Interface</Filter>
+      <Filter>Git Submodules\Docking Dialogue Interface</Filter>
     </ClCompile>
     <ClCompile Include="Docking_Dialogue_Interface\Plugin\Non_Modal_Dialogue_Base.cpp">
-      <Filter>Docking Dialogue Interface</Filter>
+      <Filter>Git Submodules\Docking Dialogue Interface</Filter>
     </ClCompile>
     <ClCompile Include="Docking_Dialogue_Interface\Plugin\Non_Modal_Dialogue_Interface.cpp">
-      <Filter>Docking Dialogue Interface</Filter>
+      <Filter>Git Submodules\Docking Dialogue Interface</Filter>
     </ClCompile>
     <ClCompile Include="Docking_Dialogue_Interface\Plugin\Plugin.cpp">
-      <Filter>Docking Dialogue Interface</Filter>
+      <Filter>Git Submodules\Docking Dialogue Interface</Filter>
     </ClCompile>
     <ClCompile Include="src\dllmain.cpp">
       <Filter>Source Files</Filter>
@@ -134,46 +137,46 @@
       <Filter>Resource Files</Filter>
     </ClInclude>
     <ClInclude Include="Docking_Dialogue_Interface\Plugin\Callback_Context.h">
-      <Filter>Docking Dialogue Interface</Filter>
+      <Filter>Git Submodules\Docking Dialogue Interface</Filter>
     </ClInclude>
     <ClInclude Include="Docking_Dialogue_Interface\Plugin\Dialogue_Interface.h">
-      <Filter>Docking Dialogue Interface</Filter>
+      <Filter>Git Submodules\Docking Dialogue Interface</Filter>
     </ClInclude>
     <ClInclude Include="Docking_Dialogue_Interface\Plugin\Docking_Dialogue_Interface.h">
-      <Filter>Docking Dialogue Interface</Filter>
+      <Filter>Git Submodules\Docking Dialogue Interface</Filter>
     </ClInclude>
     <ClInclude Include="Docking_Dialogue_Interface\Plugin\Min_Win_Defs.h">
-      <Filter>Docking Dialogue Interface</Filter>
+      <Filter>Git Submodules\Docking Dialogue Interface</Filter>
     </ClInclude>
     <ClInclude Include="Docking_Dialogue_Interface\Plugin\Modal_Dialogue_Interface.h">
-      <Filter>Docking Dialogue Interface</Filter>
+      <Filter>Git Submodules\Docking Dialogue Interface</Filter>
     </ClInclude>
     <ClInclude Include="Docking_Dialogue_Interface\Plugin\Non_Modal_Dialogue_Base.h">
-      <Filter>Docking Dialogue Interface</Filter>
+      <Filter>Git Submodules\Docking Dialogue Interface</Filter>
     </ClInclude>
     <ClInclude Include="Docking_Dialogue_Interface\Plugin\Non_Modal_Dialogue_Interface.h">
-      <Filter>Docking Dialogue Interface</Filter>
+      <Filter>Git Submodules\Docking Dialogue Interface</Filter>
     </ClInclude>
     <ClInclude Include="Docking_Dialogue_Interface\Plugin\Plugin.h">
-      <Filter>Docking Dialogue Interface</Filter>
+      <Filter>Git Submodules\Docking Dialogue Interface</Filter>
     </ClInclude>
     <ClInclude Include="Docking_Dialogue_Interface\notepad++\menuCmdID.h">
-      <Filter>Notepad++</Filter>
+      <Filter>Git Submodules\Notepad++</Filter>
     </ClInclude>
     <ClInclude Include="Docking_Dialogue_Interface\notepad++\Notepad_plus_msgs.h">
-      <Filter>Notepad++</Filter>
+      <Filter>Git Submodules\Notepad++</Filter>
     </ClInclude>
     <ClInclude Include="Docking_Dialogue_Interface\notepad++\PluginInterface.h">
-      <Filter>Notepad++</Filter>
+      <Filter>Git Submodules\Notepad++</Filter>
     </ClInclude>
     <ClInclude Include="Docking_Dialogue_Interface\notepad++\Scintilla.h">
-      <Filter>Notepad++</Filter>
+      <Filter>Git Submodules\Notepad++</Filter>
     </ClInclude>
     <ClInclude Include="Docking_Dialogue_Interface\notepad++\DockingFeature\Docking.h">
-      <Filter>Notepad++\DockingFeature</Filter>
+      <Filter>Git Submodules\Notepad++\DockingFeature</Filter>
     </ClInclude>
     <ClInclude Include="Docking_Dialogue_Interface\notepad++\DockingFeature\dockingResource.h">
-      <Filter>Notepad++\DockingFeature</Filter>
+      <Filter>Git Submodules\Notepad++\DockingFeature</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -185,7 +188,6 @@
     <None Include=".clang-format" />
     <None Include="post-build.ps1" />
     <None Include="README.md" />
-    <None Include="TODO.md" />
     <None Include="iwyu.bat" />
     <None Include="vs2022cpp20.imp" />
     <None Include=".github\dependabot.yml">

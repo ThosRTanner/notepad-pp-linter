@@ -16,19 +16,20 @@ class Settings
     {
         std::wstring extension_;
         std::wstring command_;
+        std::wstring args_;
         bool use_stdin_ = false;
     };
 
     /** Returns the alpha mask for the 'squiggle' or -1 if not set */
-    int alpha() const noexcept
+    int fill_alpha() const noexcept
     {
-        return alpha_;
+        return fill_alpha_;
     }
 
     /** Returns the colour for the 'squiggle' or -1 if not set */
-    int color() const noexcept
+    int fg_colour() const noexcept
     {
-        return colour_;
+        return fg_colour_;
     }
 
     /** Return an iterator to the linters */
@@ -57,8 +58,8 @@ class Settings
 
     std::wstring settings_xml_;
 
-    int alpha_ = -1;
-    int colour_ = -1;
+    int fill_alpha_ = -1;
+    int fg_colour_ = -1;
     std::filesystem::file_time_type last_update_time_;
     std::vector<Linter> linters_;
 };
