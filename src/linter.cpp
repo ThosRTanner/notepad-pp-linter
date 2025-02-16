@@ -1,7 +1,7 @@
 #include "Linter.h"
 
 #include "Checkstyle_Parser.h"
-#include "File.h"
+#include "File_Holder.h"
 #include "Output_Dialogue.h"
 #include "Settings.h"
 #include "XML_Decode_Error.h"
@@ -392,7 +392,7 @@ void Linter::apply_linters()
     auto const text = get_document_text();
 
     // Why do we need to construct file like this?
-    File file{full_path};
+    File_Holder file{full_path};
     if (needs_file)
     {
         file.write(text);
@@ -401,7 +401,7 @@ void Linter::apply_linters()
     for (auto const &command : commands)
     {
         // std::string xml =
-        // File::exec(L"C:\\Users\\deadem\\AppData\\Roaming\\npm\\jscs.cmd
+        // File_Holder::exec(L"C:\\Users\\deadem\\AppData\\Roaming\\npm\\jscs.cmd
         // --reporter=checkstyle ", file);
         try
         {

@@ -7,17 +7,17 @@
 namespace Linter
 {
 
-class File
+class File_Holder
 {
   public:
-    explicit File(std::filesystem::path const &);
+    explicit File_Holder(std::filesystem::path const &);
 
-    File(File const &) = delete;
-    File(File &&) = delete;
-    File &operator=(File const &) = delete;
-    File &operator=(File &&) = delete;
+    File_Holder(File_Holder const &) = delete;
+    File_Holder(File_Holder &&) = delete;
+    File_Holder &operator=(File_Holder const &) = delete;
+    File_Holder &operator=(File_Holder &&) = delete;
 
-    ~File();
+    ~File_Holder();
 
     std::pair<std::string, std::string> exec(
         std::wstring command_line, std::string const *str

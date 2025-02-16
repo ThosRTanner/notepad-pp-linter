@@ -1,4 +1,4 @@
-#include "File.h"
+#include "File_Holder.h"
 
 #include "Child_Pipe.h"
 #include "Handle_Wrapper.h"
@@ -23,11 +23,11 @@
 namespace Linter
 {
 
-File::File(std::filesystem::path const &path) : path_(path)
+File_Holder::File_Holder(std::filesystem::path const &path) : path_(path)
 {
 }
 
-File::~File()
+File_Holder::~File_Holder()
 {
     if (! temp_file_.empty())
     {
@@ -36,7 +36,7 @@ File::~File()
     }
 }
 
-std::pair<std::string, std::string> File::exec(
+std::pair<std::string, std::string> File_Holder::exec(
     std::wstring command_line, std::string const *text
 )
 {
@@ -104,7 +104,7 @@ std::pair<std::string, std::string> File::exec(
     return std::make_pair(out, err);
 }
 
-void File::write(std::string const &data)
+void File_Holder::write(std::string const &data)
 {
     if (data.empty())
     {
