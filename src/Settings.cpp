@@ -1,12 +1,14 @@
 #include "Settings.h"
 
 #include "Dom_Document.h"
+#include "Linter.h"
 #include "System_Error.h"
 
 #include <atlcomcli.h>
 #include <comutil.h>
 #include <intsafe.h>
 #include <msxml.h>
+#include <msxml6.h>
 #include <oleauto.h>
 
 #include <chrono>
@@ -16,9 +18,33 @@
 namespace Linter
 {
 
-Settings::Settings(std::filesystem::path const &settings_xml) :
+Settings::Settings(
+    std::filesystem::path const &settings_xml, ::Linter::Linter const &linter
+) :
     settings_xml_(settings_xml)
 {
+    // Create a schema cache and our xsd to it.
+    auto hr = settings_xsd_.CoCreateInstance(__uuidof(XMLSchemaCache60));
+    if (! SUCCEEDED(hr))
+    {
+        throw System_Error(hr, "Can't create XMLSchemaCache60");
+    }
+    wchar_t module_path[_MAX_PATH + 1];
+    // FIXME we should really check for an error here.
+    GetModuleFileName(
+        linter.module(),
+        &module_path[0],
+        sizeof(module_path) / sizeof(module_path[0])
+    );
+    std::filesystem::path xsd_file(module_path);
+    xsd_file.replace_extension(".xsd");
+
+    CComVariant xsd{xsd_file.c_str()};
+    hr = settings_xsd_->add(bstr_t(""), xsd);
+    if (! SUCCEEDED(hr))
+    {
+        throw System_Error(hr, "Can't add to schema pool");
+    }
 }
 
 void Settings::refresh()
@@ -37,7 +63,8 @@ void Settings::read_settings()
     fg_colour_ = -1;
     linters_.clear();
 
-    Dom_Document settings{settings_xml_};
+    Dom_Document settings{settings_xml_, settings_xsd_};
+
     CComPtr<IXMLDOMNodeList> styleNode{settings.getNodeList("//style")};
 
     LONG nodes;

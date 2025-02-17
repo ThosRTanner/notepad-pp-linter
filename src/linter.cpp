@@ -44,7 +44,7 @@ namespace Linter
 Linter::Linter(NppData const &data) :
     Super(data, get_plugin_name()),
     config_file_(get_plugin_config_dir().append(L"linter.xml")),
-    settings_(std::make_unique<Settings>(config_file_)),
+    settings_(std::make_unique<Settings>(config_file_, *this)),
     output_dialogue_(
         std::make_unique<Output_Dialogue>(Menu_Entry_Show_Results, *this)
     ),

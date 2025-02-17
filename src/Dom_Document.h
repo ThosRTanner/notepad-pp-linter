@@ -1,5 +1,6 @@
 #pragma once
 
+#include <filesystem>
 #include <string>
 
 #include <atlcomcli.h>
@@ -19,8 +20,9 @@ class Dom_Document
      */
 
   public:
-    /** Creates an XML document from the supplied filename */
-    explicit Dom_Document(std::wstring const &filename);
+    /** Creates an XML document from the supplied filename and validates against
+     * xsd */
+    Dom_Document(std::filesystem::path const &, CComPtr<IXMLDOMSchemaCollection2> &);
 
     /** Creates an XML document from the supplied UTF8 string */
     explicit Dom_Document(std::string const &xml);

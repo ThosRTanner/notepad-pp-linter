@@ -98,6 +98,9 @@ class Linter : public Plugin
     // configuration file
     std::filesystem::path const config_file_;
 
+    // xsd for configuration. NB This is loaded at startup, so changing it
+    // will require a rebuild...
+
     // Settings
     std::unique_ptr<Settings> settings_;
 

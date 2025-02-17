@@ -174,10 +174,12 @@
       </Message>
     </PostBuildEvent>
     <PreLinkEvent>
-      <Command>iwyu.bat</Command>
+      <Command>copy "src\Linter++.xsd" "$(TargetDir)"
+iwyu.bat
+</Command>
     </PreLinkEvent>
     <PreLinkEvent>
-      <Message>Include what you use checks</Message>
+      <Message>copy xsd files and Include what you use checks</Message>
     </PreLinkEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">
@@ -216,10 +218,12 @@
       </Message>
     </PostBuildEvent>
     <PreLinkEvent>
-      <Command>iwyu.bat</Command>
+      <Command>copy "src\Linter++.xsd" "$(TargetDir)"
+iwyu.bat
+</Command>
     </PreLinkEvent>
     <PreLinkEvent>
-      <Message>Include what you use checks</Message>
+      <Message>copy xsd files and Include what you use checks</Message>
     </PreLinkEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -256,10 +260,12 @@
       <Message>Copy dll to notepad++ plugin directory</Message>
     </PostBuildEvent>
     <PreLinkEvent>
-      <Command>iwyu.bat</Command>
+      <Command>copy "src\Linter++.xsd" "$(TargetDir)"
+iwyu.bat
+</Command>
     </PreLinkEvent>
     <PreLinkEvent>
-      <Message>Include what you use checks</Message>
+      <Message>copy xsd files and Include what you use checks</Message>
     </PreLinkEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -301,10 +307,12 @@
       </Message>
     </PostBuildEvent>
     <PreLinkEvent>
-      <Command>iwyu.bat</Command>
+      <Command>copy "src\Linter++.xsd" "$(TargetDir)"
+iwyu.bat
+</Command>
     </PreLinkEvent>
     <PreLinkEvent>
-      <Message>Include what you use checks</Message>
+      <Message>copy xsd files and Include what you use checks</Message>
     </PreLinkEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'">
@@ -345,10 +353,12 @@
       </Message>
     </PostBuildEvent>
     <PreLinkEvent>
-      <Command>iwyu.bat</Command>
+      <Command>copy "src\Linter++.xsd" "$(TargetDir)"
+iwyu.bat
+</Command>
     </PreLinkEvent>
     <PreLinkEvent>
-      <Message>Include what you use checks</Message>
+      <Message>copy xsd files and Include what you use checks</Message>
     </PreLinkEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -387,10 +397,12 @@
       <Message>Copy dll to notepad++ plugin directory</Message>
     </PostBuildEvent>
     <PreLinkEvent>
-      <Command>iwyu.bat</Command>
+      <Command>copy "src\Linter++.xsd" "$(TargetDir)"
+iwyu.bat
+</Command>
     </PreLinkEvent>
     <PreLinkEvent>
-      <Message>Include what you use checks</Message>
+      <Message>copy xsd files and Include what you use checks</Message>
     </PreLinkEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -404,7 +416,7 @@
     <ClCompile Include="src\dllmain.cpp" />
     <ClCompile Include="src\Dom_Document.cpp" />
     <ClCompile Include="src\encoding.cpp" />
-    <ClCompile Include="src\File.cpp" />
+    <ClCompile Include="src\File_Holder.cpp" />
     <ClCompile Include="src\Child_Pipe.cpp" />
     <ClCompile Include="src\Handle_Wrapper.cpp" />
     <ClCompile Include="src\Linter.cpp" />
@@ -440,7 +452,7 @@
     <ClInclude Include="src\Clipboard.h" />
     <ClInclude Include="src\Dom_Document.h" />
     <ClInclude Include="src\encoding.h" />
-    <ClInclude Include="src\File.h" />
+    <ClInclude Include="src\File_Holder.h" />
     <ClInclude Include="src\Child_Pipe.h" />
     <ClInclude Include="src\Handle_Wrapper.h" />
     <ClInclude Include="src\Linter.h" />
@@ -470,6 +482,16 @@
     <Image Include="img\1.jpg" />
     <Image Include="img\2.png" />
     <Image Include="src\linter.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <Xsd Include="src\Linter++.xsd">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </Xsd>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

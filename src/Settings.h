@@ -1,5 +1,8 @@
 #pragma once
 
+#include <atlcomcli.h>
+#include <MsXml6.h>
+
 #include <filesystem>
 #include <string>
 #include <vector>
@@ -7,10 +10,12 @@
 namespace Linter
 {
 
+class Linter;
+
 class Settings
 {
   public:
-    Settings(std::filesystem::path const &settings_xml);
+    Settings(std::filesystem::path const &settings_xml, Linter const &linter);
 
     struct Linter
     {
@@ -57,6 +62,8 @@ class Settings
     void read_settings();
 
     std::wstring settings_xml_;
+
+    CComPtr<IXMLDOMSchemaCollection2> settings_xsd_;
 
     int fill_alpha_ = -1;
     int fg_colour_ = -1;
