@@ -95,12 +95,6 @@ class Linter : public Plugin
     // Ditto with optional message
     void show_tooltip(std::wstring message);
 
-    // configuration file
-    std::filesystem::path const config_file_;
-
-    // xsd for configuration. NB This is loaded at startup, so changing it
-    // will require a rebuild...
-
     // Settings
     std::unique_ptr<Settings> settings_;
 

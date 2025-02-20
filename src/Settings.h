@@ -1,7 +1,7 @@
 #pragma once
 
-#include <atlcomcli.h>
 #include <MsXml6.h>
+#include <atlcomcli.h>
 
 #include <filesystem>
 #include <string>
@@ -15,7 +15,7 @@ class Linter;
 class Settings
 {
   public:
-    Settings(std::filesystem::path const &settings_xml, Linter const &linter);
+    explicit Settings(Linter const &linter);
 
     struct Linter
     {
@@ -24,6 +24,12 @@ class Settings
         std::wstring args_;
         bool use_stdin_ = false;
     };
+
+    /** Returns the configuration path */
+    std::filesystem::path const &settings_file() const noexcept
+    {
+        return settings_xml_;
+    }
 
     /** Returns the alpha mask for the 'squiggle' or -1 if not set */
     int fill_alpha() const noexcept
@@ -61,9 +67,14 @@ class Settings
   private:
     void read_settings();
 
-    std::wstring settings_xml_;
+    // configuration file
+    std::filesystem::path const settings_xml_;
 
-    CComPtr<IXMLDOMSchemaCollection2> settings_xsd_;
+    // xsd file
+    std::filesystem::path const settings_xsd_;
+
+    // Processed schema
+    CComPtr<IXMLDOMSchemaCollection2> settings_schema_;
 
     int fill_alpha_ = -1;
     int fg_colour_ = -1;

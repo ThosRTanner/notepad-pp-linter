@@ -43,8 +43,7 @@ namespace Linter
 
 Linter::Linter(NppData const &data) :
     Super(data, get_plugin_name()),
-    config_file_(get_plugin_config_dir().append(L"linter.xml")),
-    settings_(std::make_unique<Settings>(config_file_, *this)),
+    settings_(std::make_unique<Settings>(*this)),
     output_dialogue_(
         std::make_unique<Output_Dialogue>(Menu_Entry_Show_Results, *this)
     ),
@@ -131,7 +130,7 @@ void Linter::on_notification(SCNotification const *notification)
             break;
 
         case NPPN_FILESAVED:
-            if (get_document_path(notification->nmhdr.idFrom) == config_file_)
+            if (get_document_path(notification->nmhdr.idFrom) == settings_->settings_file())
             {
                 mark_file_changed();
             }
@@ -162,7 +161,7 @@ void Linter::on_notification(SCNotification const *notification)
 
 void Linter::edit_config() noexcept
 {
-    send_to_notepad(NPPM_DOOPEN, 0, config_file_.c_str());
+    send_to_notepad(NPPM_DOOPEN, 0, settings_->settings_file().c_str());
 }
 
 void Linter::show_results() noexcept

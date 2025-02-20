@@ -18,63 +18,26 @@ namespace Linter
 {
 
 Linter::Dom_Document::Dom_Document(
-    std::filesystem::path const &xml_file, CComPtr<IXMLDOMSchemaCollection2> &schemas)
+    std::filesystem::path const &xml_file,
+    CComPtr<IXMLDOMSchemaCollection2> &schemas
+)
 {
     init();
 
+    document_->put_validateOnParse(VARIANT_TRUE);
+    // Not sure what this does but it doesn't seem to be  necessary.
+    // pXD->put_resolveExternals(VARIANT_TRUE); 
+
+    // Assign the schema cache to the DOMDocument's schemas collection.
+    HRESULT hr = document_->putref_schemas(CComVariant(schemas));
+    if (! SUCCEEDED(hr))
     {
-        // Try parsing new form of xml file with xsd file
-        std::filesystem::path new_xml(xml_file.parent_path());
-        new_xml.append("linterv2.xml");
-        CComVariant value2{new_xml.c_str()};
-
-        CComPtr<IXMLDOMDocument2> pXD;
-        HRESULT hr = pXD.CoCreateInstance(__uuidof(DOMDocument60)); //You need 60 or you can't attatch a schema cache.
-        if (! SUCCEEDED(hr))
-        {
-            throw System_Error(hr, "Can't create DOMDocument");
-        }
-        pXD->put_async(VARIANT_FALSE);
-        pXD->put_validateOnParse(VARIANT_TRUE);
-        pXD->put_resolveExternals(VARIANT_TRUE);
-
-        // Assign the schema cache to the DOMDocument's schemas collection.
-        hr = pXD->putref_schemas(CComVariant(schemas));
-        if (! SUCCEEDED(hr))
-        {
-            throw System_Error(hr, "Can't use schema collection");
-        }        
-
-        VARIANT_BOOL res;
-        hr = pXD->load(value2, &res);
-        if (! SUCCEEDED(hr) || res == VARIANT_FALSE)
-        {
-            std::cerr << "Bad things\n";
-            CComPtr<IXMLDOMParseError> error;
-            pXD->get_parseError(&error);
-            XML_Decode_Error xerr(*(error.p));
-            (void)xerr;
-
-            /*
-            try
-            {
-                checkLoadResults(res, hr);
-            }
-            catch (std::exception const&)
-            {
-
-            }
-            */
-        }
-        else
-        {
-            std::cout << "boogie\n";
-        }
+        throw System_Error(hr, "Can't use schema collection");
     }
 
     CComVariant value{xml_file.c_str()};
     VARIANT_BOOL resultCode = FALSE;
-    HRESULT const hr = document_->load(value, &resultCode);
+    hr = document_->load(value, &resultCode);
 
     checkLoadResults(resultCode, hr);
 }
