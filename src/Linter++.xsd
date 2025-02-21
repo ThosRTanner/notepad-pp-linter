@@ -108,8 +108,9 @@
   <!-- Command to execute -->
   <xs:complexType name="command">
     <xs:sequence>
-      <xs:element name="program" type="xs:normalizedString" />
-      <xs:element name="args" type="xs:normalizedString" />
+      <!-- Please note - these are just strings. Whitespace IS significant. -->
+      <xs:element name="program" type="xs:string" />
+      <xs:element name="args" type="xs:string" />
     </xs:sequence>
   </xs:complexType>
 

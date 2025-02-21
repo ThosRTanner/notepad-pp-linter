@@ -1,6 +1,8 @@
 #include "Settings.h"
 
 #include "Dom_Document.h"
+#include "Dom_Node.h"
+#include "Dom_Node_List.h"
 #include "Linter.h"
 #include "System_Error.h"
 
@@ -64,69 +66,6 @@ void Settings::refresh()
     }
 }
 
-class Dom_Node_List
-{
-  public:
-    class iterator
-    {
-      public:
-        iterator(CComPtr<IXMLDOMNodeList> node_list, LONG item) noexcept :
-            node_list_(node_list),
-            item_(item)
-        {
-        }
-
-        iterator operator++() noexcept
-        {
-            item_ += 1;
-            return *this;
-        }
-
-        bool operator!=(iterator const &other) const noexcept
-        {
-            return node_list_ != other.node_list_ || item_ != other.item_;
-        }
-
-        CComPtr<IXMLDOMNode> operator*() const
-        {
-            CComPtr<IXMLDOMNode> node;
-            auto const hr = node_list_->get_item(item_, &node);
-            if (! SUCCEEDED(hr))
-            {
-                throw System_Error(hr, "Can't get linter detail");
-            }
-            return node;
-        }
-
-      private:
-        CComPtr<IXMLDOMNodeList> node_list_;
-        LONG item_;
-    };
-
-    Dom_Node_List(CComPtr<IXMLDOMNodeList> node_list) : node_list_(node_list)
-    {
-        HRESULT const hr = node_list->get_length(&num_items_);
-        if (! SUCCEEDED(hr))
-        {
-            throw System_Error(hr, "Can't get number of items in node list");
-        }
-    }
-
-    iterator begin() const noexcept
-    {
-        return iterator(node_list_, 0);
-    }
-
-    iterator end() const noexcept
-    {
-        return iterator(node_list_, num_items_);
-    }
-
-  private:
-    CComPtr<IXMLDOMNodeList> node_list_;
-    LONG num_items_;
-};
-
 void Settings::read_settings()
 {
     fill_alpha_ = -1;
@@ -135,27 +74,16 @@ void Settings::read_settings()
 
     Dom_Document settings{settings_xml_, settings_schema_};
 
-    CComPtr<IXMLDOMNodeList> linters{settings.getNodeList("//linter")};
+    //FIXME getNodeList should return a Dom_Node_List
+    Dom_Node_List linters{settings.getNodeList("//linter")};
 
-    for (auto linter : Dom_Node_List(linters))
+    for (auto linter : linters)
     {
-        CComPtr<IXMLDOMNodeList> extension_nodes;
-        auto hr = linter->selectNodes(
-            static_cast<bstr_t>(L".//extension"), &extension_nodes
-        );
-        if (! SUCCEEDED(hr))
-        {
-            throw System_Error(hr, "Can't get extensions");
-        }
+        Dom_Node_List extension_nodes{linter.get_node_list(".//extension")};
         std::vector<std::wstring> extensions;
-        for (auto extension_node : Dom_Node_List(extension_nodes))
+        for (auto const extension_node : extension_nodes)
         {
-            CComVariant extension;
-            hr = extension_node->get_nodeTypedValue(&extension);
-            if (! SUCCEEDED(hr))
-            {
-                throw System_Error(hr, "Can't get extension value");
-            }
+            CComVariant extension = extension_node.get_typed_value();
             extensions.push_back(extension.bstrVal);
         }
 
@@ -166,62 +94,25 @@ void Settings::read_settings()
             std::wstring program;
             std::wstring args;
         };
+
         std::vector<Command> commands;
-        CComPtr<IXMLDOMNodeList> command_nodes;
-        hr = linter->selectNodes(
-            static_cast<bstr_t>(L".//command"), &command_nodes
-        );
-        if (! SUCCEEDED(hr))
+        Dom_Node_List command_nodes{linter.get_node_list(".//command")};
+        for (auto const command_node : command_nodes)
         {
-            throw System_Error(hr, "Can't get extensions");
+            Dom_Node program_node{command_node.get_node(".//program")};
+
+            CComVariant program{program_node.get_typed_value()};
+
+            Dom_Node args_node{command_node.get_node(".//args")};
+
+            CComVariant args{args_node.get_typed_value()};
+            commands.push_back(Command{program.bstrVal, args.bstrVal});
         }
-        for (auto command_node : Dom_Node_List(command_nodes))
-        {
-            CComPtr<IXMLDOMNode> program_node;
-            hr = command_node->selectSingleNode(
-                static_cast<bstr_t>(L".//program"), &program_node
-            );
-            if (! SUCCEEDED(hr))
-            {
-                throw System_Error(hr, "Can't get program");
-            }
-
-            CComVariant command;
-            hr = program_node->get_nodeTypedValue(&command);
-            if (! SUCCEEDED(hr))
-            {
-                throw System_Error(hr, "Can't get command value");
-            }
-
-            CComPtr<IXMLDOMNode> args_node;
-            hr = command_node->selectSingleNode(
-                static_cast<bstr_t>(L".//args"), &args_node
-            );
-            if (! SUCCEEDED(hr))
-            {
-                throw System_Error(hr, "Can't get args");
-            }
-
-            CComVariant args;
-            hr = args_node->get_nodeTypedValue(&args);
-            if (! SUCCEEDED(hr))
-            {
-                throw System_Error(hr, "Can't get args value");
-            }
-            // commands.push_back(extension.bstrVal);
-        }
+        (void)extensions;
+        (void)commands;
     }
 }
 
-/* commands:
-
-<commands>
-<command>
-  <program>C:\Users\Dad\Dad\Roaming\npm\csslint.cmd</program>
-  <args>--format=checkstyle-xml</args>
-</command>
-</commands>
-*/
 /*CComQIPtr<IXMLDOMElement> element(node);
 Linter linter;
 CComVariant value;
@@ -290,37 +181,6 @@ if (nodes != 0)
             fg_colour_ = (fg_colour_ << 8) | (colorVal & 0xff);
             colorVal >>= 8;
         }
-    }
-}
-
-CComPtr<IXMLDOMNodeList> XMLNodeList{settings.getNodeList("//linter")};
-
-hr = XMLNodeList->get_length(&nodes);
-if (! SUCCEEDED(hr))
-{
-    throw System_Error(hr, "Can't get XPath length");
-}
-
-for (LONG entry = 0; entry < nodes; entry++)
-{
-    CComPtr<IXMLDOMNode> node;
-    hr = XMLNodeList->nextNode(&node);
-    if (SUCCEEDED(hr) && node != nullptr)
-    {
-        CComQIPtr<IXMLDOMElement> element(node);
-        Linter linter;
-        CComVariant value;
-
-        element->getAttribute(static_cast<bstr_t>(L"extension"), &value);
-        linter.extension_ = value.bstrVal;
-
-        element->getAttribute(static_cast<bstr_t>(L"command"), &value);
-        linter.command_ = value.bstrVal;
-
-        element->getAttribute(static_cast<bstr_t>(L"stdin"), &value);
-        linter.use_stdin_ = value.boolVal;
-
-        linters_.push_back(linter);
     }
 }
 */

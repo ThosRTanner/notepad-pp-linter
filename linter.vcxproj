@@ -415,6 +415,8 @@ iwyu.bat
     <ClCompile Include="src\Clipboard.cpp" />
     <ClCompile Include="src\dllmain.cpp" />
     <ClCompile Include="src\Dom_Document.cpp" />
+    <ClCompile Include="src\Dom_Node.cpp" />
+    <ClCompile Include="src\Dom_Node_List.cpp" />
     <ClCompile Include="src\encoding.cpp" />
     <ClCompile Include="src\File_Holder.cpp" />
     <ClCompile Include="src\Child_Pipe.cpp" />
@@ -451,6 +453,8 @@ iwyu.bat
     <ClInclude Include="Docking_Dialogue_Interface\Plugin\Plugin.h" />
     <ClInclude Include="src\Clipboard.h" />
     <ClInclude Include="src\Dom_Document.h" />
+    <ClInclude Include="src\Dom_Node.h" />
+    <ClInclude Include="src\Dom_Node_List.h" />
     <ClInclude Include="src\encoding.h" />
     <ClInclude Include="src\File_Holder.h" />
     <ClInclude Include="src\Child_Pipe.h" />
