@@ -366,17 +366,17 @@ void Linter::apply_linters()
         throw std::runtime_error("Empty linters.xml");
     }
 
-    std::vector<std::pair<std::wstring, bool>> commands;
+    std::vector<Settings::Linter::Command> commands;
     bool needs_file = false;
     auto const full_path = get_document_path();
 
     auto const extension = full_path.extension();
     for (auto const &linter : *settings_)
     {
-        if (linter.extension_ == extension)
+        if (linter.extension == extension)
         {
-            commands.emplace_back(linter.command_, linter.use_stdin_);
-            if (not linter.use_stdin_)
+            commands.emplace_back(linter.command);
+            if (not linter.command.use_stdin)
             {
                 needs_file = true;
             }
@@ -390,7 +390,6 @@ void Linter::apply_linters()
 
     auto const text = get_document_text();
 
-    // Why do we need to construct file like this?
     File_Holder file{full_path};
     if (needs_file)
     {
@@ -404,8 +403,7 @@ void Linter::apply_linters()
         // --reporter=checkstyle ", file);
         try
         {
-            auto output =
-                file.exec(command.first, command.second ? &text : nullptr);
+            auto output = file.exec(command, &text);
             std::vector<Checkstyle_Parser::Error> parseError;
             if (output.first.empty() && not output.second.empty())
             {

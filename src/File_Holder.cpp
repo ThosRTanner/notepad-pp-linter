@@ -37,9 +37,10 @@ File_Holder::~File_Holder()
 }
 
 std::pair<std::string, std::string> File_Holder::exec(
-    std::wstring command_line, std::string const *text
+    Settings::Linter::Command const &command, std::string const *text
 )
 {
+    std::wstring command_line = command.program + L" " + command.args;
     if (! temp_file_.empty())
     {
         command_line += ' ';
@@ -84,7 +85,7 @@ std::pair<std::string, std::string> File_Holder::exec(
         );
     }
 
-    if (text != nullptr)
+    if (command.use_stdin)
     {
         stdinpipe.writer().writeFile(*text);
     }
@@ -114,9 +115,11 @@ void File_Holder::write(std::string const &data)
     // We cannot put these files in temp dir because the tools search for
     // configuration in the directory the file is being processed. Therefore we
     // create the file in the same directory but mark it hidden.
+
     {
+        //Don't set temp_file_ until we have the complete path!
         std::filesystem::path temp = path_;
-        temp.concat(".tmp.linter.tmp");
+        temp.concat(".tmp.linter.tmp").concat(path_.extension().c_str());
         temp_file_ = temp;
     }
 

@@ -74,7 +74,7 @@ void Settings::read_settings()
 
     Dom_Document settings{settings_xml_, settings_schema_};
 
-    //FIXME getNodeList should return a Dom_Node_List
+    // FIXME getNodeList should return a Dom_Node_List
     Dom_Node_List linters{settings.getNodeList("//linter")};
 
     for (auto linter : linters)
@@ -89,13 +89,6 @@ void Settings::read_settings()
 
         // FIXME xsd validation shouldn't allow empty command or extension list
 
-        struct Command
-        {
-            std::wstring program;
-            std::wstring args;
-        };
-
-        std::vector<Command> commands;
         Dom_Node_List command_nodes{linter.get_node_list(".//command")};
         for (auto const command_node : command_nodes)
         {
@@ -106,28 +99,20 @@ void Settings::read_settings()
             Dom_Node args_node{command_node.get_node(".//args")};
 
             CComVariant args{args_node.get_typed_value()};
-            commands.push_back(Command{program.bstrVal, args.bstrVal});
+
+            // FIXME Deal with STDIN somehow
+
+            for (auto const &extension : extensions)
+            {
+                linters_.push_back({
+                    .extension = extension,
+                    .command =
+                        {.program = program.bstrVal, .args = args.bstrVal}
+                });
+            }
         }
-        (void)extensions;
-        (void)commands;
     }
 }
-
-/*CComQIPtr<IXMLDOMElement> element(node);
-Linter linter;
-CComVariant value;
-
-element->getAttribute(static_cast<bstr_t>(L"extension"), &value);
-linter.extension_ = value.bstrVal;
-
-element->getAttribute(static_cast<bstr_t>(L"command"), &value);
-linter.command_ = value.bstrVal;
-
-element->getAttribute(static_cast<bstr_t>(L"stdin"), &value);
-linter.use_stdin_ = value.boolVal;
-
-linters_.push_back(linter);
-*/
 
 /*
     CComPtr<IXMLDOMNodeList> styleNode{settings.getNodeList("//style")};

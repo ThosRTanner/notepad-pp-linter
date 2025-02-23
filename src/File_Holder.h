@@ -1,5 +1,8 @@
 #pragma once
 
+// Fixme do we extract the command substructure somewhere?
+#include "Settings.h"
+
 #include <filesystem>
 #include <string>
 #include <utility>
@@ -20,7 +23,7 @@ class File_Holder
     ~File_Holder();
 
     std::pair<std::string, std::string> exec(
-        std::wstring command_line, std::string const *str
+        Settings::Linter::Command const &, std::string const *str
     );
 
     void write(std::string const &data);

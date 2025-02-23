@@ -19,10 +19,14 @@ class Settings
 
     struct Linter
     {
-        std::wstring extension_;
-        std::wstring command_;
-        std::wstring args_;
-        bool use_stdin_ = false;
+        std::wstring extension;
+        struct Command
+        {
+            std::wstring program;
+            std::wstring args;
+            // Remove use_stdin_. supply %LINTER% if args (or not)
+            bool use_stdin = false;
+        } command;
     };
 
     /** Returns the configuration path */
