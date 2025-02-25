@@ -20,26 +20,9 @@
 namespace Linter
 {
 
-namespace
-{
-std::filesystem::path get_module_path(HMODULE module)
-{
-    wchar_t module_path[_MAX_PATH + 1];
-    // FIXME we should really check for an error here.
-    // FIXME this should be a method in the plugin class
-    GetModuleFileName(
-        module, &module_path[0], sizeof(module_path) / sizeof(module_path[0])
-    );
-    std::filesystem::path xsd_file(module_path);
-    xsd_file.replace_extension(".xsd");
-    return xsd_file;
-}
-
-}    // namespace
-
 Settings::Settings(::Linter::Linter const &linter) :
-    settings_xml_(linter.get_plugin_config_dir().append(L"linter++.xml")),
-    settings_xsd_(get_module_path(linter.module()).replace_extension(".xsd"))
+    settings_xml_(linter.get_plugin_config_dir().append(linter.get_name() + L".xml")),
+    settings_xsd_(linter.get_module_path().replace_extension(".xsd"))
 {
     // Create a schema cache and our xsd to it.
     auto hr = settings_schema_.CoCreateInstance(__uuidof(XMLSchemaCache60));

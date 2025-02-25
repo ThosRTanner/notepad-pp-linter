@@ -403,7 +403,7 @@ void Linter::apply_linters()
         // --reporter=checkstyle ", file);
         try
         {
-            auto output = file.exec(command, &text);
+            auto output = file.exec(command, text);
             std::vector<Checkstyle_Parser::Error> parseError;
             if (output.first.empty() && not output.second.empty())
             {

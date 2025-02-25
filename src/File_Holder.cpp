@@ -37,7 +37,7 @@ File_Holder::~File_Holder()
 }
 
 std::pair<std::string, std::string> File_Holder::exec(
-    Settings::Linter::Command const &command, std::string const *text
+    Settings::Linter::Command const &command, std::string const &text
 )
 {
     std::wstring command_line = command.program + L" " + command.args;
@@ -87,7 +87,7 @@ std::pair<std::string, std::string> File_Holder::exec(
 
     if (command.use_stdin)
     {
-        stdinpipe.writer().writeFile(*text);
+        stdinpipe.writer().writeFile(text);
     }
     stdinpipe.writer().close();
 

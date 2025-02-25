@@ -23,7 +23,7 @@ class File_Holder
     ~File_Holder();
 
     std::pair<std::string, std::string> exec(
-        Settings::Linter::Command const &, std::string const *str
+        Settings::Linter::Command const &, std::string const &text
     );
 
     void write(std::string const &data);

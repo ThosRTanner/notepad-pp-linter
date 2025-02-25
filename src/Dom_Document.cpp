@@ -12,8 +12,6 @@
 
 #include <string>
 
-#include <iostream>
-
 namespace Linter
 {
 
