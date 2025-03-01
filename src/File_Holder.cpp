@@ -10,6 +10,7 @@
 #include <handleapi.h>
 #include <intsafe.h>
 #include <minwindef.h>
+#include <processenv.h>
 #include <processthreadsapi.h>
 #include <winbase.h>
 #include <winnt.h>
@@ -40,15 +41,6 @@ std::pair<std::string, std::string> File_Holder::exec(
     Settings::Linter::Command const &command, std::string const &text
 )
 {
-    std::wstring command_line = command.program + L" " + command.args;
-    if (! temp_file_.empty())
-    {
-        command_line += ' ';
-        command_line += '"';
-        command_line += temp_file_;
-        command_line += '"';
-    }
-
     auto const stdoutpipe = Child_Pipe::create_output_pipe();
     auto const stderrpipe = Child_Pipe::create_output_pipe();
     auto const stdinpipe = Child_Pipe::create_input_pipe();
@@ -63,11 +55,31 @@ std::pair<std::string, std::string> File_Holder::exec(
 
     PROCESS_INFORMATION procInfo = {0};
 
+    setup_environment();
+
+    auto program{expand_variables(command.program)};
+    auto args{expand_arg_values(command.args)};
+    // Microsoft is amazingly evil. If you pass cmd.exe as an executable, you
+    // render yourself vulnerable to one security issue. If you don't, you
+    // render yourself vulnerable to a different security issue.
+    // Oh, and also you have to pass the executable name in the command
+    // line anyway. Oh, except if you're using cmd.exe and a batch file.
+    args = L"\"" + program + L"\" " + args;
+    if (command.program.ends_with(L".bat")
+        or command.program.ends_with(L".cmd"))
+    {
+        program = expand_variables(L"%SystemRoot%\\system32\\cmd.exe");
+        //A note: The insertion of '"program" ' is optional, but the "/c "
+        //is necesssary. I insert the first bit in case an error is produced,
+        //to make it a bit clearer what is happening.
+        args = L"\"" + program + L"\" /c " + args;
+    }
+    // Oh yes, and this
     // See https://devblogs.microsoft.com/oldnewthing/20090601-00/?p=18083
-    std::unique_ptr<wchar_t[]> const cmdline{wcsdup(command_line.c_str())};
+    std::unique_ptr<wchar_t[]> const args_copy{wcsdup(args.c_str())};
     if (not CreateProcess(
-            nullptr,
-            cmdline.get(),       // command line
+            program.c_str(),
+            args_copy.get(),
             nullptr,             // process security attributes
             nullptr,             // primary thread security attributes
             TRUE,                // handles are inherited
@@ -79,7 +91,7 @@ std::pair<std::string, std::string> File_Holder::exec(
         ))
     {
         DWORD const error{GetLastError()};
-        bstr_t const cmd{command_line.c_str()};
+        bstr_t const cmd{args.c_str()};
         throw System_Error(
             error, "Can't execute command: " + static_cast<std::string>(cmd)
         );
@@ -91,8 +103,12 @@ std::pair<std::string, std::string> File_Holder::exec(
     }
     stdinpipe.writer().close();
 
-    // We need to close all the handles for this end otherwise strange things
-    // happen.
+    // Should likely be using WaitForSingleObject(procInfo.hProcess, INFINITE)
+    // somewhere here. It does seem that for the first run of this, we don't
+    // actually get a result till we change the buffer.
+
+    // We need to close all the handles for this end otherwise
+    // strange things happen.
     CloseHandle(procInfo.hProcess);
     CloseHandle(procInfo.hThread);
 
@@ -107,6 +123,7 @@ std::pair<std::string, std::string> File_Holder::exec(
 
 void File_Holder::write(std::string const &data)
 {
+    // FIXME Why do we do this?
     if (data.empty())
     {
         return;
@@ -117,7 +134,7 @@ void File_Holder::write(std::string const &data)
     // create the file in the same directory but mark it hidden.
 
     {
-        //Don't set temp_file_ until we have the complete path!
+        // Don't set temp_file_ until we have the complete path!
         std::filesystem::path temp = path_;
         temp.concat(".tmp.linter.tmp").concat(path_.extension().c_str());
         temp_file_ = temp;
@@ -134,6 +151,64 @@ void File_Holder::write(std::string const &data)
     )};
 
     handle.writeFile(data);
+}
+
+void File_Holder::setup_environment() const
+{
+    // Set up the supported environment variables.
+    if (not SetEnvironmentVariable(L"LINTER_TARGET", temp_file_.c_str()))
+    {
+        throw System_Error();
+    }
+    if (not SetEnvironmentVariable(L"TARGET", path_.c_str()))
+    {
+        throw System_Error();
+    }
+    if (not SetEnvironmentVariable(L"TARGET_DIR", path_.parent_path().c_str()))
+    {
+        throw System_Error();
+    }
+    if (not SetEnvironmentVariable(L"TARGET_EXT", path_.extension().c_str()))
+    {
+        throw System_Error();
+    }
+    if (not SetEnvironmentVariable(
+            L"TARGET_FILENAME", path_.filename().c_str()
+        ))
+    {
+        throw System_Error();
+    }
+}
+
+std::wstring File_Holder::expand_arg_values(std::wstring args) const
+{
+    // Additionally, we treat a trailing %% as a reference to the target.
+    if (args.ends_with(L"%%"))
+    {
+        args = args.substr(0, args.size() - 2) + L"\"%LINTER_TARGET%\"";
+    }
+    return expand_variables(args);
+}
+
+std::wstring File_Holder::expand_variables(std::wstring const &command_line
+) const
+{
+    // Replace all %x% stuff a-la windows command line.
+    // Get the length of the string we'll generate
+    auto len = ExpandEnvironmentStrings(command_line.c_str(), nullptr, 0);
+    if (len == 0)
+    {
+        throw System_Error();
+    }
+    std::wstring res;
+    res.resize(len);
+    len = ExpandEnvironmentStrings(command_line.c_str(), &*res.begin(), len);
+    if (len == 0)
+    {
+        throw System_Error();
+    }
+    res.resize(len - 1);    // Remove the trailing null
+    return res;
 }
 
 }    // namespace Linter

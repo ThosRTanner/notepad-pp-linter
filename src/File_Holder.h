@@ -29,6 +29,12 @@ class File_Holder
     void write(std::string const &data);
 
   private:
+    void setup_environment() const;
+
+    std::wstring expand_arg_values(std::wstring) const;
+
+    std::wstring expand_variables(std::wstring const &) const;
+
     std::filesystem::path path_;
     std::filesystem::path temp_file_;
 };

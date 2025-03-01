@@ -1,16 +1,30 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <xs:schema id="Linterpp" xmlns:xs="http://www.w3.org/2001/XMLSchema">
 
-  <!-- Value between 0 and 255 cos thats how everyone specifies colours... -->
+  <xs:annotation>
+    <xs:documentation>
+      This defines the layout of the linter++ configuration.
+    </xs:documentation>
+  </xs:annotation>
+
   <xs:simpleType name="byte">
+    <xs:annotation>
+      <xs:documentation>
+        Defines a value between 0 and 255 cos thats how everyone specifies colours...
+      </xs:documentation>
+    </xs:annotation>
     <xs:restriction base="xs:int">
       <xs:minInclusive value="0"/>
       <xs:maxInclusive value="255"/>
     </xs:restriction>
   </xs:simpleType>
 
-  <!-- a colour is red, green, blue -->
   <xs:complexType name="colour">
+    <xs:annotation>
+      <xs:documentation>
+        A colour is consists of red, green and blue values.
+      </xs:documentation>
+    </xs:annotation>
     <xs:sequence>
       <xs:element name="red" type="byte"/>
       <xs:element name="green" type="byte"/>
@@ -18,8 +32,12 @@
     </xs:sequence>
   </xs:complexType>
 
-  <!-- These are the valid indicator types -->
   <xs:simpleType name="style">
+    <xs:annotation>
+      <xs:documentation>
+        These are the valid indicator types - see the scintilla documentation.
+      </xs:documentation>
+    </xs:annotation>
     <xs:restriction base="xs:string">
       <xs:enumeration value="box"/>
       <xs:enumeration value="compositionthick"/>
@@ -48,10 +66,21 @@
     </xs:restriction>
   </xs:simpleType>
 
-  <!-- This is used if the presence of a tag implies truth. -->
-  <xs:complexType name="presence"/>
+  <xs:complexType name="presence">
+  <xs:annotation>
+    <xs:documentation>
+      This is used if the presence of a tag implies truth.
+    </xs:documentation>
+  </xs:annotation>
+  </xs:complexType>
   
   <xs:complexType name="indicator">
+    <xs:annotation>
+      <xs:documentation>
+        This controls the display of the indicator placed where an issue is
+        detected
+      </xs:documentation>
+    </xs:annotation>
     <xs:all>
       <xs:element name="style" type="style" minOccurs="0"/>
       <xs:element name="colour" minOccurs="0">
@@ -83,8 +112,13 @@
     </xs:all>
   </xs:complexType>
 
-  <!-- Message colours -->
   <xs:complexType name="messages">
+    <xs:annotation>
+      <xs:documentation>
+        This enables you to specify the the colours in which messages will be
+        displayed. If you don't define a colour, a default colour will be used.
+      </xs:documentation>
+    </xs:annotation>
     <xs:all>
       <xs:element name="error" type="colour" minOccurs="0"/>
       <xs:element name="other" type="colour" minOccurs="0"/>
@@ -92,14 +126,25 @@
     </xs:all>
   </xs:complexType>
 
-  <!-- file extension (with the ".") -->
+  <!-- Shortcut keys -->
+  
   <xs:simpleType name="extension">
+    <xs:annotation>
+      <xs:documentation>
+        A file extension is a string starting with a .
+      </xs:documentation>
+    </xs:annotation>
     <xs:restriction base="xs:string">
       <xs:pattern value="[.][^.]*"/>
     </xs:restriction>
   </xs:simpleType>
 
   <xs:complexType name="extensions">
+    <xs:annotation>
+      <xs:documentation>
+        A list of extensions.
+      </xs:documentation>
+    </xs:annotation>
     <xs:sequence>
       <xs:element maxOccurs="unbounded" name="extension" type="extension"/>
     </xs:sequence>
@@ -107,28 +152,64 @@
 
   <!-- Command to execute -->
   <xs:complexType name="command">
+    <xs:annotation>
+      <xs:documentation>
+        A command consists of a program to run and its arguments.
+
+        While these are "Just strings", whitespace and newlines are
+        significant.
+        
+        You can use windows environment variables in these strings (e.g.
+        %TMPDIR%, %APPDATA%) as well as the following:
+
+        %LINTER_TARGET% - temp linter file
+        %TARGET% - original file
+        %TARGET_DIR% - directory of file
+        %TARGET_EXT% - extension of file
+        %TARGET_FILENAME% - filename of file
+
+        The args element will accept "%%" as the last two characters as a
+        shortcut for "%LINTER_TARGET%". You'll also need to ensure everything
+        is properly double quoted - it's best to put "" round any use of an
+        environment variable.
+      </xs:documentation>
+    </xs:annotation>
     <xs:sequence>
-      <!-- Please note - these are just strings. Whitespace IS significant. -->
       <xs:element name="program" type="xs:string" />
       <xs:element name="args" type="xs:string" />
     </xs:sequence>
   </xs:complexType>
 
   <xs:complexType name="commands">
+    <xs:annotation>
+      <xs:documentation>
+        A list of commands to execute.
+      </xs:documentation>
+    </xs:annotation>
     <xs:sequence>
       <xs:element maxOccurs="unbounded" name="command" type="command"/>
     </xs:sequence>
   </xs:complexType>
 
-  <!-- A linter consists of a list of extensions and the command to run
-       to lint the matching files-->
   <xs:complexType name="linter">
+    <xs:annotation>
+      <xs:documentation>
+        A linter consists of a list of extensions and the command to run
+        to lint a file that matches any of those extensions.
+      </xs:documentation>
+    </xs:annotation>
     <xs:sequence>
       <xs:element name="extensions" type="extensions"/>
       <xs:element name="commands" type="commands"/>
     </xs:sequence>
   </xs:complexType>
+  
   <xs:complexType name="linters">
+    <xs:annotation>
+      <xs:documentation>
+        A list of linters.
+      </xs:documentation>
+    </xs:annotation>
     <xs:sequence>
       <xs:element maxOccurs="unbounded" name="linter" type="linter"/>
     </xs:sequence>
@@ -136,6 +217,12 @@
 
   <!-- And putting them all together -->
   <xs:element name="LinterPP">
+    <xs:annotation>
+      <xs:documentation>
+        Linter configuration consists of a list of linters, and
+        optionally message colours and indicator setup.
+      </xs:documentation>
+    </xs:annotation>
     <xs:complexType>
       <xs:all>
         <xs:element name="linters" type="linters"/>

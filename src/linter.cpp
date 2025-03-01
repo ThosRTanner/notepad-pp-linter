@@ -137,7 +137,6 @@ void Linter::on_notification(SCNotification const *notification)
             break;
 
         case SCN_MODIFIED:
-            //**case NPPM_GLOBAL_MODIFIED:
             if ((notification->modificationType
                  & (SC_MOD_DELETETEXT | SC_MOD_INSERTTEXT))
                 != 0)
@@ -412,6 +411,13 @@ void Linter::apply_linters()
             parseError = Checkstyle_Parser::get_errors(output.first);
             errors_.insert(errors_.end(), parseError.begin(), parseError.end());
             output_dialogue_->add_lint_errors(parseError);
+            if (not output.second.empty())
+            {
+                std::wstring const wstr{output.second.begin(), output.second.end()};
+                output_dialogue_->add_system_error(
+                    Checkstyle_Parser::Error{0, 0, wstr, get_plugin_name()}
+                );
+            }
         }
         catch (std::exception const &e)
         {
