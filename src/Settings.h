@@ -1,5 +1,8 @@
 #pragma once
 
+#include <MsXml6.h>
+#include <atlcomcli.h>
+
 #include <filesystem>
 #include <string>
 #include <vector>
@@ -7,28 +10,41 @@
 namespace Linter
 {
 
+class Linter;
+
 class Settings
 {
   public:
-    Settings(std::filesystem::path const &settings_xml);
+    explicit Settings(Linter const &linter);
 
     struct Linter
     {
-        std::wstring extension_;
-        std::wstring command_;
-        bool use_stdin_ = false;
+        std::wstring extension;
+        struct Command
+        {
+            std::filesystem::path program;
+            std::wstring args;
+            // Remove use_stdin_. supply %LINTER_TARGET% if args (or not)
+            bool use_stdin = false;
+        } command;
     };
 
-    /** Returns the alpha mask for the 'squiggle' or -1 if not set */
-    int alpha() const noexcept
+    /** Returns the configuration path */
+    std::filesystem::path const &settings_file() const noexcept
     {
-        return alpha_;
+        return settings_xml_;
+    }
+
+    /** Returns the alpha mask for the 'squiggle' or -1 if not set */
+    int fill_alpha() const noexcept
+    {
+        return fill_alpha_;
     }
 
     /** Returns the colour for the 'squiggle' or -1 if not set */
-    int color() const noexcept
+    int fg_colour() const noexcept
     {
-        return colour_;
+        return fg_colour_;
     }
 
     /** Return an iterator to the linters */
@@ -55,10 +71,17 @@ class Settings
   private:
     void read_settings();
 
-    std::wstring settings_xml_;
+    // configuration file
+    std::filesystem::path const settings_xml_;
 
-    int alpha_ = -1;
-    int colour_ = -1;
+    // xsd file
+    std::filesystem::path const settings_xsd_;
+
+    // Processed schema
+    CComPtr<IXMLDOMSchemaCollection2> settings_schema_;
+
+    int fill_alpha_ = -1;
+    int fg_colour_ = -1;
     std::filesystem::file_time_type last_update_time_;
     std::vector<Linter> linters_;
 };

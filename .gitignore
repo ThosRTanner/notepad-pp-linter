@@ -6,3 +6,4 @@ compile_commands.json
 linter.vcxproj.user
 linter.log
 
+enc_temp_folder/

@@ -1,5 +1,6 @@
 #include "Dom_Document.h"
 
+#include "Dom_Node_List.h"
 #include "System_Error.h"
 #include "XML_Decode_Error.h"
 
@@ -8,19 +9,34 @@
 #include <intsafe.h>
 #include <minwindef.h>    //For FALSE
 #include <msxml.h>
+#include <msxml6.h>
 
 #include <string>
 
 namespace Linter
 {
 
-Dom_Document::Dom_Document(std::wstring const &filename)
+Linter::Dom_Document::Dom_Document(
+    std::filesystem::path const &xml_file,
+    CComPtr<IXMLDOMSchemaCollection2> &schemas
+)
 {
     init();
 
-    CComVariant value{filename.c_str()};
+    document_->put_validateOnParse(VARIANT_TRUE);
+    // Not sure what this does but it doesn't seem to be  necessary.
+    // pXD->put_resolveExternals(VARIANT_TRUE); 
+
+    // Assign the schema cache to the DOMDocument's schemas collection.
+    HRESULT hr = document_->putref_schemas(CComVariant(schemas));
+    if (! SUCCEEDED(hr))
+    {
+        throw System_Error(hr, "Can't use schema collection");
+    }
+
+    CComVariant value{xml_file.c_str()};
     VARIANT_BOOL resultCode = FALSE;
-    HRESULT const hr = document_->load(value, &resultCode);
+    hr = document_->load(value, &resultCode);
 
     checkLoadResults(resultCode, hr);
 }
@@ -38,7 +54,7 @@ Dom_Document::Dom_Document(std::string const &xml)
 
 Dom_Document::~Dom_Document() = default;
 
-CComPtr<IXMLDOMNodeList> Dom_Document::getNodeList(std::string const &xpath)
+Dom_Node_List Dom_Document::get_node_list(std::string const &xpath)
 {
     CComPtr<IXMLDOMNodeList> nodes;
     HRESULT const hr =
@@ -47,12 +63,12 @@ CComPtr<IXMLDOMNodeList> Dom_Document::getNodeList(std::string const &xpath)
     {
         throw System_Error(hr, "Can't execute XPath " + xpath);
     }
-    return nodes;
+    return Dom_Node_List(nodes);
 }
 
 void Dom_Document::init()
 {
-    HRESULT hr = document_.CoCreateInstance(__uuidof(DOMDocument));
+    HRESULT hr = document_.CoCreateInstance(__uuidof(DOMDocument60));
     if (! SUCCEEDED(hr))
     {
         throw System_Error(hr, "Can't create IID_IXMLDOMDocument2");

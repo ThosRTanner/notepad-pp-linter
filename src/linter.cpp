@@ -1,7 +1,7 @@
 #include "Linter.h"
 
 #include "Checkstyle_Parser.h"
-#include "File.h"
+#include "File_Holder.h"
 #include "Output_Dialogue.h"
 #include "Settings.h"
 #include "XML_Decode_Error.h"
@@ -43,8 +43,7 @@ namespace Linter
 
 Linter::Linter(NppData const &data) :
     Super(data, get_plugin_name()),
-    config_file_(get_plugin_config_dir().append(L"linter.xml")),
-    settings_(std::make_unique<Settings>(config_file_)),
+    settings_(std::make_unique<Settings>(*this)),
     output_dialogue_(
         std::make_unique<Output_Dialogue>(Menu_Entry_Show_Results, *this)
     ),
@@ -131,14 +130,14 @@ void Linter::on_notification(SCNotification const *notification)
             break;
 
         case NPPN_FILESAVED:
-            if (get_document_path(notification->nmhdr.idFrom) == config_file_)
+            if (get_document_path(notification->nmhdr.idFrom)
+                == settings_->settings_file())
             {
                 mark_file_changed();
             }
             break;
 
         case SCN_MODIFIED:
-            //**case NPPM_GLOBAL_MODIFIED:
             if ((notification->modificationType
                  & (SC_MOD_DELETETEXT | SC_MOD_INSERTTEXT))
                 != 0)
@@ -162,7 +161,7 @@ void Linter::on_notification(SCNotification const *notification)
 
 void Linter::edit_config() noexcept
 {
-    send_to_notepad(NPPM_DOOPEN, 0, config_file_.c_str());
+    send_to_notepad(NPPM_DOOPEN, 0, settings_->settings_file().c_str());
 }
 
 void Linter::show_results() noexcept
@@ -252,22 +251,22 @@ void Linter::setup_error_indicator() noexcept
     send_to_editor(SCI_INDICSETFORE, Error_Indicator, 0x0000ff);
     // ^ Red (Reversed RGB)
 
-    if (settings_->alpha() != -1 || settings_->color() != -1)
+    if (settings_->fill_alpha() != -1 || settings_->fg_colour() != -1)
     {
         // Magic happens. This isn't documented
         send_to_editor(SCI_INDICSETSTYLE, Error_Indicator, INDIC_ROUNDBOX);
 
-        if (settings_->alpha() != -1)
+        if (settings_->fill_alpha() != -1)
         {
             send_to_editor(
-                SCI_INDICSETALPHA, Error_Indicator, settings_->alpha()
+                SCI_INDICSETALPHA, Error_Indicator, settings_->fill_alpha()
             );
         }
 
-        if (settings_->color() != -1)
+        if (settings_->fg_colour() != -1)
         {
             send_to_editor(
-                SCI_INDICSETFORE, Error_Indicator, settings_->color()
+                SCI_INDICSETFORE, Error_Indicator, settings_->fg_colour()
             );
         }
     }
@@ -328,13 +327,9 @@ unsigned int Linter::run_linter() noexcept
         {
             apply_linters();
         }
-        catch (::Linter::XML_Decode_Error const &e)
-        {
-            handle_exception(e, e.line(), e.column());
-        }
         catch (std::exception const &e)
         {
-            handle_exception(e);
+            handle_exception(e, get_plugin_name());
         }
     }
     catch (std::exception const &e)
@@ -367,17 +362,17 @@ void Linter::apply_linters()
         throw std::runtime_error("Empty linters.xml");
     }
 
-    std::vector<std::pair<std::wstring, bool>> commands;
+    std::vector<Settings::Linter::Command> commands;
     bool needs_file = false;
     auto const full_path = get_document_path();
 
     auto const extension = full_path.extension();
     for (auto const &linter : *settings_)
     {
-        if (linter.extension_ == extension)
+        if (linter.extension == extension)
         {
-            commands.emplace_back(linter.command_, linter.use_stdin_);
-            if (not linter.use_stdin_)
+            commands.emplace_back(linter.command);
+            if (not linter.command.use_stdin)
             {
                 needs_file = true;
             }
@@ -391,8 +386,7 @@ void Linter::apply_linters()
 
     auto const text = get_document_text();
 
-    // Why do we need to construct file like this?
-    File file{full_path};
+    File_Holder file{full_path};
     if (needs_file)
     {
         file.write(text);
@@ -400,37 +394,50 @@ void Linter::apply_linters()
 
     for (auto const &command : commands)
     {
-        // std::string xml =
-        // File::exec(L"C:\\Users\\deadem\\AppData\\Roaming\\npm\\jscs.cmd
-        // --reporter=checkstyle ", file);
         try
         {
-            auto output =
-                file.exec(command.first, command.second ? &text : nullptr);
-            std::vector<Checkstyle_Parser::Error> parseError;
+            auto output = file.exec(command, text);
             if (output.first.empty() && not output.second.empty())
             {
                 throw std::runtime_error(output.second);
             }
-            parseError = Checkstyle_Parser::get_errors(output.first);
+            std::vector<Checkstyle_Parser::Error> const parseError{
+                Checkstyle_Parser::get_errors(output.first)
+            };
             errors_.insert(errors_.end(), parseError.begin(), parseError.end());
             output_dialogue_->add_lint_errors(parseError);
+            if (not output.second.empty())
+            {
+                Checkstyle_Parser::Error error = {
+                    .message_ = std::wstring(
+                        output.second.begin(), output.second.end()
+                    ),
+                    .severity_ = L"warning",
+                    .tool_ = command.program.stem()
+                };
+                output_dialogue_->add_system_error(error);
+            }
         }
         catch (std::exception const &e)
         {
-            handle_exception(e);
+            handle_exception(e, command.program.stem());
         }
     }
 }
 
-void Linter::handle_exception(std::exception const &exc, int line, int col)
+void Linter::Linter::handle_exception(
+    std::exception const &exc, std::wstring const &tool
+)
 {
     std::string const str(exc.what());
     std::wstring const wstr{str.begin(), str.end()};
-    output_dialogue_->add_system_error(
-        Checkstyle_Parser::Error{line, col, wstr, get_plugin_name()}
-    );
-    show_tooltip(get_plugin_name() + wstr);
+    Checkstyle_Parser::Error error = {
+        .message_ = wstr,
+        .severity_ = L"error",
+        .tool_ = tool,
+    };
+    output_dialogue_->add_system_error(error);
+    show_tooltip(tool + wstr);
 }
 
 void Linter::show_tooltip()
