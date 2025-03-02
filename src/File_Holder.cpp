@@ -59,20 +59,21 @@ std::pair<std::string, std::string> File_Holder::exec(
 
     auto program{expand_variables(command.program)};
     auto args{expand_arg_values(command.args)};
-    // Microsoft is amazingly evil. If you pass cmd.exe as an executable, you
-    // render yourself vulnerable to one security issue. If you don't, you
-    // render yourself vulnerable to a different security issue.
-    // Oh, and also you have to pass the executable name in the command
-    // line anyway. Oh, except if you're using cmd.exe and a batch file.
+    // Microsoft is amazingly evil.
+    // You need to supply the application name to avoid one sort of
+    // vulnerability. However, if you have a .bat or .cmd file, you must
+    // either not supply an application name or you need to supply the correct
+    // path to the system cmd.exe, and surround the *entire* command
+    // with double quotes.
     args = L"\"" + program + L"\" " + args;
-    if (command.program.ends_with(L".bat")
-        or command.program.ends_with(L".cmd"))
+    if (command.program.extension() == L".bat"
+        or command.program.extension() == L".cmd")
     {
         program = expand_variables(L"%SystemRoot%\\system32\\cmd.exe");
-        //A note: The insertion of '"program" ' is optional, but the "/c "
-        //is necesssary. I insert the first bit in case an error is produced,
-        //to make it a bit clearer what is happening.
-        args = L"\"" + program + L"\" /c " + args;
+        // A note: The insertion of '"program" ' is optional, but the "/c "
+        // is necesssary. I insert the first bit in case an error is produced,
+        // to make it a bit clearer what is happening.
+        args = L"\"" + program + L"\" /c \"" + args + L"\"";
     }
     // Oh yes, and this
     // See https://devblogs.microsoft.com/oldnewthing/20090601-00/?p=18083
