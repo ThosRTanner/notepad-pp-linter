@@ -22,9 +22,9 @@ class Settings
         std::wstring extension;
         struct Command
         {
-            std::wstring program;
+            std::filesystem::path program;
             std::wstring args;
-            // Remove use_stdin_. supply %LINTER% if args (or not)
+            // Remove use_stdin_. supply %LINTER_TARGET% if args (or not)
             bool use_stdin = false;
         } command;
     };

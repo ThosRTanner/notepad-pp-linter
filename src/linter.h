@@ -87,7 +87,7 @@ class Linter : public Plugin
     void apply_linters();
 
     // Pop up a message on an exception caught when running linters
-    void handle_exception(std::exception const &exc, int line = 0, int col = 0);
+    void handle_exception(std::exception const &exc, std::wstring const &tool);
 
     // Shows tooltip in notepad++ window.
     void show_tooltip();

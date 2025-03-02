@@ -130,7 +130,8 @@ void Linter::on_notification(SCNotification const *notification)
             break;
 
         case NPPN_FILESAVED:
-            if (get_document_path(notification->nmhdr.idFrom) == settings_->settings_file())
+            if (get_document_path(notification->nmhdr.idFrom)
+                == settings_->settings_file())
             {
                 mark_file_changed();
             }
@@ -326,13 +327,9 @@ unsigned int Linter::run_linter() noexcept
         {
             apply_linters();
         }
-        catch (::Linter::XML_Decode_Error const &e)
-        {
-            handle_exception(e, e.line(), e.column());
-        }
         catch (std::exception const &e)
         {
-            handle_exception(e);
+            handle_exception(e, get_plugin_name());
         }
     }
     catch (std::exception const &e)
@@ -397,43 +394,50 @@ void Linter::apply_linters()
 
     for (auto const &command : commands)
     {
-        // std::string xml =
-        // File_Holder::exec(L"C:\\Users\\deadem\\AppData\\Roaming\\npm\\jscs.cmd
-        // --reporter=checkstyle ", file);
         try
         {
             auto output = file.exec(command, text);
-            std::vector<Checkstyle_Parser::Error> parseError;
             if (output.first.empty() && not output.second.empty())
             {
                 throw std::runtime_error(output.second);
             }
-            parseError = Checkstyle_Parser::get_errors(output.first);
+            std::vector<Checkstyle_Parser::Error> const parseError{
+                Checkstyle_Parser::get_errors(output.first)
+            };
             errors_.insert(errors_.end(), parseError.begin(), parseError.end());
             output_dialogue_->add_lint_errors(parseError);
             if (not output.second.empty())
             {
-                std::wstring const wstr{output.second.begin(), output.second.end()};
-                output_dialogue_->add_system_error(
-                    Checkstyle_Parser::Error{0, 0, wstr, get_plugin_name()}
-                );
+                Checkstyle_Parser::Error error = {
+                    .message_ = std::wstring(
+                        output.second.begin(), output.second.end()
+                    ),
+                    .severity_ = L"warning",
+                    .tool_ = command.program.stem()
+                };
+                output_dialogue_->add_system_error(error);
             }
         }
         catch (std::exception const &e)
         {
-            handle_exception(e);
+            handle_exception(e, command.program.stem());
         }
     }
 }
 
-void Linter::handle_exception(std::exception const &exc, int line, int col)
+void Linter::Linter::handle_exception(
+    std::exception const &exc, std::wstring const &tool
+)
 {
     std::string const str(exc.what());
     std::wstring const wstr{str.begin(), str.end()};
-    output_dialogue_->add_system_error(
-        Checkstyle_Parser::Error{line, col, wstr, get_plugin_name()}
-    );
-    show_tooltip(get_plugin_name() + wstr);
+    Checkstyle_Parser::Error error = {
+        .message_ = wstr,
+        .severity_ = L"error",
+        .tool_ = tool,
+    };
+    output_dialogue_->add_system_error(error);
+    show_tooltip(tool + wstr);
 }
 
 void Linter::show_tooltip()
