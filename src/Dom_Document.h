@@ -12,6 +12,8 @@
 namespace Linter
 {
 
+class Dom_Node_List;
+
 class Dom_Document
 {
     /** Important note:
@@ -35,7 +37,7 @@ class Dom_Document
     ~Dom_Document();
 
     /** Get list of nodes selected by supplied XPATH */
-    CComPtr<IXMLDOMNodeList> getNodeList(std::string const &xpath);
+    Dom_Node_List get_node_list(std::string const &xpath);
 
   private:
     /** Set up the dom interface */

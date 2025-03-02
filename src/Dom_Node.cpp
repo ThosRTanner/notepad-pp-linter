@@ -48,4 +48,20 @@ CComVariant Dom_Node::get_typed_value() const
     return res;
 }
 
+CComVariant Dom_Node::get_attribute(
+    std::wstring const &attribute
+) const
+{
+    CComQIPtr<IXMLDOMElement> element(node_);
+    CComVariant value;
+
+    auto const hr = element->getAttribute(static_cast<bstr_t>(attribute.c_str()), &value);
+    if (! SUCCEEDED(hr))
+    {
+        throw System_Error(hr, "Can't get node attribute value");
+    }
+
+    return value;
+}
+
 }    // namespace Linter

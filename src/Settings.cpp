@@ -57,8 +57,7 @@ void Settings::read_settings()
 
     Dom_Document settings{settings_xml_, settings_schema_};
 
-    // FIXME getNodeList should return a Dom_Node_List
-    Dom_Node_List linters{settings.getNodeList("//linter")};
+    Dom_Node_List linters{settings.get_node_list("//linter")};
 
     for (auto linter : linters)
     {

@@ -1,5 +1,6 @@
 #include "Dom_Document.h"
 
+#include "Dom_Node_List.h"
 #include "System_Error.h"
 #include "XML_Decode_Error.h"
 
@@ -53,7 +54,7 @@ Dom_Document::Dom_Document(std::string const &xml)
 
 Dom_Document::~Dom_Document() = default;
 
-CComPtr<IXMLDOMNodeList> Dom_Document::getNodeList(std::string const &xpath)
+Dom_Node_List Dom_Document::get_node_list(std::string const &xpath)
 {
     CComPtr<IXMLDOMNodeList> nodes;
     HRESULT const hr =
@@ -62,7 +63,7 @@ CComPtr<IXMLDOMNodeList> Dom_Document::getNodeList(std::string const &xpath)
     {
         throw System_Error(hr, "Can't execute XPath " + xpath);
     }
-    return nodes;
+    return Dom_Node_List(nodes);
 }
 
 void Dom_Document::init()

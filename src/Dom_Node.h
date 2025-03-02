@@ -20,6 +20,8 @@ class Dom_Node
 
     CComVariant get_typed_value() const;
 
+    CComVariant get_attribute(std::wstring const &attribute) const;
+
   private:
     CComPtr<IXMLDOMNode> node_;
 };

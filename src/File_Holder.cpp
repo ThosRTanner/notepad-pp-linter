@@ -106,7 +106,8 @@ std::pair<std::string, std::string> File_Holder::exec(
 
     // Should likely be using WaitForSingleObject(procInfo.hProcess, INFINITE)
     // somewhere here. It does seem that for the first run of this, we don't
-    // actually get a result till we change the buffer.
+    // actually get a result till we change the buffer. However, this seems to
+    // hang indefinitely
 
     // We need to close all the handles for this end otherwise
     // strange things happen.
