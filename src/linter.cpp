@@ -1,11 +1,11 @@
 #include "Linter.h"
 
 #include "Checkstyle_Parser.h"
+#include "encoding.h"
 #include "File_Holder.h"
 #include "Output_Dialogue.h"
 #include "Settings.h"
 #include "XML_Decode_Error.h"
-#include "encoding.h"
 
 #include "Plugin/Callback_Context.h"    // IWYU pragma: keep
 // IWYU requires Plugin/Min_Win_Defs.h because it doesn't understand
@@ -357,17 +357,13 @@ void Linter::apply_linters()
     output_dialogue_->clear_lint_info();
 
     settings_->refresh();
-    if (settings_->empty())
-    {
-        throw std::runtime_error("Empty linters.xml");
-    }
 
     std::vector<Settings::Linter::Command> commands;
     bool needs_file = false;
     auto const full_path = get_document_path();
 
     auto const extension = full_path.extension();
-    for (auto const &linter : *settings_)
+    for (auto const &linter : settings_->linters())
     {
         if (linter.extension == extension)
         {

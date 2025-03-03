@@ -5,6 +5,7 @@
 #include "Checkstyle_Parser.h"
 #include "Clipboard.h"
 #include "Linter.h"
+#include "Settings.h"
 #include "System_Error.h"
 
 #include "resource.h"
@@ -73,7 +74,8 @@ Output_Dialogue::Output_Dialogue(int menu_entry, Linter const &plugin) :
         TabDefinition{L"Lint Errors",   IDC_LIST_LINTS,  Lint_Error,   *this},
         TabDefinition{L"System Errors", IDC_LIST_OUTPUT, System_Error, *this}
 }),
-    current_tab_(&tab_definitions_.at(0))
+    current_tab_(&tab_definitions_.at(0)),
+    settings_(plugin.settings())
 {
     initialise_dialogue();
     for (auto &tab : tab_definitions_)
@@ -394,19 +396,8 @@ Output_Dialogue::Message_Return Output_Dialogue::process_custom_draw(
 
                 // Now we colour the text according to the severity level.
                 auto const &lint_error = current_tab_->errors[item.lParam];
-                if (lint_error.severity_ == L"warning")
-                {
-                    custom_draw->clrText = RGB(255, 127, 0);    // Orange
-                }
-                else if (lint_error.severity_ == L"error")
-                {
-                    custom_draw->clrText = RGB(255, 0, 0);    // Red
-                }
-                else
-                {
-                    custom_draw->clrText = RGB(0, 0, 0);    // Black
-                }
-
+                custom_draw->clrText =
+                    settings_->get_message_colour(lint_error.severity_);
                 // Tell Windows to paint the control itself.
                 return CDRF_DODEFAULT;
             }

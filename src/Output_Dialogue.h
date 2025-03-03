@@ -16,6 +16,7 @@ namespace Linter
 {
 
 class Linter;
+class Settings;
 
 /** This maintains an output dialogue for the linter plugin.
  *
@@ -137,6 +138,8 @@ class Output_Dialogue : protected Docking_Dialogue_Interface
     std::array<TabDefinition, Num_Tabs> tab_definitions_;
 
     TabDefinition *current_tab_;
+
+    Settings const *settings_;
 };
 
 }    // namespace Linter

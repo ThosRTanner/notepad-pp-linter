@@ -3,12 +3,8 @@
 #include "Dom_Document.h"
 #include "Dom_Node.h"
 #include "Dom_Node_List.h"
-#include "System_Error.h"
 
 #include <atlcomcli.h>
-#include <comutil.h>
-#include <intsafe.h>
-#include <msxml.h>
 
 #include <cstddef>
 #include <string>

@@ -1,5 +1,6 @@
 #include "Dom_Document.h"
 
+#include "Dom_Node.h"
 #include "Dom_Node_List.h"
 #include "System_Error.h"
 #include "XML_Decode_Error.h"
@@ -10,7 +11,9 @@
 #include <minwindef.h>    //For FALSE
 #include <msxml.h>
 #include <msxml6.h>
+#include <winerror.h>
 
+#include <optional>
 #include <string>
 
 namespace Linter
@@ -64,6 +67,22 @@ Dom_Node_List Dom_Document::get_node_list(std::string const &xpath)
         throw System_Error(hr, "Can't execute XPath " + xpath);
     }
     return Dom_Node_List(nodes);
+}
+
+std::optional<Dom_Node> Dom_Document::get_node(std::string const &xpath)
+{
+    CComPtr<IXMLDOMNode> node;
+    HRESULT const hr =
+        document_->selectSingleNode(static_cast<_bstr_t>(xpath.c_str()), &node);
+    if (! SUCCEEDED(hr))
+    {
+        throw System_Error(hr, "Can't execute XPath " + xpath);
+    }
+    if (hr == S_FALSE)
+    {
+        return std::nullopt;
+    }
+    return Dom_Node(node);
 }
 
 void Dom_Document::init()
