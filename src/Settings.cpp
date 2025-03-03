@@ -99,20 +99,25 @@ void Settings::read_settings()
 
         for (auto const command_node : linter.get_node_list(".//command"))
         {
-            Dom_Node program_node{command_node.get_node(".//program")};
-            CComVariant program{program_node.get_typed_value()};
+            Dom_Node const program_node{command_node.get_node(".//program")};
+            std::wstring const program{program_node.get_typed_value().bstrVal};
 
-            Dom_Node args_node{command_node.get_node(".//args")};
-            CComVariant args{args_node.get_typed_value()};
+            Dom_Node const args_node{command_node.get_node(".//args")};
+            std::wstring const args{args_node.get_typed_value().bstrVal};
 
-            // FIXME Deal with STDIN somehow
+            bool const use_stdin =
+                args.find(L"%LINTER_TARGET%") == std::string::npos
+                and not args.ends_with(L"%%");
 
             for (auto const &extension : extensions)
             {
                 linters_.push_back({
                     .extension = extension,
-                    .command =
-                        {.program = program.bstrVal, .args = args.bstrVal}
+                    .command = {
+                        .program = program,
+                        .args = args,
+                        .use_stdin = use_stdin
+                    }
                 });
             }
         }

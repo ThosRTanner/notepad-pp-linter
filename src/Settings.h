@@ -25,7 +25,6 @@ class Settings
         {
             std::filesystem::path program;
             std::wstring args;
-            // FIXME Remove use_stdin_. supply %LINTER_TARGET% if args (or not)
             bool use_stdin = false;
         } command;
     };
