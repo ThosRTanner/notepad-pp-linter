@@ -23,7 +23,7 @@ This is a fork of the 'linter' plugin for notepad++ from deadem which provides r
 1. It has a docking window similar to that provided by the jslint plugin, which displays a list of all the detected errors in the file (by default sorted by line), and the tool which detected the issue.
 1. The window will also display (in a separate tab) any messages resulting from failures to execute checker programs.
 1. It is no longer necessary to restart notepad++ after changing the configuration.
-1. The linter configuration file has changed considerably. It is also validated against an xsd file.
+1. The linter configuration file has changed considerably, and it now gets validated against an xsd file.
 
 ## Config example
 
@@ -82,7 +82,7 @@ The `<args>` element will accept `%%` as the last two characters as a shortcut f
 
 If you don't specify `%LINTER_TARGET%` or `%%` in your `<args>` element, it is assumed that your linter process its input from `stdin`.
 
-Optional parameters
+### Optional parameters
 
 By default, error messages will be shown in the docked dialogue window as red, warning messages as orange, and any other messages are shown in black.
 
@@ -96,4 +96,4 @@ You can change the colours by adding a `<messages>` section to the `<LinterPP>` 
   </messages>
 ```
 
-You don't have to specify all of the styles, but you must specify at least one!
+These are all optional, though if you do include a `<messages>` section, you must include at least one colour setting.
