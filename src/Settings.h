@@ -1,15 +1,16 @@
 #pragma once
 
-#include <MsXml6.h>
 #include <atlcomcli.h>
+#include <msxml6.h>
 
 #include <filesystem>
 #include <string>
+#include <unordered_map>
 #include <vector>
 
 namespace Linter
 {
-
+class Dom_Node;
 class Linter;
 
 class Settings
@@ -24,7 +25,6 @@ class Settings
         {
             std::filesystem::path program;
             std::wstring args;
-            // Remove use_stdin_. supply %LINTER_TARGET% if args (or not)
             bool use_stdin = false;
         } command;
     };
@@ -47,29 +47,22 @@ class Settings
         return fg_colour_;
     }
 
-    /** Return an iterator to the linters */
-    std::vector<Linter>::const_iterator begin() const noexcept
+    /** Return the list of linters */
+    std::vector<Linter> const &linters() const noexcept
     {
-        return linters_.cbegin();
+        return linters_;
     }
 
-    /** Returns true if there are no linters to run */
-    bool empty() const noexcept
-    {
-        return linters_.empty();
-    }
-
-    /** Return an iterator to the linters */
-    std::vector<Linter>::const_iterator end() const noexcept
-    {
-        return linters_.cend();
-    }
+    /** Get a message colour */
+    uint32_t get_message_colour(std::wstring const &colour) const noexcept;
 
     /** Reread settings if they've changed */
     void refresh();
 
   private:
     void read_settings();
+
+    uint32_t read_colour_node(Dom_Node const &node);
 
     // configuration file
     std::filesystem::path const settings_xml_;
@@ -84,6 +77,7 @@ class Settings
     int fg_colour_ = -1;
     std::filesystem::file_time_type last_update_time_;
     std::vector<Linter> linters_;
+    std::unordered_map<std::wstring, uint32_t> message_colours_;
 };
 
 }    // namespace Linter

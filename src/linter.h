@@ -45,6 +45,11 @@ class Linter : public Plugin
         Menu_Entry_Show_Previous_Lint
     };
 
+    Settings const* settings() const noexcept
+    {
+        return settings_.get();
+    }
+
   private:
     std::vector<FuncItem> &on_get_menu_entries() override;
 

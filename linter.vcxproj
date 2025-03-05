@@ -181,6 +181,9 @@ iwyu.bat
     <PreLinkEvent>
       <Message>copy xsd files and Include what you use checks</Message>
     </PreLinkEvent>
+    <ResourceCompile>
+      <Culture>0x0809</Culture>
+    </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">
     <ClCompile>
@@ -225,6 +228,9 @@ iwyu.bat
     <PreLinkEvent>
       <Message>copy xsd files and Include what you use checks</Message>
     </PreLinkEvent>
+    <ResourceCompile>
+      <Culture>0x0809</Culture>
+    </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -267,6 +273,9 @@ iwyu.bat
     <PreLinkEvent>
       <Message>copy xsd files and Include what you use checks</Message>
     </PreLinkEvent>
+    <ResourceCompile>
+      <Culture>0x0809</Culture>
+    </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -314,6 +323,9 @@ iwyu.bat
     <PreLinkEvent>
       <Message>copy xsd files and Include what you use checks</Message>
     </PreLinkEvent>
+    <ResourceCompile>
+      <Culture>0x0809</Culture>
+    </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'">
     <ClCompile>
@@ -360,6 +372,9 @@ iwyu.bat
     <PreLinkEvent>
       <Message>copy xsd files and Include what you use checks</Message>
     </PreLinkEvent>
+    <ResourceCompile>
+      <Culture>0x0809</Culture>
+    </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -404,6 +419,9 @@ iwyu.bat
     <PreLinkEvent>
       <Message>copy xsd files and Include what you use checks</Message>
     </PreLinkEvent>
+    <ResourceCompile>
+      <Culture>0x0809</Culture>
+    </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Docking_Dialogue_Interface\Plugin\Dialogue_Interface.cpp" />

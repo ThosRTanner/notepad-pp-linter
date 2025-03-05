@@ -1,17 +1,17 @@
 #pragma once
 
 #include <filesystem>
+#include <optional>
 #include <string>
 
 #include <atlcomcli.h>
-#include <msxml.h>
 #include <msxml6.h>
 #include <winnt.h>    //For HRESULT
 #include <wtypes.h>
 
 namespace Linter
 {
-
+class Dom_Node;
 class Dom_Node_List;
 
 class Dom_Document
@@ -38,6 +38,9 @@ class Dom_Document
 
     /** Get list of nodes selected by supplied XPATH */
     Dom_Node_List get_node_list(std::string const &xpath);
+
+    /* Get a single node from selected XPATH */
+    std::optional<Dom_Node> get_node(std::string const &xpath);
 
   private:
     /** Set up the dom interface */

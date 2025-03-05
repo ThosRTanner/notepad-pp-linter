@@ -120,8 +120,8 @@
       </xs:documentation>
     </xs:annotation>
     <xs:all>
+      <xs:element name="default" type="colour" minOccurs="0"/>
       <xs:element name="error" type="colour" minOccurs="0"/>
-      <xs:element name="other" type="colour" minOccurs="0"/>
       <xs:element name="warning" type="colour" minOccurs="0"/>
     </xs:all>
   </xs:complexType>
@@ -168,7 +168,7 @@
         %TARGET_EXT% - extension of file
         %TARGET_FILENAME% - filename of file
 
-        The args element will accept "%%" as the last two characters as a
+        The args element will accept %% as the last two characters as a
         shortcut for "%LINTER_TARGET%". You'll also need to ensure everything
         is properly double quoted - it's best to put "" round any use of an
         environment variable.

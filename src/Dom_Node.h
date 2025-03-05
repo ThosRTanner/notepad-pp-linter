@@ -18,6 +18,8 @@ class Dom_Node
 
     Dom_Node get_node(std::string const &xpath) const;
 
+    std::wstring get_name() const;
+
     CComVariant get_typed_value() const;
 
     CComVariant get_attribute(std::wstring const &attribute) const;

@@ -37,6 +37,17 @@ Dom_Node Dom_Node::get_node(std::string const &xpath) const
     return Dom_Node(node);
 }
 
+std::wstring Dom_Node::get_name() const
+{
+    CComBSTR name;
+    auto const hr = node_->get_nodeName(&name);
+    if (! SUCCEEDED(hr))
+    {
+        throw System_Error(hr, "Can't get node name");
+    }
+    return static_cast<wchar_t *>(name);
+}
+
 CComVariant Dom_Node::get_typed_value() const
 {
     CComVariant res;
@@ -48,14 +59,13 @@ CComVariant Dom_Node::get_typed_value() const
     return res;
 }
 
-CComVariant Dom_Node::get_attribute(
-    std::wstring const &attribute
-) const
+CComVariant Dom_Node::get_attribute(std::wstring const &attribute) const
 {
     CComQIPtr<IXMLDOMElement> element(node_);
     CComVariant value;
 
-    auto const hr = element->getAttribute(static_cast<bstr_t>(attribute.c_str()), &value);
+    auto const hr =
+        element->getAttribute(static_cast<bstr_t>(attribute.c_str()), &value);
     if (! SUCCEEDED(hr))
     {
         throw System_Error(hr, "Can't get node attribute value");
