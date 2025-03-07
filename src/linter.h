@@ -37,14 +37,6 @@ class Linter : public Plugin
     /** Return the plugin name */
     static wchar_t const *get_plugin_name() noexcept;
 
-    enum Menu_Entries
-    {
-        Menu_Entry_Edit_Config,
-        Menu_Entry_Show_Results,
-        Menu_Entry_Show_Next_Lint,
-        Menu_Entry_Show_Previous_Lint
-    };
-
     Settings const* settings() const noexcept
     {
         return settings_.get();

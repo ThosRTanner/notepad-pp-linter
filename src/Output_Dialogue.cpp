@@ -376,6 +376,7 @@ Output_Dialogue::Message_Return Output_Dialogue::process_custom_draw(
             return CDRF_NOTIFYITEMDRAW;
 
         case CDDS_ITEMPREPAINT:
+#pragma warning(suppress : 26472)
             current_item_ = static_cast<int>(custom_draw->nmcd.dwItemSpec);
             return CDRF_NOTIFYSUBITEMDRAW;
 
@@ -385,6 +386,7 @@ Output_Dialogue::Message_Return Output_Dialogue::process_custom_draw(
                 LVITEM const item{.mask = LVIF_PARAM, .iItem = current_item_};
                 ListView_GetItem(custom_draw->nmcd.hdr.hwndFrom, &item);
 
+#pragma warning(suppress : 26472)
                 if (static_cast<std::size_t>(item.lParam)
                     >= current_tab_->errors.size())
                 {

@@ -32,6 +32,14 @@
     </xs:sequence>
   </xs:complexType>
 
+  <xs:complexType name="presence">
+    <xs:annotation>
+      <xs:documentation>
+        This is used if the presence of a tag implies truth.
+      </xs:documentation>
+    </xs:annotation>
+  </xs:complexType>
+
   <xs:simpleType name="style">
     <xs:annotation>
       <xs:documentation>
@@ -66,14 +74,6 @@
     </xs:restriction>
   </xs:simpleType>
 
-  <xs:complexType name="presence">
-  <xs:annotation>
-    <xs:documentation>
-      This is used if the presence of a tag implies truth.
-    </xs:documentation>
-  </xs:annotation>
-  </xs:complexType>
-  
   <xs:complexType name="indicator">
     <xs:annotation>
       <xs:documentation>
@@ -81,15 +81,16 @@
         detected
       </xs:documentation>
     </xs:annotation>
+    <!-- FIXME ENSURE THIS HAS SOMETHING IN IT -->
     <xs:all>
       <xs:element name="style" type="style" minOccurs="0"/>
       <xs:element name="colour" minOccurs="0">
         <xs:complexType>
-          <xs:choice>            
+          <xs:choice>
             <xs:element name="shade" type="colour"/>
             <xs:element name="message" type="presence"/>
           </xs:choice>
-        </xs:complexType>        
+        </xs:complexType>
       </xs:element>
       <xs:element name="fill_alpha" type="byte" minOccurs="0"/>
       <xs:element name="outline_alpha" type="byte" minOccurs="0"/>
@@ -103,6 +104,7 @@
       </xs:element>
       <xs:element name="hover" minOccurs="0">
         <xs:complexType>
+          <!-- FIXME ENSURE THIS HAS SOMETHING IN IT -->
           <xs:all>
             <xs:element name="style" type="style" minOccurs="0"/>
             <xs:element name="colour" type="colour" minOccurs="0"/>
@@ -119,6 +121,7 @@
         displayed. If you don't define a colour, a default colour will be used.
       </xs:documentation>
     </xs:annotation>
+    <!-- FIXME ENSURE THIS HAS SOMETHING IN IT -->
     <xs:all>
       <xs:element name="default" type="colour" minOccurs="0"/>
       <xs:element name="error" type="colour" minOccurs="0"/>
@@ -126,8 +129,87 @@
     </xs:all>
   </xs:complexType>
 
-  <!-- Shortcut keys -->
-  
+  <xs:complexType name="key">
+    <xs:annotation>
+      <xs:documentation>
+        A consists of optional modifiers (ctrl, alt, shift) and a single
+        virtual key. Other keys may be added to the list.
+
+        Note that although you can change these while notepad++ is running,
+        notepad++ will only read the settings at startup, so the changes
+        won't take effect till you quit and restart.
+      </xs:documentation>
+    </xs:annotation>
+    <xs:all>
+      <xs:element name="ctrl" type="presence" minOccurs="0"/>
+      <xs:element name="alt" type="presence" minOccurs="0"/>
+      <xs:element name="shift" type="presence" minOccurs="0"/>
+      <xs:element name="key">
+        <xs:simpleType>
+          <xs:union>
+            <xs:simpleType>
+              <xs:restriction base="xs:string">
+                <xs:pattern value="[a-zA-Z0-9]"/>
+                <xs:pattern value="F[1-9]"/>
+                <xs:pattern value="F1[0-2]"/>
+                <xs:pattern value="NUMPAD[0-9]"/>
+              </xs:restriction>
+            </xs:simpleType>
+            <xs:simpleType>
+              <xs:restriction base="xs:string">
+                <xs:enumeration value="INSERT"/>
+                <xs:enumeration value="DELETE"/>
+                <xs:enumeration value="HOME"/>
+                <xs:enumeration value="END"/>
+                <xs:enumeration value="PAGE UP"/>
+                <xs:enumeration value="PAGE DOWN"/>
+              </xs:restriction>
+            </xs:simpleType>
+          </xs:union>
+        </xs:simpleType>
+      </xs:element>
+    </xs:all>
+  </xs:complexType>
+
+  <xs:complexType name="shortcuts">
+    <xs:annotation>
+      <xs:documentation>
+        A list of menu shortcuts
+      </xs:documentation>
+    </xs:annotation>
+    <!-- FIXME ENSURE THIS HAS SOMETHING IN IT -->
+    <xs:all>
+      <xs:element name="edit" type="key" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation>
+            Shortcut for 'Edit config'
+          </xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="show" type="key" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation>
+            Shortcut for 'Show linter results'
+          </xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="previous" type="key" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation>
+            Shortcut for 'Show previous message'
+          </xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="next" type="key" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation>
+            Shortcut for 'Show next message'
+          </xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:all>
+  </xs:complexType>
+
   <xs:simpleType name="extension">
     <xs:annotation>
       <xs:documentation>
@@ -150,7 +232,6 @@
     </xs:sequence>
   </xs:complexType>
 
-  <!-- Command to execute -->
   <xs:complexType name="command">
     <xs:annotation>
       <xs:documentation>
@@ -158,7 +239,7 @@
 
         While these are "Just strings", whitespace and newlines are
         significant.
-        
+
         You can use windows environment variables in these strings (e.g.
         %TMPDIR%, %APPDATA%) as well as the following:
 
@@ -203,7 +284,7 @@
       <xs:element name="commands" type="commands"/>
     </xs:sequence>
   </xs:complexType>
-  
+
   <xs:complexType name="linters">
     <xs:annotation>
       <xs:documentation>
@@ -215,7 +296,6 @@
     </xs:sequence>
   </xs:complexType>
 
-  <!-- And putting them all together -->
   <xs:element name="LinterPP">
     <xs:annotation>
       <xs:documentation>
@@ -226,6 +306,7 @@
     <xs:complexType>
       <xs:all>
         <xs:element name="linters" type="linters"/>
+        <xs:element name="shortcuts" type="shortcuts" minOccurs="0"/>
         <xs:element name="messages" type="messages" minOccurs="0"/>
         <xs:element name="indicator" type="indicator" minOccurs="0"/>
       </xs:all>

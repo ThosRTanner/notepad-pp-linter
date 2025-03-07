@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Menu_Entry.h"
+
 #include <atlcomcli.h>
 #include <msxml6.h>
 
@@ -7,6 +9,8 @@
 #include <string>
 #include <unordered_map>
 #include <vector>
+
+struct ShortcutKey;
 
 namespace Linter
 {
@@ -59,6 +63,8 @@ class Settings
     /** Reread settings if they've changed */
     void refresh();
 
+    ShortcutKey const *get_shortcut_key(Menu_Entry) const;
+
   private:
     void read_settings();
 
@@ -75,9 +81,21 @@ class Settings
 
     int fill_alpha_ = -1;
     int fg_colour_ = -1;
+
+    // Last time linter++.xml was updated.
     std::filesystem::file_time_type last_update_time_;
+
+    // The list of linters
     std::vector<Linter> linters_;
+
+    // Custom message colours
     std::unordered_map<std::wstring, uint32_t> message_colours_;
+
+    // Shortcut keys for the menu.
+    std::unordered_map<Menu_Entry, ShortcutKey> menu_entries_;
+
+    // Map from xml element values to virtual key codes
+    std::unordered_map<std::wstring, int> const key_mappings_;
 };
 
 }    // namespace Linter

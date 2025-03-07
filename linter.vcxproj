@@ -157,6 +157,7 @@
       <AdditionalIncludeDirectories>.;Docking_Dialogue_Interface;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
       <ForcedIncludeFiles>stdafx.h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <LanguageStandard_C>stdc17</LanguageStandard_C>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -205,6 +206,7 @@ iwyu.bat
       <AdditionalIncludeDirectories>.;Docking_Dialogue_Interface;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
       <ForcedIncludeFiles>stdafx.h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <LanguageStandard_C>stdc17</LanguageStandard_C>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -252,6 +254,7 @@ iwyu.bat
       <AdditionalIncludeDirectories>.;Docking_Dialogue_Interface;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
       <ForcedIncludeFiles>stdafx.h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <LanguageStandard_C>stdc17</LanguageStandard_C>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -298,6 +301,7 @@ iwyu.bat
       <AdditionalIncludeDirectories>.;Docking_Dialogue_Interface;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
       <ForcedIncludeFiles>stdafx.h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <LanguageStandard_C>stdc17</LanguageStandard_C>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>false</GenerateDebugInformation>
@@ -348,6 +352,7 @@ iwyu.bat
       <AdditionalIncludeDirectories>.;Docking_Dialogue_Interface;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
       <ForcedIncludeFiles>stdafx.h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <LanguageStandard_C>stdc17</LanguageStandard_C>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>false</GenerateDebugInformation>
@@ -397,6 +402,7 @@ iwyu.bat
       <AdditionalIncludeDirectories>.;Docking_Dialogue_Interface;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
       <ForcedIncludeFiles>stdafx.h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <LanguageStandard_C>stdc17</LanguageStandard_C>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>false</GenerateDebugInformation>
@@ -440,6 +446,7 @@ iwyu.bat
     <ClCompile Include="src\Child_Pipe.cpp" />
     <ClCompile Include="src\Handle_Wrapper.cpp" />
     <ClCompile Include="src\Linter.cpp" />
+    <ClCompile Include="src\Menu_Entry.cpp" />
     <ClCompile Include="src\Output_Dialogue.cpp" />
     <ClCompile Include="src\Settings.cpp" />
     <ClCompile Include="src\stdafx.cpp">
@@ -478,6 +485,7 @@ iwyu.bat
     <ClInclude Include="src\Child_Pipe.h" />
     <ClInclude Include="src\Handle_Wrapper.h" />
     <ClInclude Include="src\Linter.h" />
+    <ClInclude Include="src\Menu_Entry.h" />
     <ClInclude Include="src\Output_Dialogue.h" />
     <ClInclude Include="src\resource.h" />
     <ClInclude Include="src\Settings.h" />
