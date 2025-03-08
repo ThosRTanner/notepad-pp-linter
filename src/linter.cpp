@@ -64,39 +64,21 @@ wchar_t const *Linter::get_plugin_name() noexcept
 
 std::vector<FuncItem> &Linter::on_get_menu_entries()
 {
-#define MAKE_CALLBACK(entry, text, method, ...) \
-    PLUGIN_MENU_MAKE_CALLBACK(Linter, entry, text, method, __VA_ARGS__)
+#define MAKE_CALLBACK(entry, method)       \
+    PLUGIN_MENU_MAKE_CALLBACK(             \
+        Linter,                            \
+        entry,                             \
+        get_menu_string(entry),            \
+        method,                            \
+        false,                             \
+        settings_->get_shortcut_key(entry) \
+    )
 
     static std::vector<FuncItem> res = {
-        MAKE_CALLBACK(
-            Menu_Entry_Edit_Config,
-            get_menu_string(Menu_Entry_Edit_Config),
-            edit_config,
-            false,
-            settings_->get_shortcut_key(Menu_Entry_Edit_Config)
-        ),
-        MAKE_CALLBACK(
-            Menu_Entry_Show_Results,
-            //L"Show linter results",
-            L"this is an enormously long string in an attempt to get a compil<e time error rather than a failure at runtime",
-            show_results,
-            false,
-            settings_->get_shortcut_key(Menu_Entry_Show_Results)
-        ),
-        MAKE_CALLBACK(
-            Menu_Entry_Show_Previous_Lint,
-            L"Show previous message",
-            select_previous_lint,
-            false,
-            settings_->get_shortcut_key(Menu_Entry_Show_Previous_Lint)
-        ),
-        MAKE_CALLBACK(
-            Menu_Entry_Show_Next_Lint,
-            L"Show next message",
-            select_next_lint,
-            false,
-            settings_->get_shortcut_key(Menu_Entry_Show_Next_Lint)
-        )
+        MAKE_CALLBACK(Menu_Entry_Edit_Config, edit_config),
+        MAKE_CALLBACK(Menu_Entry_Show_Results, show_results),
+        MAKE_CALLBACK(Menu_Entry_Show_Previous_Lint, select_previous_lint),
+        MAKE_CALLBACK(Menu_Entry_Show_Next_Lint, select_next_lint)
     };
     return res;
 }
