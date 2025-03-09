@@ -1,11 +1,12 @@
 #include "Linter.h"
 
 #include "Checkstyle_Parser.h"
-#include "encoding.h"
 #include "File_Holder.h"
+#include "Menu_Entry.h"
 #include "Output_Dialogue.h"
 #include "Settings.h"
 #include "XML_Decode_Error.h"
+#include "encoding.h"
 
 #include "Plugin/Callback_Context.h"    // IWYU pragma: keep
 // IWYU requires Plugin/Min_Win_Defs.h because it doesn't understand
@@ -63,38 +64,21 @@ wchar_t const *Linter::get_plugin_name() noexcept
 
 std::vector<FuncItem> &Linter::on_get_menu_entries()
 {
-#define MAKE_CALLBACK(entry, text, method, ...) \
-    PLUGIN_MENU_MAKE_CALLBACK(Linter, entry, text, method, __VA_ARGS__)
-
-    // Note: These are ctrl-shift in jslint
-    // Put in settings
-    static ShortcutKey prev_key{
-        ._isAlt = true, ._isShift = true, ._key = VK_F7
-    };
-
-    static ShortcutKey next_key{
-        ._isAlt = true, ._isShift = true, ._key = VK_F8
-    };
+#define MAKE_CALLBACK(entry, method)       \
+    PLUGIN_MENU_MAKE_CALLBACK(             \
+        Linter,                            \
+        entry,                             \
+        get_menu_string(entry),            \
+        method,                            \
+        false,                             \
+        settings_->get_shortcut_key(entry) \
+    )
 
     static std::vector<FuncItem> res = {
-        MAKE_CALLBACK(Menu_Entry_Edit_Config, L"Edit config", edit_config),
-        MAKE_CALLBACK(
-            Menu_Entry_Show_Results, L"Show linter results", show_results
-        ),
-        MAKE_CALLBACK(
-            Menu_Entry_Show_Previous_Lint,
-            L"Show previous lint",
-            select_previous_lint,
-            false,
-            &prev_key
-        ),
-        MAKE_CALLBACK(
-            Menu_Entry_Show_Next_Lint,
-            L"Show next lint",
-            select_next_lint,
-            false,
-            &next_key
-        )
+        MAKE_CALLBACK(Menu_Entry_Edit_Config, edit_config),
+        MAKE_CALLBACK(Menu_Entry_Show_Results, show_results),
+        MAKE_CALLBACK(Menu_Entry_Show_Previous_Lint, select_previous_lint),
+        MAKE_CALLBACK(Menu_Entry_Show_Next_Lint, select_next_lint)
     };
     return res;
 }

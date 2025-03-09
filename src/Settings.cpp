@@ -6,6 +6,8 @@
 #include "Linter.h"
 #include "System_Error.h"
 
+#include "notepad++/PluginInterface.h"
+
 #include <atlcomcli.h>
 #include <comutil.h>
 #include <intsafe.h>
@@ -15,16 +17,51 @@
 
 #include <chrono>
 #include <filesystem>
+#include <locale>
 #include <sstream>
 
 namespace Linter
 {
 
+#define MAP_KEY(s) {L#s, VK_##s}
+#undef DELETE
 Settings::Settings(::Linter::Linter const &linter) :
     settings_xml_(
         linter.get_plugin_config_dir().append(linter.get_name() + L".xml")
     ),
-    settings_xsd_(linter.get_module_path().replace_extension(".xsd"))
+    settings_xsd_(linter.get_module_path().replace_extension(".xsd")),
+    key_mappings_{
+        MAP_KEY(F1),
+        MAP_KEY(F2),
+        MAP_KEY(F3),
+        MAP_KEY(F4),
+        MAP_KEY(F5),
+        MAP_KEY(F6),
+        MAP_KEY(F7),
+        MAP_KEY(F8),
+        MAP_KEY(F9),
+        MAP_KEY(F10),
+        MAP_KEY(F11),
+        MAP_KEY(F12),
+        MAP_KEY(F10),
+        MAP_KEY(NUMPAD0),
+        MAP_KEY(NUMPAD1),
+        MAP_KEY(NUMPAD2),
+        MAP_KEY(NUMPAD3),
+        MAP_KEY(NUMPAD4),
+        MAP_KEY(NUMPAD5),
+        MAP_KEY(NUMPAD6),
+        MAP_KEY(NUMPAD7),
+        MAP_KEY(NUMPAD8),
+        MAP_KEY(NUMPAD9),
+        MAP_KEY(INSERT),
+        MAP_KEY(DELETE),
+        MAP_KEY(HOME),
+        MAP_KEY(END),
+        {L"PAGE UP",   VK_PRIOR},
+        {L"PAGE DOWN", VK_NEXT }
+}
+#undef MAP_KEY
 {
     // Create a schema cache and our xsd to it.
     auto hr = settings_schema_.CoCreateInstance(__uuidof(XMLSchemaCache60));
@@ -39,6 +76,8 @@ Settings::Settings(::Linter::Linter const &linter) :
     {
         throw System_Error(hr, "Can't add to schema pool");
     }
+
+    refresh();
 }
 
 uint32_t Settings::get_message_colour(std::wstring const &colour) const noexcept
@@ -65,6 +104,16 @@ void Settings::refresh()
     }
 }
 
+ShortcutKey const *Settings::get_shortcut_key(Menu_Entry entry) const
+{
+    auto res = menu_entries_.find(entry);
+    if (res == menu_entries_.end())
+    {
+        return nullptr;
+    }
+    return &(res->second);
+}
+
 void Settings::read_settings()
 {
     fill_alpha_ = -1;
@@ -88,22 +137,49 @@ void Settings::read_settings()
         }
     }
 
+    std::optional<Dom_Node> shortcuts = settings.get_node("//shortcuts");
+    if (shortcuts.has_value())
+    {
+        // Set up any shortcuts
+        Dom_Node_List menu_entries = shortcuts->get_node_list("./*");
+        for (auto const menu_entry : menu_entries)
+        {
+            ShortcutKey key = {
+                ._isCtrl = menu_entry.get_optional_node("ctrl").has_value(),
+                ._isAlt = menu_entry.get_optional_node("alt").has_value(),
+                ._isShift = menu_entry.get_optional_node("shift").has_value()
+            };
+            // get the key as well.
+            std::wstring const k = menu_entry.get_value().bstrVal;
+            if (k.size() == 1)
+            {
+#pragma warning(suppress : 26472)
+                key._key = static_cast<UCHAR>(std::toupper(*k.begin()));
+            }
+            else
+            {
+                key._key = static_cast<UCHAR>(key_mappings_.at(k));
+            }
+            menu_entries_[get_menu_entry_from_element(menu_entry.get_name())] = key;
+        }
+    }
+
     for (auto const linter : settings.get_node_list("//linter"))
     {
         std::vector<std::wstring> extensions;
         for (auto const extension_node : linter.get_node_list(".//extension"))
         {
-            CComVariant extension = extension_node.get_typed_value();
+            CComVariant extension = extension_node.get_value();
             extensions.push_back(extension.bstrVal);
         }
 
         for (auto const command_node : linter.get_node_list(".//command"))
         {
             Dom_Node const program_node{command_node.get_node(".//program")};
-            std::wstring const program{program_node.get_typed_value().bstrVal};
+            std::wstring const program{program_node.get_value().bstrVal};
 
             Dom_Node const args_node{command_node.get_node(".//args")};
-            std::wstring const args{args_node.get_typed_value().bstrVal};
+            std::wstring const args{args_node.get_value().bstrVal};
 
             bool const use_stdin =
                 args.find(L"%LINTER_TARGET%") == std::string::npos
@@ -113,11 +189,10 @@ void Settings::read_settings()
             {
                 linters_.push_back({
                     .extension = extension,
-                    .command = {
-                        .program = program,
-                        .args = args,
-                        .use_stdin = use_stdin
-                    }
+                    .command =
+                        {.program = program,
+                                  .args = args,
+                                  .use_stdin = use_stdin}
                 });
             }
         }
@@ -131,7 +206,7 @@ uint32_t Settings::read_colour_node(Dom_Node const &node)
     uint32_t bgr = 0;
     for (auto const colour : colours)
     {
-        auto value = colour.get_typed_value();
+        auto value = colour.get_value();
         // This always comes back as a BSTR. I have no idea why.
         std::wstringstream data{
             std::wstring(value.bstrVal, SysStringLen(value.bstrVal))

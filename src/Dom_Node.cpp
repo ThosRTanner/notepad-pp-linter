@@ -5,6 +5,9 @@
 
 #include <comutil.h>
 #include <intsafe.h>
+#include <winerror.h>
+
+#include <stdexcept>
 
 namespace Linter
 {
@@ -27,12 +30,26 @@ Dom_Node_List Dom_Node::get_node_list(std::string const &xpath) const
 
 Dom_Node Dom_Node::get_node(std::string const &xpath) const
 {
+    auto node = get_optional_node(xpath);
+    if (not node.has_value())
+    {
+        throw std::runtime_error("Can't get node from xpath " + xpath);
+    }
+    return *node;
+}
+
+std::optional<Dom_Node> Dom_Node::get_optional_node(std::string const &xpath) const
+{
     CComPtr<IXMLDOMNode> node;
     auto const hr =
         node_->selectSingleNode(static_cast<bstr_t>(xpath.c_str()), &node);
     if (! SUCCEEDED(hr))
     {
         throw System_Error(hr, "Can't get node from xpath " + xpath);
+    }
+    if (hr == S_FALSE)
+    {
+        return std::nullopt;
     }
     return Dom_Node(node);
 }
@@ -48,7 +65,7 @@ std::wstring Dom_Node::get_name() const
     return static_cast<wchar_t *>(name);
 }
 
-CComVariant Dom_Node::get_typed_value() const
+CComVariant Dom_Node::get_value() const
 {
     CComVariant res;
     auto const hr = node_->get_nodeTypedValue(&res);
@@ -59,7 +76,7 @@ CComVariant Dom_Node::get_typed_value() const
     return res;
 }
 
-CComVariant Dom_Node::get_attribute(std::wstring const &attribute) const
+std::wstring Dom_Node::get_attribute(std::wstring const &attribute) const
 {
     CComQIPtr<IXMLDOMElement> element(node_);
     CComVariant value;
@@ -71,7 +88,7 @@ CComVariant Dom_Node::get_attribute(std::wstring const &attribute) const
         throw System_Error(hr, "Can't get node attribute value");
     }
 
-    return value;
+    return value.bstrVal;
 }
 
 }    // namespace Linter

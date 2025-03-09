@@ -4,8 +4,6 @@
 #include "Dom_Node.h"
 #include "Dom_Node_List.h"
 
-#include <atlcomcli.h>
-
 #include <cstddef>
 #include <string>
 #include <vector>
@@ -39,29 +37,18 @@ std::vector<Checkstyle_Parser::Error> Checkstyle_Parser::get_errors(
     Dom_Node_List nodes(document.get_node_list("//error"));
     for (auto const node : nodes)
     {
-        CComVariant value = node.get_attribute(L"line");
-        int const line = std::stoi(value.bstrVal);
-
-        value = node.get_attribute(L"column");
-        int const column = std::stoi(value.bstrVal);
-
-        value = node.get_attribute(L"severity");
-        std::wstring const severity(value.bstrVal);
-
-        value = node.get_attribute(L"source");
-        std::wstring tool{value.bstrVal};
+        std::wstring tool{node.get_attribute(L"source")};
         std::size_t const pos = tool.find_first_of('.');
         if (pos != std::string::npos)
         {
             tool.resize(pos);
         }
 
-        value = node.get_attribute(L"message");
         errors.push_back(Error{
-            .line_ = line,
-            .column_ = column,
-            .message_ = value.bstrVal,
-            .severity_ = severity,
+            .line_ = std::stoi(node.get_attribute(L"line")),
+            .column_ = std::stoi(node.get_attribute(L"column")),
+            .message_ = node.get_attribute(L"message"),
+            .severity_ = node.get_attribute(L"severity"),
             .tool_ = tool
         });
     }
