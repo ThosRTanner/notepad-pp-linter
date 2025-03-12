@@ -88,7 +88,7 @@
         <xs:complexType>
           <xs:choice>
             <xs:element name="shade" type="colour"/>
-            <xs:element name="message" type="presence"/>
+            <xs:element name="as_message" type="presence"/>
           </xs:choice>
         </xs:complexType>
       </xs:element>

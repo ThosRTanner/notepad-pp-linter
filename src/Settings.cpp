@@ -16,6 +16,7 @@
 #include <oleauto.h>
 
 #include <chrono>
+#include <cwctype>
 #include <filesystem>
 #include <locale>
 #include <sstream>
@@ -23,45 +24,26 @@
 namespace Linter
 {
 
-#define MAP_KEY(s) {L#s, VK_##s}
-#undef DELETE
+namespace
+{
+std::wstring to_lower(std::wstring_view data)
+{
+    std::wstring res;
+    std::transform(
+        data.begin(),
+        data.end(),
+        std::back_inserter(res),
+        [](wchar_t c) noexcept { return std::towlower(c); }
+    );
+    return res;
+}
+}    // namespace
+
 Settings::Settings(::Linter::Linter const &linter) :
     settings_xml_(
         linter.get_plugin_config_dir().append(linter.get_name() + L".xml")
     ),
-    settings_xsd_(linter.get_module_path().replace_extension(".xsd")),
-    key_mappings_{
-        MAP_KEY(F1),
-        MAP_KEY(F2),
-        MAP_KEY(F3),
-        MAP_KEY(F4),
-        MAP_KEY(F5),
-        MAP_KEY(F6),
-        MAP_KEY(F7),
-        MAP_KEY(F8),
-        MAP_KEY(F9),
-        MAP_KEY(F10),
-        MAP_KEY(F11),
-        MAP_KEY(F12),
-        MAP_KEY(F10),
-        MAP_KEY(NUMPAD0),
-        MAP_KEY(NUMPAD1),
-        MAP_KEY(NUMPAD2),
-        MAP_KEY(NUMPAD3),
-        MAP_KEY(NUMPAD4),
-        MAP_KEY(NUMPAD5),
-        MAP_KEY(NUMPAD6),
-        MAP_KEY(NUMPAD7),
-        MAP_KEY(NUMPAD8),
-        MAP_KEY(NUMPAD9),
-        MAP_KEY(INSERT),
-        MAP_KEY(DELETE),
-        MAP_KEY(HOME),
-        MAP_KEY(END),
-        {L"PAGE UP",   VK_PRIOR},
-        {L"PAGE DOWN", VK_NEXT }
-}
-#undef MAP_KEY
+    settings_xsd_(linter.get_module_path().replace_extension(".xsd"))
 {
     // Create a schema cache and our xsd to it.
     auto hr = settings_schema_.CoCreateInstance(__uuidof(XMLSchemaCache60));
@@ -116,70 +98,220 @@ ShortcutKey const *Settings::get_shortcut_key(Menu_Entry entry) const
 
 void Settings::read_settings()
 {
+    Dom_Document settings{settings_xml_, settings_schema_};
+    read_indicator(settings);
+    read_messages(settings);
+    read_shortcuts(settings);
+    read_linters(settings);
+}
+
+void Settings::read_indicator(Dom_Document const &settings)
+{
     fill_alpha_ = -1;
-    fg_colour_ = -1;
-    linters_.clear();
+    std::optional<Dom_Node> indicator = settings.get_node("//indicator");
+    if (not indicator.has_value())
+    {
+        return;
+    }
+
+    // A note - this is fairly dodgy, but as all the strings involved are
+    // pure ascii it's safe.
+#define STR_TO_INDIC(STR)            \
+    {                                \
+        to_lower(L#STR), INDIC_##STR \
+    }
+    static std::unordered_map<std::wstring, int> const styles = {
+        STR_TO_INDIC(BOX),
+        STR_TO_INDIC(COMPOSITIONTHICK),
+        STR_TO_INDIC(COMPOSITIONTHIN),
+        STR_TO_INDIC(DASH),
+        STR_TO_INDIC(DIAGONAL),
+        STR_TO_INDIC(DOTBOX),
+        STR_TO_INDIC(DOTS),
+        STR_TO_INDIC(EXPLORERLINK),
+        STR_TO_INDIC(FULLBOX),
+        STR_TO_INDIC(GRADIENT),
+        STR_TO_INDIC(GRADIENTCENTRE),
+        STR_TO_INDIC(HIDDEN),
+        STR_TO_INDIC(PLAIN),
+        STR_TO_INDIC(POINT),
+        STR_TO_INDIC(POINT_TOP),
+        STR_TO_INDIC(POINTCHARACTER),
+        STR_TO_INDIC(ROUNDBOX),
+        STR_TO_INDIC(SQUIGGLE),
+        STR_TO_INDIC(SQUIGGLELOW),
+        STR_TO_INDIC(SQUIGGLEPIXMAP),
+        STR_TO_INDIC(STRAIGHTBOX),
+        STR_TO_INDIC(STRIKE),
+        STR_TO_INDIC(TEXTFORE),
+        STR_TO_INDIC(TT),
+    };
+#undef STR_TO_INDIC
+
+    {
+        auto const style = indicator->get_optional_node(".//style");
+        if (style.has_value())
+        {
+            indicator_.style = styles.at(style->get_value());
+        }
+        else
+        {
+            indicator_.style = INDIC_FULLBOX;
+        }
+    }
+
+    {
+        auto const colour = indicator->get_optional_node(".//colour");
+        if (colour.has_value())
+        {
+            auto const shade = indicator->get_optional_node(".//shade");
+            if (shade.has_value())
+            {
+                indicator_.colour.shade = read_colour_node(*shade);
+                indicator_.colour.as_message = false;
+            }
+            else
+            {
+                indicator_.colour.as_message = true;
+            }
+        }
+        else
+        {
+            indicator_.colour.shade = 0x0000ff;    // Scintilla is BGR
+            indicator_.colour.as_message = false;
+        }
+    }
+
+    /*
+      <xs:element name="fill_alpha" type="byte" minOccurs="0"/>
+      <xs:element name="outline_alpha" type="byte" minOccurs="0"/>
+      <xs:element name="under" type="presence" minOccurs="0"/>
+      <xs:element name="stroke_width" minOccurs="0">
+        <xs:simpleType>
+          <xs:restriction base="xs:decimal">
+            <xs:fractionDigits fixed="true" value="2" />
+          </xs:restriction>
+        </xs:simpleType>
+      </xs:element>
+      <xs:element name="hover" minOccurs="0">
+        <xs:complexType>
+          <!-- FIXME ENSURE THIS HAS SOMETHING IN IT -->
+          <xs:all>
+            <xs:element name="style" type="style" minOccurs="0"/>
+            <xs:element name="colour" type="colour" minOccurs="0"/>
+          </xs:all>
+        </xs:complexType>
+      </xs:element>
+    </xs:all>*/
+}
+
+void Settings::read_messages(Dom_Document const &settings)
+{
     message_colours_.clear();
     message_colours_[L"default"] = RGB(0, 0, 0);        // Black
     message_colours_[L"error"] = RGB(255, 0, 0);        // Red
     message_colours_[L"warning"] = RGB(255, 127, 0);    // Orange
 
-    Dom_Document settings{settings_xml_, settings_schema_};
-
     std::optional<Dom_Node> messages = settings.get_node("//messages");
-    if (messages.has_value())
+    if (not messages.has_value())
     {
-        // Set up any custom message colours.
-        Dom_Node_List types = messages->get_node_list("./*");
-        for (auto const type : types)
-        {
-            message_colours_[type.get_name()] = read_colour_node(type);
-        }
+        return;
     }
 
+    // Set up any custom message colours.
+    Dom_Node_List types = messages->get_node_list("./*");
+    for (auto const type : types)
+    {
+        message_colours_[type.get_name()] = read_colour_node(type);
+    }
+}
+
+void Settings::read_shortcuts(Dom_Document const &settings)
+{
+    menu_entries_.clear();
     std::optional<Dom_Node> shortcuts = settings.get_node("//shortcuts");
-    if (shortcuts.has_value())
+    if (not shortcuts.has_value())
     {
-        // Set up any shortcuts
-        Dom_Node_List menu_entries = shortcuts->get_node_list("./*");
-        for (auto const menu_entry : menu_entries)
-        {
-            ShortcutKey key = {
-                ._isCtrl = menu_entry.get_optional_node("ctrl").has_value(),
-                ._isAlt = menu_entry.get_optional_node("alt").has_value(),
-                ._isShift = menu_entry.get_optional_node("shift").has_value()
-            };
-            // get the key as well.
-            std::wstring const k = menu_entry.get_value().bstrVal;
-            if (k.size() == 1)
-            {
-#pragma warning(suppress : 26472)
-                key._key = static_cast<UCHAR>(std::toupper(*k.begin()));
-            }
-            else
-            {
-                key._key = static_cast<UCHAR>(key_mappings_.at(k));
-            }
-            menu_entries_[get_menu_entry_from_element(menu_entry.get_name())] = key;
-        }
+        return;
     }
 
+#define MAP_KEY(s) {L#s, VK_##s}
+#undef DELETE
+    static std::unordered_map<std::wstring, int> const key_mappings{
+        MAP_KEY(F1),
+        MAP_KEY(F2),
+        MAP_KEY(F3),
+        MAP_KEY(F4),
+        MAP_KEY(F5),
+        MAP_KEY(F6),
+        MAP_KEY(F7),
+        MAP_KEY(F8),
+        MAP_KEY(F9),
+        MAP_KEY(F10),
+        MAP_KEY(F11),
+        MAP_KEY(F12),
+        MAP_KEY(F10),
+        MAP_KEY(NUMPAD0),
+        MAP_KEY(NUMPAD1),
+        MAP_KEY(NUMPAD2),
+        MAP_KEY(NUMPAD3),
+        MAP_KEY(NUMPAD4),
+        MAP_KEY(NUMPAD5),
+        MAP_KEY(NUMPAD6),
+        MAP_KEY(NUMPAD7),
+        MAP_KEY(NUMPAD8),
+        MAP_KEY(NUMPAD9),
+        MAP_KEY(INSERT),
+        MAP_KEY(DELETE),
+        MAP_KEY(HOME),
+        MAP_KEY(END),
+        {L"PAGE UP",   VK_PRIOR},
+        {L"PAGE DOWN", VK_NEXT }
+    };
+#undef MAP_KEY
+
+    // Set up any shortcuts
+    Dom_Node_List menu_entries = shortcuts->get_node_list("./*");
+    for (auto const menu_entry : menu_entries)
+    {
+        ShortcutKey key = {
+            ._isCtrl = menu_entry.get_optional_node("ctrl").has_value(),
+            ._isAlt = menu_entry.get_optional_node("alt").has_value(),
+            ._isShift = menu_entry.get_optional_node("shift").has_value()
+        };
+        // get the key as well.
+        auto const k = menu_entry.get_value();
+        if (k.size() == 1)
+        {
+#pragma warning(suppress : 26472)
+            key._key = static_cast<UCHAR>(std::toupper(*k.begin()));
+        }
+        else
+        {
+            key._key = static_cast<UCHAR>(key_mappings.at(k));
+        }
+        menu_entries_[get_menu_entry_from_element(menu_entry.get_name())] = key;
+    }
+}
+
+void Settings::read_linters(Dom_Document const &settings)
+{
+    linters_.clear();
     for (auto const linter : settings.get_node_list("//linter"))
     {
         std::vector<std::wstring> extensions;
         for (auto const extension_node : linter.get_node_list(".//extension"))
         {
-            CComVariant extension = extension_node.get_value();
-            extensions.push_back(extension.bstrVal);
+            extensions.push_back(extension_node.get_value());
         }
 
         for (auto const command_node : linter.get_node_list(".//command"))
         {
             Dom_Node const program_node{command_node.get_node(".//program")};
-            std::wstring const program{program_node.get_value().bstrVal};
+            std::wstring const program{program_node.get_value()};
 
             Dom_Node const args_node{command_node.get_node(".//args")};
-            std::wstring const args{args_node.get_value().bstrVal};
+            std::wstring const args{args_node.get_value()};
 
             bool const use_stdin =
                 args.find(L"%LINTER_TARGET%") == std::string::npos
@@ -206,11 +338,9 @@ uint32_t Settings::read_colour_node(Dom_Node const &node)
     uint32_t bgr = 0;
     for (auto const colour : colours)
     {
-        auto value = colour.get_value();
         // This always comes back as a BSTR. I have no idea why.
-        std::wstringstream data{
-            std::wstring(value.bstrVal, SysStringLen(value.bstrVal))
-        };
+        auto value = colour.get_value();
+        std::wstringstream data{colour.get_value()};
         uint32_t val;
         data >> val;
         bgr = (bgr >> 8) | (val << 16);

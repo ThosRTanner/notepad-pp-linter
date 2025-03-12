@@ -197,62 +197,92 @@ void Linter::highlight_errors()
             get_line_text(error.line_ - 1), error.column_ - 1
         );
         errors_by_position_[position] = error.message_;
-        highlight_error_at(position);
+        highlight_error_at(
+            position, settings_->get_message_colour(error.severity_)
+        );
     }
 }
 
-void Linter::highlight_error_at(LRESULT position) noexcept
+class Save_Selected_Indicator
 {
-    update_error_indicators(position, position + 1, true);
+  public:
+    explicit Save_Selected_Indicator(Plugin &plugin) noexcept:
+        plugin_(plugin),
+        old_id_(plugin_.send_to_editor(SCI_GETINDICATORCURRENT))
+    {
+        plugin_.send_to_editor(SCI_SETINDICATORCURRENT, Error_Indicator);
+    }
+
+    Save_Selected_Indicator(Save_Selected_Indicator const &) = delete;
+
+    Save_Selected_Indicator(Save_Selected_Indicator const &&) = delete;
+
+    Save_Selected_Indicator &operator=(Save_Selected_Indicator const &) =
+        delete;
+
+    Save_Selected_Indicator &operator=(Save_Selected_Indicator const &&) =
+        delete;
+
+    ~Save_Selected_Indicator()
+    {
+        plugin_.send_to_editor(SCI_SETINDICATORCURRENT, old_id_);
+    }
+
+  private:
+    Plugin const &plugin_;
+    LRESULT old_id_;
+};
+
+void Linter::highlight_error_at(LRESULT position, uint64_t col) noexcept
+{
+    Save_Selected_Indicator indicator(*this);
+    if (settings_->indicator().colour.as_message)
+    {
+        send_to_editor(
+            SCI_SETINDICATORVALUE, SC_INDICVALUEBIT | col
+        );
+    }
+    send_to_editor(SCI_INDICATORFILLRANGE, position, 1);
 }
 
 void Linter::clear_error_highlights() noexcept
 {
-    update_error_indicators(0, send_to_editor(SCI_GETLENGTH), false);
+    {
+        Save_Selected_Indicator indicator(*this);
+        send_to_editor(
+            SCI_INDICATORCLEARRANGE, 0, send_to_editor(SCI_GETLENGTH)
+        );
+    }
     send_to_editor(SCI_ANNOTATIONCLEARALL);
-}
-
-void Linter::update_error_indicators(
-    LRESULT start, LRESULT end, bool on
-) noexcept
-{
-    LRESULT const oldid = send_to_editor(SCI_GETINDICATORCURRENT);
-    send_to_editor(SCI_SETINDICATORCURRENT, Error_Indicator);
-    send_to_editor(
-        on ? SCI_INDICATORFILLRANGE : SCI_INDICATORCLEARRANGE,
-        start,
-        end - start
-    );
-    send_to_editor(SCI_SETINDICATORCURRENT, oldid);
 }
 
 void Linter::setup_error_indicator() noexcept
 {
-    // FIXME Why do we have to do this every time we want to use the indicator?
-    // FIXME Make all this configurable, because it is just strange.
-    send_to_editor(SCI_INDICSETSTYLE, Error_Indicator, INDIC_BOX);
-    // ^ could use INDIC_SQUIGGLE instead of INDIC_BOX
-    send_to_editor(SCI_INDICSETFORE, Error_Indicator, 0x0000ff);
-    // ^ Red (Reversed RGB)
+    send_to_editor(
+        SCI_INDICSETSTYLE, Error_Indicator, settings_->indicator().style
+    );
 
-    if (settings_->fill_alpha() != -1 || settings_->fg_colour() != -1)
+    if (settings_->indicator().colour.as_message)
     {
-        // Magic happens. This isn't documented
-        send_to_editor(SCI_INDICSETSTYLE, Error_Indicator, INDIC_ROUNDBOX);
+        send_to_editor(
+            SCI_INDICSETFLAGS, Error_Indicator, SC_INDICFLAG_VALUEFORE
+        );
+    }
+    else
+    {
+        send_to_editor(SCI_INDICSETFLAGS, Error_Indicator, 0LL);
+        send_to_editor(
+            SCI_INDICSETFORE,
+            Error_Indicator,
+            settings_->indicator().colour.shade
+        );
+    }
 
-        if (settings_->fill_alpha() != -1)
-        {
-            send_to_editor(
-                SCI_INDICSETALPHA, Error_Indicator, settings_->fill_alpha()
-            );
-        }
-
-        if (settings_->fg_colour() != -1)
-        {
-            send_to_editor(
-                SCI_INDICSETFORE, Error_Indicator, settings_->fg_colour()
-            );
-        }
+    if (settings_->fill_alpha() != -1)
+    {
+        send_to_editor(
+            SCI_INDICSETALPHA, Error_Indicator, settings_->fill_alpha()
+        );
     }
 }
 
