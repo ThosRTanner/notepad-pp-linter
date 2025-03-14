@@ -7,6 +7,7 @@
 
 #include <algorithm>
 #include <cwctype>
+#include <istream>
 #include <iterator>
 #include <optional>
 #include <string>

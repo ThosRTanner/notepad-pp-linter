@@ -237,7 +237,7 @@ void Linter::highlight_errors()
     }
 }
 
-void Linter::highlight_error_at(LRESULT position, uint64_t col) noexcept
+void Linter::highlight_error_at(LRESULT position, uint32_t col) noexcept
 {
     Save_Selected_Indicator indicator(*this);
     if (settings_->indicator().colour_as_message())

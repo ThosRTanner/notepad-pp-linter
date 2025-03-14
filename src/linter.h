@@ -62,7 +62,7 @@ class Linter : public Plugin
 
     void highlight_errors();
 
-    void highlight_error_at(LRESULT pos, uint64_t col) noexcept;
+    void highlight_error_at(LRESULT pos, uint32_t col) noexcept;
 
     void clear_error_highlights() noexcept;
 

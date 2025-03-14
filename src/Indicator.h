@@ -1,8 +1,9 @@
 #pragma once
 
 #include <optional>
-#include <stdint.h>
 #include <unordered_map>
+
+#include <stdint.h>
 
 namespace Linter
 {
@@ -23,7 +24,7 @@ class Indicator
         Stroke_Width
     };
 
-    typedef std::unordered_map<Property, uint64_t> Properties;
+    typedef std::unordered_map<Property, uint32_t> Properties;
 
     bool colour_as_message() const noexcept;
 
