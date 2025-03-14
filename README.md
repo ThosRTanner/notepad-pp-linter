@@ -84,13 +84,13 @@ If you don't specify `%LINTER_TARGET%` or `%%` in your `<args>` element, it is a
 
 ### Optional parameters
 
-By default, error messages will be shown in the docked dialogue window as red, warning messages as orange, and any other messages are shown in black.
+By default, error messages will be shown in the docked dialogue window as red, warning messages as orange, and any other messages are shown in cyan (I'd be interested to find out if anyone gets this colour and under what circumstances).
 
 You can change the colours by adding a `<messages>` section to the `<LinterPP>` section, like this:
 
 ```xml
   <messages>
-    <default> <red>0</red> <green>0</green> <blue>0</blue> </default>
+    <default> <red>0</red> <green>255</green> <blue>255</blue> </default>
     <error> <red>255</red> <green>0</green> <blue>0</blue> </error>
     <warning> <red>127</red> <green>127</green> <blue>0</blue> </warning>
   </messages>

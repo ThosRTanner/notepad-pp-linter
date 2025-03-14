@@ -445,6 +445,7 @@ iwyu.bat
     <ClCompile Include="src\File_Holder.cpp" />
     <ClCompile Include="src\Child_Pipe.cpp" />
     <ClCompile Include="src\Handle_Wrapper.cpp" />
+    <ClCompile Include="src\Indicator.cpp" />
     <ClCompile Include="src\Linter.cpp" />
     <ClCompile Include="src\Menu_Entry.cpp" />
     <ClCompile Include="src\Output_Dialogue.cpp" />
@@ -484,6 +485,7 @@ iwyu.bat
     <ClInclude Include="src\File_Holder.h" />
     <ClInclude Include="src\Child_Pipe.h" />
     <ClInclude Include="src\Handle_Wrapper.h" />
+    <ClInclude Include="src\Indicator.h" />
     <ClInclude Include="src\Linter.h" />
     <ClInclude Include="src\Menu_Entry.h" />
     <ClInclude Include="src\Output_Dialogue.h" />

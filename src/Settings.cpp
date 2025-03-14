@@ -3,6 +3,7 @@
 #include "Dom_Document.h"
 #include "Dom_Node.h"
 #include "Dom_Node_List.h"
+#include "Indicator.h"
 #include "Linter.h"
 #include "System_Error.h"
 
@@ -23,21 +24,6 @@
 
 namespace Linter
 {
-
-namespace
-{
-std::wstring to_lower(std::wstring_view data)
-{
-    std::wstring res;
-    std::transform(
-        data.begin(),
-        data.end(),
-        std::back_inserter(res),
-        [](wchar_t c) noexcept { return std::towlower(c); }
-    );
-    return res;
-}
-}    // namespace
 
 Settings::Settings(::Linter::Linter const &linter) :
     settings_xml_(
@@ -107,108 +93,13 @@ void Settings::read_settings()
 
 void Settings::read_indicator(Dom_Document const &settings)
 {
-    fill_alpha_ = -1;
-    std::optional<Dom_Node> indicator = settings.get_node("//indicator");
-    if (not indicator.has_value())
-    {
-        return;
-    }
-
-    // A note - this is fairly dodgy, but as all the strings involved are
-    // pure ascii it's safe.
-#define STR_TO_INDIC(STR)            \
-    {                                \
-        to_lower(L#STR), INDIC_##STR \
-    }
-    static std::unordered_map<std::wstring, int> const styles = {
-        STR_TO_INDIC(BOX),
-        STR_TO_INDIC(COMPOSITIONTHICK),
-        STR_TO_INDIC(COMPOSITIONTHIN),
-        STR_TO_INDIC(DASH),
-        STR_TO_INDIC(DIAGONAL),
-        STR_TO_INDIC(DOTBOX),
-        STR_TO_INDIC(DOTS),
-        STR_TO_INDIC(EXPLORERLINK),
-        STR_TO_INDIC(FULLBOX),
-        STR_TO_INDIC(GRADIENT),
-        STR_TO_INDIC(GRADIENTCENTRE),
-        STR_TO_INDIC(HIDDEN),
-        STR_TO_INDIC(PLAIN),
-        STR_TO_INDIC(POINT),
-        STR_TO_INDIC(POINT_TOP),
-        STR_TO_INDIC(POINTCHARACTER),
-        STR_TO_INDIC(ROUNDBOX),
-        STR_TO_INDIC(SQUIGGLE),
-        STR_TO_INDIC(SQUIGGLELOW),
-        STR_TO_INDIC(SQUIGGLEPIXMAP),
-        STR_TO_INDIC(STRAIGHTBOX),
-        STR_TO_INDIC(STRIKE),
-        STR_TO_INDIC(TEXTFORE),
-        STR_TO_INDIC(TT),
-    };
-#undef STR_TO_INDIC
-
-    {
-        auto const style = indicator->get_optional_node(".//style");
-        if (style.has_value())
-        {
-            indicator_.style = styles.at(style->get_value());
-        }
-        else
-        {
-            indicator_.style = INDIC_FULLBOX;
-        }
-    }
-
-    {
-        auto const colour = indicator->get_optional_node(".//colour");
-        if (colour.has_value())
-        {
-            auto const shade = indicator->get_optional_node(".//shade");
-            if (shade.has_value())
-            {
-                indicator_.colour.shade = read_colour_node(*shade);
-                indicator_.colour.as_message = false;
-            }
-            else
-            {
-                indicator_.colour.as_message = true;
-            }
-        }
-        else
-        {
-            indicator_.colour.shade = 0x0000ff;    // Scintilla is BGR
-            indicator_.colour.as_message = false;
-        }
-    }
-
-    /*
-      <xs:element name="fill_alpha" type="byte" minOccurs="0"/>
-      <xs:element name="outline_alpha" type="byte" minOccurs="0"/>
-      <xs:element name="under" type="presence" minOccurs="0"/>
-      <xs:element name="stroke_width" minOccurs="0">
-        <xs:simpleType>
-          <xs:restriction base="xs:decimal">
-            <xs:fractionDigits fixed="true" value="2" />
-          </xs:restriction>
-        </xs:simpleType>
-      </xs:element>
-      <xs:element name="hover" minOccurs="0">
-        <xs:complexType>
-          <!-- FIXME ENSURE THIS HAS SOMETHING IN IT -->
-          <xs:all>
-            <xs:element name="style" type="style" minOccurs="0"/>
-            <xs:element name="colour" type="colour" minOccurs="0"/>
-          </xs:all>
-        </xs:complexType>
-      </xs:element>
-    </xs:all>*/
+    indicator_.read(settings.get_node("//indicator"));
 }
 
 void Settings::read_messages(Dom_Document const &settings)
 {
     message_colours_.clear();
-    message_colours_[L"default"] = RGB(0, 0, 0);        // Black
+    message_colours_[L"default"] = RGB(0, 255, 255);    // Cyan
     message_colours_[L"error"] = RGB(255, 0, 0);        // Red
     message_colours_[L"warning"] = RGB(255, 127, 0);    // Orange
 
@@ -347,61 +238,5 @@ uint32_t Settings::read_colour_node(Dom_Node const &node)
     }
     return bgr;
 }
-
-/*
-    CComPtr<IXMLDOMNodeList> styleNode{settings.getNodeList("//style")};
-    LONG nodes;
-HRESULT hr = styleNode->get_length(&nodes);
-if (! SUCCEEDED(hr))
-{
-    throw System_Error(hr, "Can't get XPath style length");
-}
-
-if (nodes != 0)
-{
-    CComPtr<IXMLDOMNode> node;
-    hr = styleNode->nextNode(&node);
-    if (! SUCCEEDED(hr))
-    {
-        throw System_Error(hr, "Can't read style node");
-    }
-    CComQIPtr<IXMLDOMElement> element(node);
-    CComVariant value;
-    if (element->getAttribute(static_cast<bstr_t>(L"alpha"), &value)
-        == S_OK)
-    {
-        int alphaVal{0};
-        if (value.bstrVal)
-        {
-            std::wstringstream data{
-                std::wstring(value.bstrVal, SysStringLen(value.bstrVal))
-            };
-            data >> alphaVal;
-        }
-        fill_alpha_ = alphaVal;
-    }
-
-    if (element->getAttribute(static_cast<bstr_t>(L"color"), &value)
-        == S_OK)
-    {
-        unsigned int colorVal{0};
-        if (value.bstrVal)
-        {
-            std::wstringstream data{
-                std::wstring(value.bstrVal, SysStringLen(value.bstrVal))
-            };
-            data >> std::hex >> colorVal;
-        }
-
-        // reverse colors for scintilla's LE order
-        fg_colour_ = 0;
-        for (int i = 0; i < 3; i += 1)
-        {
-            fg_colour_ = (fg_colour_ << 8) | (colorVal & 0xff);
-            colorVal >>= 8;
-        }
-    }
-}
-*/
 
 }    // namespace Linter

@@ -42,6 +42,40 @@ DEFINE_PLUGIN_MENU_CALLBACKS(Linter::Linter);
 namespace Linter
 {
 
+namespace
+{
+class Save_Selected_Indicator
+{
+  public:
+    explicit Save_Selected_Indicator(Plugin &plugin) noexcept :
+        plugin_(plugin),
+        old_id_(plugin_.send_to_editor(SCI_GETINDICATORCURRENT))
+    {
+        plugin_.send_to_editor(SCI_SETINDICATORCURRENT, Error_Indicator);
+    }
+
+    Save_Selected_Indicator(Save_Selected_Indicator const &) = delete;
+
+    Save_Selected_Indicator(Save_Selected_Indicator const &&) = delete;
+
+    Save_Selected_Indicator &operator=(Save_Selected_Indicator const &) =
+        delete;
+
+    Save_Selected_Indicator &operator=(Save_Selected_Indicator const &&) =
+        delete;
+
+    ~Save_Selected_Indicator()
+    {
+        plugin_.send_to_editor(SCI_SETINDICATORCURRENT, old_id_);
+    }
+
+  private:
+    Plugin const &plugin_;
+    LRESULT old_id_;
+};
+
+}    // namespace
+
 Linter::Linter(NppData const &data) :
     Super(data, get_plugin_name()),
     settings_(std::make_unique<Settings>(*this)),
@@ -203,44 +237,12 @@ void Linter::highlight_errors()
     }
 }
 
-class Save_Selected_Indicator
-{
-  public:
-    explicit Save_Selected_Indicator(Plugin &plugin) noexcept:
-        plugin_(plugin),
-        old_id_(plugin_.send_to_editor(SCI_GETINDICATORCURRENT))
-    {
-        plugin_.send_to_editor(SCI_SETINDICATORCURRENT, Error_Indicator);
-    }
-
-    Save_Selected_Indicator(Save_Selected_Indicator const &) = delete;
-
-    Save_Selected_Indicator(Save_Selected_Indicator const &&) = delete;
-
-    Save_Selected_Indicator &operator=(Save_Selected_Indicator const &) =
-        delete;
-
-    Save_Selected_Indicator &operator=(Save_Selected_Indicator const &&) =
-        delete;
-
-    ~Save_Selected_Indicator()
-    {
-        plugin_.send_to_editor(SCI_SETINDICATORCURRENT, old_id_);
-    }
-
-  private:
-    Plugin const &plugin_;
-    LRESULT old_id_;
-};
-
 void Linter::highlight_error_at(LRESULT position, uint64_t col) noexcept
 {
     Save_Selected_Indicator indicator(*this);
-    if (settings_->indicator().colour.as_message)
+    if (settings_->indicator().colour_as_message())
     {
-        send_to_editor(
-            SCI_SETINDICATORVALUE, SC_INDICVALUEBIT | col
-        );
+        send_to_editor(SCI_SETINDICATORVALUE, SC_INDICVALUEBIT | col);
     }
     send_to_editor(SCI_INDICATORFILLRANGE, position, 1);
 }
@@ -258,31 +260,21 @@ void Linter::clear_error_highlights() noexcept
 
 void Linter::setup_error_indicator() noexcept
 {
-    send_to_editor(
-        SCI_INDICSETSTYLE, Error_Indicator, settings_->indicator().style
-    );
+#pragma warning(suppress : 26447)
+    static std::unordered_map<Indicator::Property, int> const cmd_map = {
+        {Indicator::Style,           SCI_INDICSETSTYLE       },
+        {Indicator::Colour,          SCI_INDICSETFORE        },
+        {Indicator::Dynamic_Colour,  SCI_INDICSETFLAGS       },
+        {Indicator::Opacity,         SCI_INDICSETALPHA       },
+        {Indicator::Outline_Opacity, SCI_INDICSETOUTLINEALPHA},
+        {Indicator::Draw_Under,      SCI_INDICSETUNDER       },
+        {Indicator::Stroke_Width,    SCI_INDICSETSTROKEWIDTH }
+    };
 
-    if (settings_->indicator().colour.as_message)
+    for (auto &[command, value] : settings_->indicator().properties())
     {
-        send_to_editor(
-            SCI_INDICSETFLAGS, Error_Indicator, SC_INDICFLAG_VALUEFORE
-        );
-    }
-    else
-    {
-        send_to_editor(SCI_INDICSETFLAGS, Error_Indicator, 0LL);
-        send_to_editor(
-            SCI_INDICSETFORE,
-            Error_Indicator,
-            settings_->indicator().colour.shade
-        );
-    }
-
-    if (settings_->fill_alpha() != -1)
-    {
-        send_to_editor(
-            SCI_INDICSETALPHA, Error_Indicator, settings_->fill_alpha()
-        );
+#pragma warning(suppress : 26447)
+        send_to_editor(cmd_map.at(command), Error_Indicator, value);
     }
 }
 

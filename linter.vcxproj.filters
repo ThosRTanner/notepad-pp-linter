@@ -98,6 +98,9 @@
     <ClCompile Include="src\Menu_Entry.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\Indicator.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Clipboard.h">
@@ -194,6 +197,9 @@
       <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="src\Menu_Entry.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Indicator.h">
       <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>
