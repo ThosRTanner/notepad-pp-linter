@@ -33,7 +33,7 @@ class Indicator
         return properties_;
     }
 
-    void read(std::optional<Dom_Node> node);
+    void read_config(std::optional<Dom_Node> node);
 
   private:
     Properties properties_;

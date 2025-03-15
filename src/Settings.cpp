@@ -93,7 +93,7 @@ void Settings::read_settings()
 
 void Settings::read_indicator(Dom_Document const &settings)
 {
-    indicator_.read(settings.get_node("//indicator"));
+    indicator_.read_config(settings.get_node("//indicator"));
 }
 
 void Settings::read_messages(Dom_Document const &settings)

@@ -38,7 +38,7 @@ bool Indicator::colour_as_message() const noexcept
     return properties_.at(Dynamic_Colour);
 }
 
-void Indicator::read(std::optional<Dom_Node> node)
+void Indicator::read_config(std::optional<Dom_Node> node)
 {
     // Default values
     properties_[Indicator::Style] = INDIC_FULLBOX;
