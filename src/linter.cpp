@@ -268,7 +268,9 @@ void Linter::setup_error_indicator() noexcept
         {Indicator::Opacity,         SCI_INDICSETALPHA       },
         {Indicator::Outline_Opacity, SCI_INDICSETOUTLINEALPHA},
         {Indicator::Draw_Under,      SCI_INDICSETUNDER       },
-        {Indicator::Stroke_Width,    SCI_INDICSETSTROKEWIDTH }
+        {Indicator::Stroke_Width,    SCI_INDICSETSTROKEWIDTH },
+        {Indicator::Hover_Style,     SCI_INDICSETHOVERSTYLE  },
+        {Indicator::Hover_Colour,    SCI_INDICSETHOVERFORE   },
     };
 
     for (auto &[command, value] : settings_->indicator().properties())

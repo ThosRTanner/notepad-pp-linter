@@ -48,6 +48,8 @@ void Indicator::read_config(std::optional<Dom_Node> node)
     properties_[Indicator::Outline_Opacity] = 50;
     properties_[Indicator::Draw_Under] = 0;
     properties_[Indicator::Stroke_Width] = 100;
+    properties_[Indicator::Hover_Style] = properties_[Indicator::Style];
+    properties_[Indicator::Hover_Colour] = properties_[Indicator::Colour];
 
     if (not node.has_value())
     {
@@ -150,25 +152,27 @@ void Indicator::read_config(std::optional<Dom_Node> node)
         properties_[Indicator::Stroke_Width] = whole * 100 + frac;
     }
 
-    /*
-          <xs:element name="hover" minOccurs="0">
-            <xs:complexType>
-              <!-- FIXME ENSURE THIS HAS SOMETHING IN IT -->
-    SCI_INDICSETHOVERSTYLE(int indicator, int indicatorStyle)
-    SCI_INDICSETHOVERFORE(int indicator, colour fore)
-    These messages set and get the colour and style used to draw indicators when
-    the mouse is over them or the caret moved into them. The mouse cursor also
-    changes when an indicator is drawn in hover style. The default is for the
-    hover appearance to be the same as the normal appearance and calling
-    SCI_INDICSETFORE or SCI_INDICSETSTYLE will also reset the hover attribute.
-              <xs:all>
-                <xs:element name="style" type="style" minOccurs="0"/>
-                <xs:element name="colour" type="colour" minOccurs="0"/>
-              </xs:all>
-            </xs:complexType>
-          </xs:element>
-        </xs:all>
-    */
+    if (auto const hover_style = node->get_optional_node("./hover/style");
+        hover_style.has_value())
+    {
+        properties_[Indicator::Hover_Style] =
+            styles.at(hover_style->get_value());
+    }
+    else
+    {
+        properties_[Indicator::Hover_Style] = properties_[Indicator::Style];
+    }
+
+    if (auto const hover_colour = node->get_optional_node("./hover/colour");
+        hover_colour.has_value())
+    {
+        properties_[Indicator::Hover_Colour] =
+            Settings::read_colour_node(*hover_colour);
+    }
+    else
+    {
+        properties_[Indicator::Hover_Colour] = properties_[Indicator::Colour];
+    }
 }
 
 }    // namespace Linter

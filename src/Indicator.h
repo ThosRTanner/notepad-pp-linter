@@ -21,7 +21,9 @@ class Indicator
         Opacity,
         Outline_Opacity,
         Draw_Under,
-        Stroke_Width
+        Stroke_Width,
+        Hover_Style,
+        Hover_Colour,
     };
 
     typedef std::unordered_map<Property, uint32_t> Properties;
