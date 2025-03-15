@@ -37,17 +37,17 @@ class Dom_Document
     ~Dom_Document();
 
     /** Get list of nodes selected by supplied XPATH */
-    Dom_Node_List get_node_list(std::string const &xpath);
+    Dom_Node_List get_node_list(std::string const &xpath) const;
 
     /* Get a single node from selected XPATH */
-    std::optional<Dom_Node> get_node(std::string const &xpath);
+    std::optional<Dom_Node> get_node(std::string const &xpath) const;
 
   private:
     /** Set up the dom interface */
     void init();
 
     /* Check the result of doing a load, die if it didn't complete */
-    void checkLoadResults(VARIANT_BOOL resultcode, HRESULT hr);
+    void checkLoadResults(VARIANT_BOOL resultcode, HRESULT hr) const;
 
     CComPtr<IXMLDOMDocument2> document_;
 };

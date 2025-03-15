@@ -33,8 +33,8 @@ class Dom_Node
     /** Get the nodes name */
     std::wstring get_name() const;
 
-    /** Get the value of the node. */
-    CComVariant get_value() const;
+    /** Get the value of the node as a string */
+    std::wstring get_value() const;
 
     /** Get the value of the specified attribute
      *

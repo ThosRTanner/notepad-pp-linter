@@ -5,7 +5,9 @@
 
 #include <comutil.h>
 #include <intsafe.h>
+#include <oleauto.h>
 #include <winerror.h>
+#include <wtypes.h>
 
 #include <stdexcept>
 
@@ -62,10 +64,10 @@ std::wstring Dom_Node::get_name() const
     {
         throw System_Error(hr, "Can't get node name");
     }
-    return static_cast<wchar_t *>(name);
+    return std::wstring(static_cast<BSTR>(name), name.Length());
 }
 
-CComVariant Dom_Node::get_value() const
+std::wstring Dom_Node::get_value() const
 {
     CComVariant res;
     auto const hr = node_->get_nodeTypedValue(&res);
@@ -73,7 +75,7 @@ CComVariant Dom_Node::get_value() const
     {
         throw System_Error(hr, "Can't get node value");
     }
-    return res;
+    return std::wstring(res.bstrVal, SysStringLen(res.bstrVal));
 }
 
 std::wstring Dom_Node::get_attribute(std::wstring const &attribute) const
@@ -88,7 +90,7 @@ std::wstring Dom_Node::get_attribute(std::wstring const &attribute) const
         throw System_Error(hr, "Can't get node attribute value");
     }
 
-    return value.bstrVal;
+    return std::wstring(value.bstrVal, SysStringLen(value.bstrVal));
 }
 
 }    // namespace Linter

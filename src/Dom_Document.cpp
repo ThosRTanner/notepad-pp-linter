@@ -57,7 +57,7 @@ Dom_Document::Dom_Document(std::string const &xml)
 
 Dom_Document::~Dom_Document() = default;
 
-Dom_Node_List Dom_Document::get_node_list(std::string const &xpath)
+Dom_Node_List Dom_Document::get_node_list(std::string const &xpath) const
 {
     CComPtr<IXMLDOMNodeList> nodes;
     HRESULT const hr =
@@ -69,7 +69,7 @@ Dom_Node_List Dom_Document::get_node_list(std::string const &xpath)
     return Dom_Node_List(nodes);
 }
 
-std::optional<Dom_Node> Dom_Document::get_node(std::string const &xpath)
+std::optional<Dom_Node> Dom_Document::get_node(std::string const &xpath) const
 {
     CComPtr<IXMLDOMNode> node;
     HRESULT const hr =
@@ -100,7 +100,7 @@ void Dom_Document::init()
     }
 }
 
-void Dom_Document::checkLoadResults(VARIANT_BOOL resultcode, HRESULT hr)
+void Dom_Document::checkLoadResults(VARIANT_BOOL resultcode, HRESULT hr) const
 {
     if (! SUCCEEDED(hr))
     {

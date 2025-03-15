@@ -88,13 +88,13 @@
         <xs:complexType>
           <xs:choice>
             <xs:element name="shade" type="colour"/>
-            <xs:element name="message" type="presence"/>
+            <xs:element name="as_message" type="presence"/>
           </xs:choice>
         </xs:complexType>
       </xs:element>
-      <xs:element name="fill_alpha" type="byte" minOccurs="0"/>
-      <xs:element name="outline_alpha" type="byte" minOccurs="0"/>
-      <xs:element name="under" type="presence" minOccurs="0"/>
+      <xs:element name="fill_opacity" type="byte" minOccurs="0"/>
+      <xs:element name="outline_opacity" type="byte" minOccurs="0"/>
+      <xs:element name="draw_under" type="presence" minOccurs="0"/>
       <xs:element name="stroke_width" minOccurs="0">
         <xs:simpleType>
           <xs:restriction base="xs:decimal">
