@@ -94,6 +94,7 @@ You can supply shortcuts for one or more of the menu entries, like this:
 There may be some shortcut keys which you'd like to use. Please let me know and I'll try to add them.
 
 Notes:
+
 1. Changing the shortcuts will not take effect till next time you start notepad++
 1. notepad++ determines which shortcuts get which keypresses, so take care not to clash with shortcuts from other plugins.
 
