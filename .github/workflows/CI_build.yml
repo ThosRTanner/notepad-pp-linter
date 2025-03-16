@@ -31,4 +31,4 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: plugin_dll_${{ matrix.build_platform }}
-        path: linter++\${{ matrix.build_platform }}\${{ matrix.build_configuration }}\linter++.dll
+        path: Linter++\${{ matrix.build_platform }}\${{ matrix.build_configuration }}
