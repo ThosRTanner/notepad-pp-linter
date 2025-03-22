@@ -10,7 +10,7 @@ $current_ver = Get-Content -Path "$output_file" -Tail 1
 
 if ($current_ver -eq $intended_ver)
 {
-    echo "same version $intended_ver"
+    Write-Output "Version not changed from $current_ver"
     exit
 }
 
@@ -35,7 +35,8 @@ if ($current_ver -eq $intended_ver)
 # easier to read and adjusted the captures for powershell.
 $ver_digits = '0|[1-9]\d*'
 $pre_rel_match = "$ver_digits|\d*[a-zA-Z-][0-9a-zA-Z-]*"
-$semver_regex = '^' + "(?<major>$ver_digits)\.(?<minor>$ver_digits)\.(?<patch>$ver_digits)" +
+$semver_regex = '^' +
+    "(?<major>$ver_digits)\.(?<minor>$ver_digits)\.(?<patch>$ver_digits)" +
     # pre-release
     "(?:-(?<prerelease>(?:$pre_rel_match)(?:\.(?:$pre_rel_match))*))?" +
     # build meta
@@ -45,12 +46,10 @@ $semver_regex = '^' + "(?<major>$ver_digits)\.(?<minor>$ver_digits)\.(?<patch>$v
 # Find a tag to base ourselves on.
 # To find the release, list all the tags, and find the latest one that
 # is a non-pre-release tag
-# If we can't find an appropriate tag, give up, because technically 0.0.0 is
-# a valid release so this could be tagged. Alternatively 
 $found = $false
 foreach ($tag in git tag -l --sort=-version:refname)
 {
-    if ($tag -match $semver_regex -and $Matches["prerelease"] -eq $null)
+    if ($tag -match $semver_regex -and -not $Matches -contains "prerelease")
     {
         $found = $true
         break
