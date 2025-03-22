@@ -154,7 +154,7 @@
       <EnablePREfast>true</EnablePREfast>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <AdditionalIncludeDirectories>.;Docking_Dialogue_Interface;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>Docking_Dialogue_Interface;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
       <ForcedIncludeFiles>stdafx.h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
       <LanguageStandard_C>stdc17</LanguageStandard_C>
@@ -175,16 +175,20 @@
       </Message>
     </PostBuildEvent>
     <PreLinkEvent>
-      <Command>copy "src\Linter++.xsd" "$(TargetDir)"
-iwyu.bat
+      <Command>iwyu.bat
 </Command>
     </PreLinkEvent>
     <PreLinkEvent>
-      <Message>copy xsd files and Include what you use checks</Message>
+      <Message>Include what you use checks</Message>
     </PreLinkEvent>
     <ResourceCompile>
       <Culture>0x0809</Culture>
     </ResourceCompile>
+    <PreBuildEvent>
+      <Command>copy "src\Linter++.xsd" "$(TargetDir)"
+powershell.exe -File "$(ProjectDir)gen_version_h.ps1" "$(IntDir)\"</Command>
+      <Message>Copy xsd file and generate version.h from git tags</Message>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">
     <ClCompile>
@@ -203,7 +207,7 @@ iwyu.bat
       <EnablePREfast>true</EnablePREfast>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <AdditionalIncludeDirectories>.;Docking_Dialogue_Interface;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>Docking_Dialogue_Interface;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
       <ForcedIncludeFiles>stdafx.h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
       <LanguageStandard_C>stdc17</LanguageStandard_C>
@@ -223,16 +227,20 @@ iwyu.bat
       </Message>
     </PostBuildEvent>
     <PreLinkEvent>
-      <Command>copy "src\Linter++.xsd" "$(TargetDir)"
-iwyu.bat
+      <Command>iwyu.bat
 </Command>
     </PreLinkEvent>
     <PreLinkEvent>
-      <Message>copy xsd files and Include what you use checks</Message>
+      <Message>Include what you use checks</Message>
     </PreLinkEvent>
     <ResourceCompile>
       <Culture>0x0809</Culture>
     </ResourceCompile>
+    <PreBuildEvent>
+      <Command>copy "src\Linter++.xsd" "$(TargetDir)"
+powershell.exe -File "$(ProjectDir)gen_version_h.ps1" "$(IntDir)\"</Command>
+      <Message>Copy xsd file and generate version.h from git tags</Message>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -251,7 +259,7 @@ iwyu.bat
       <EnablePREfast>true</EnablePREfast>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <AdditionalIncludeDirectories>.;Docking_Dialogue_Interface;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>Docking_Dialogue_Interface;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
       <ForcedIncludeFiles>stdafx.h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
       <LanguageStandard_C>stdc17</LanguageStandard_C>
@@ -269,16 +277,20 @@ iwyu.bat
       <Message>Copy dll to notepad++ plugin directory</Message>
     </PostBuildEvent>
     <PreLinkEvent>
-      <Command>copy "src\Linter++.xsd" "$(TargetDir)"
-iwyu.bat
+      <Command>iwyu.bat
 </Command>
     </PreLinkEvent>
     <PreLinkEvent>
-      <Message>copy xsd files and Include what you use checks</Message>
+      <Message>Include what you use checks</Message>
     </PreLinkEvent>
     <ResourceCompile>
       <Culture>0x0809</Culture>
     </ResourceCompile>
+    <PreBuildEvent>
+      <Command>copy "src\Linter++.xsd" "$(TargetDir)"
+powershell.exe -File "$(ProjectDir)gen_version_h.ps1" "$(IntDir)\"</Command>
+      <Message>Copy xsd file and generate version.h from git tags</Message>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -298,7 +310,7 @@ iwyu.bat
       <EnablePREfast>true</EnablePREfast>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <AdditionalIncludeDirectories>.;Docking_Dialogue_Interface;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>Docking_Dialogue_Interface;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
       <ForcedIncludeFiles>stdafx.h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
       <LanguageStandard_C>stdc17</LanguageStandard_C>
@@ -320,16 +332,20 @@ iwyu.bat
       </Message>
     </PostBuildEvent>
     <PreLinkEvent>
-      <Command>copy "src\Linter++.xsd" "$(TargetDir)"
-iwyu.bat
+      <Command>iwyu.bat
 </Command>
     </PreLinkEvent>
     <PreLinkEvent>
-      <Message>copy xsd files and Include what you use checks</Message>
+      <Message>Include what you use checks</Message>
     </PreLinkEvent>
     <ResourceCompile>
       <Culture>0x0809</Culture>
     </ResourceCompile>
+    <PreBuildEvent>
+      <Command>copy "src\Linter++.xsd" "$(TargetDir)"
+powershell.exe -File "$(ProjectDir)gen_version_h.ps1" "$(IntDir)\"</Command>
+      <Message>Copy xsd file and generate version.h from git tags</Message>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'">
     <ClCompile>
@@ -349,7 +365,7 @@ iwyu.bat
       <EnablePREfast>true</EnablePREfast>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <AdditionalIncludeDirectories>.;Docking_Dialogue_Interface;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>Docking_Dialogue_Interface;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
       <ForcedIncludeFiles>stdafx.h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
       <LanguageStandard_C>stdc17</LanguageStandard_C>
@@ -370,16 +386,20 @@ iwyu.bat
       </Message>
     </PostBuildEvent>
     <PreLinkEvent>
-      <Command>copy "src\Linter++.xsd" "$(TargetDir)"
-iwyu.bat
+      <Command>iwyu.bat
 </Command>
     </PreLinkEvent>
     <PreLinkEvent>
-      <Message>copy xsd files and Include what you use checks</Message>
+      <Message>Include what you use checks</Message>
     </PreLinkEvent>
     <ResourceCompile>
       <Culture>0x0809</Culture>
     </ResourceCompile>
+    <PreBuildEvent>
+      <Command>copy "src\Linter++.xsd" "$(TargetDir)"
+powershell.exe -File "$(ProjectDir)gen_version_h.ps1" "$(IntDir)\"</Command>
+      <Message>Copy xsd file and generate version.h from git tags</Message>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -399,7 +419,7 @@ iwyu.bat
       <EnablePREfast>true</EnablePREfast>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <AdditionalIncludeDirectories>.;Docking_Dialogue_Interface;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>Docking_Dialogue_Interface;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
       <ForcedIncludeFiles>stdafx.h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
       <LanguageStandard_C>stdc17</LanguageStandard_C>
@@ -418,16 +438,20 @@ iwyu.bat
       <Message>Copy dll to notepad++ plugin directory</Message>
     </PostBuildEvent>
     <PreLinkEvent>
-      <Command>copy "src\Linter++.xsd" "$(TargetDir)"
-iwyu.bat
+      <Command>iwyu.bat
 </Command>
     </PreLinkEvent>
     <PreLinkEvent>
-      <Message>copy xsd files and Include what you use checks</Message>
+      <Message>Include what you use checks</Message>
     </PreLinkEvent>
     <ResourceCompile>
       <Culture>0x0809</Culture>
     </ResourceCompile>
+    <PreBuildEvent>
+      <Command>copy "src\Linter++.xsd" "$(TargetDir)"
+powershell.exe -File "$(ProjectDir)gen_version_h.ps1" "$(IntDir)\"</Command>
+      <Message>Copy xsd file and generate version.h from git tags</Message>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Docking_Dialogue_Interface\Plugin\Dialogue_Interface.cpp" />
@@ -477,6 +501,7 @@ iwyu.bat
     <ClInclude Include="Docking_Dialogue_Interface\Plugin\Non_Modal_Dialogue_Base.h" />
     <ClInclude Include="Docking_Dialogue_Interface\Plugin\Non_Modal_Dialogue_Interface.h" />
     <ClInclude Include="Docking_Dialogue_Interface\Plugin\Plugin.h" />
+    <ClInclude Include="version.h" />
     <ClInclude Include="src\Clipboard.h" />
     <ClInclude Include="src\Dom_Document.h" />
     <ClInclude Include="src\Dom_Node.h" />
@@ -498,13 +523,21 @@ iwyu.bat
     <ClInclude Include="src\Checkstyle_Parser.h" />
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="src\Resource.rc" />
+    <ResourceCompile Include="src\Resource.rc">
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">$(IntDir)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'">$(IntDir)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(IntDir)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(IntDir)</AdditionalIncludeDirectories>
+    </ResourceCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include=".clang-format" />
     <None Include=".github\dependabot.yml" />
     <None Include=".github\workflows\CI_build.yml" />
     <None Include=".github\workflows\codeql-analysis.yml" />
+    <None Include="gen_version_h.ps1" />
     <None Include="iwyu.bat" />
     <None Include="post-build.ps1" />
     <None Include="README.md" />

@@ -223,6 +223,7 @@
     <None Include=".github\workflows\codeql-analysis.yml">
       <Filter>Github\Workflows</Filter>
     </None>
+    <None Include="gen_version_h.ps1" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="src\linter.ico">
