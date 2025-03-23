@@ -28,9 +28,11 @@ jobs:
     # Initializes the CodeQL tools for scanning.
     - name: Initialize CodeQL
       uses: github/codeql-action/init@v3
-      # Override language selection by uncommenting this and choosing your languages
-      # with:
+      with:
+        languages: actions, c, cpp
+      # The default language selection appears to be
       #   languages: go, javascript, csharp, python, cpp, java
+      # irrespective of what your repo actually contains.
 
     # Autobuild attempts to build any compiled languages  (C/C++, C#, or Java).
     # If this step fails, then you should remove it and run the build manually (see below)
