@@ -6,7 +6,10 @@ $output_file = "${output_dir}version.h"
 
 # See if we actually need to update version.h
 $intended_ver = "#define GIT_VERSION_STRING `"$(git describe --always --dirty)`""
-$current_ver = Get-Content -Path "$output_file" -Tail 1
+if (Test-Path -Path $output_file)
+{
+    $current_ver = Get-Content -Path "$output_file" -Tail 1
+}
 
 if ($current_ver -eq $intended_ver)
 {
