@@ -536,6 +536,8 @@ powershell.exe -File "$(ProjectDir)gen_version_h.ps1" "$(IntDir)\"</Command>
     <None Include=".clang-format" />
     <None Include=".github\dependabot.yml" />
     <None Include=".github\workflows\CI_build.yml" />
+    <None Include=".github\workflows\CI_pull_request.yml" />
+    <None Include=".github\workflows\CI_release.yml" />
     <None Include=".github\workflows\codeql-analysis.yml" />
     <None Include="gen_version_h.ps1" />
     <None Include="iwyu.bat" />
