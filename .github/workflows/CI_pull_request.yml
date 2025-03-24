@@ -1,0 +1,10 @@
+name: CI_pull_request
+
+on: [push, pull_request]
+permissions: read-all
+
+jobs:
+  build:
+    uses: ./.github/workflows/CI_build.yml
+    with:
+        release: false

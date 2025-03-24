@@ -1,0 +1,12 @@
+name: CI_release
+
+on:
+  release:
+    type: published
+permissions: read-all
+
+jobs:
+  build:
+    uses: ./.github/workflows/CI_build.yml
+    with:
+        release: true
