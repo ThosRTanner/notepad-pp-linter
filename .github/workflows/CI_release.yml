@@ -6,7 +6,7 @@ on:
 permissions: read-all
 
 jobs:
-  build:
+  build-release:
     uses: ./.github/workflows/CI_build.yml
     with:
         release: true
