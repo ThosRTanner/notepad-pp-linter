@@ -1,6 +1,12 @@
 name: CI_pull_request
 
-on: [push, pull_request]
+on:
+  push:
+    branches: [master, ]
+  pull_request:
+    # The branches below must be a subset of the branches above
+    branches: [master]
+
 permissions: read-all
 
 jobs:
