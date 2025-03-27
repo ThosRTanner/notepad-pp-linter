@@ -136,9 +136,19 @@ void Linter::on_notification(SCNotification const *notification)
         return;
     }
 
+    constexpr int Modification_Flags = SC_MOD_DELETETEXT | SC_MOD_INSERTTEXT;
     switch (notification->nmhdr.code)
     {
         case NPPN_READY:
+            // FIXME need to add this, but the parameter doesn't appear
+            // to be available yet.
+            /*
+            send_to_notepad(
+                NPPM_ADDSCNMODIFIEDFLAGS,
+                0,
+                Modification_Flags
+            );
+            */
             notepad_is_ready_ = true;
             mark_file_changed();
             break;
@@ -156,9 +166,9 @@ void Linter::on_notification(SCNotification const *notification)
             break;
 
         case SCN_MODIFIED:
-            if ((notification->modificationType
-                 & (SC_MOD_DELETETEXT | SC_MOD_INSERTTEXT))
-                != 0)
+            // Sadly even with the above call in NPPN_READY, we can't rely on
+            // only getting the notifications we asked for.
+            if ((notification->modificationType & Modification_Flags) != 0)
             {
                 mark_file_changed();
             }
