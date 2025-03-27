@@ -1,8 +1,11 @@
 name: CI_build
 
-on: [push, pull_request]
-
-permissions: read-all
+on:
+  workflow_call:
+    inputs:
+      release:
+        required: true
+        type: boolean
 
 jobs:
   build:
@@ -31,4 +34,10 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: plugin_dll_${{ matrix.build_platform }}
-        path: linter++\${{ matrix.build_platform }}\${{ matrix.build_configuration }}\linter++.dll
+        path: Linter++\${{ matrix.build_platform }}\${{ matrix.build_configuration }}
+
+    - name: Upload artifacts when pushing tags
+      if: matrix.build_configuration == 'Release' && inputs.release
+      uses: softprops/action-gh-release@v1
+      with:
+        path: Linter++\${{ matrix.build_platform }}\${{ matrix.build_configuration }}

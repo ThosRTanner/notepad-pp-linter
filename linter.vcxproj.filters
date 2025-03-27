@@ -202,6 +202,9 @@
     <ClInclude Include="src\Indicator.h">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="version.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="src\Resource.rc">
@@ -221,6 +224,13 @@
       <Filter>Github\Workflows</Filter>
     </None>
     <None Include=".github\workflows\codeql-analysis.yml">
+      <Filter>Github\Workflows</Filter>
+    </None>
+    <None Include="gen_version_h.ps1" />
+    <None Include=".github\workflows\CI_pull_request.yml">
+      <Filter>Github\Workflows</Filter>
+    </None>
+    <None Include=".github\workflows\CI_release.yml">
       <Filter>Github\Workflows</Filter>
     </None>
   </ItemGroup>

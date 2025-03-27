@@ -1,7 +1,7 @@
 // Microsoft Visual C++ generated resource script.
 //
 #include "resource.h"
-
+#include "version.h"
 #define APSTUDIO_READONLY_SYMBOLS
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -13,10 +13,11 @@
 #undef APSTUDIO_READONLY_SYMBOLS
 
 /////////////////////////////////////////////////////////////////////////////
-// Russian (Russia) resources
+// English (United Kingdom) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENG)
 LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_UK
+#pragma code_page(1252)
 
 #ifdef APSTUDIO_INVOKED
 /////////////////////////////////////////////////////////////////////////////
@@ -24,18 +25,18 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_UK
 // TEXTINCLUDE
 //
 
-1 TEXTINCLUDE
+1 TEXTINCLUDE 
 BEGIN
     "resource.h\0"
 END
 
-2 TEXTINCLUDE
+2 TEXTINCLUDE 
 BEGIN
     "#include ""winres.h""\r\n"
     "\0"
 END
 
-3 TEXTINCLUDE
+3 TEXTINCLUDE 
 BEGIN
     "\r\n"
     "\0"
@@ -50,8 +51,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 0,1,0,0
- PRODUCTVERSION 0,1,0,0
+ FILEVERSION GIT_VER_MAJOR,GIT_VER_MINOR,GIT_VER_PATCH,GIT_VER_EXTENDED
+ PRODUCTVERSION GIT_VER_MAJOR,GIT_VER_MINOR,GIT_VER_PATCH,GIT_VER_EXTENDED
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -68,12 +69,12 @@ BEGIN
         BEGIN
             VALUE "CompanyName", "thosrtanner"
             VALUE "FileDescription", "A Notepad++ checkstyle-compatible linter plugin"
-            VALUE "FileVersion", "0.1.0.0"
+            VALUE "FileVersion", GIT_VERSION_STRING
             VALUE "InternalName", "Notepad++ Linter++"
             VALUE "LegalCopyright", "Copyright (C) 2025"
             VALUE "OriginalFilename", "Notepad++ Linter++"
             VALUE "ProductName", "Notepad++ Linter++"
-            VALUE "ProductVersion", "0.1.0.0"
+            VALUE "ProductVersion", GIT_VERSION_STRING
         END
     END
     BLOCK "VarFileInfo"
@@ -81,6 +82,7 @@ BEGIN
         VALUE "Translation", 0x400, 1200
     END
 END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -127,6 +129,7 @@ IDD_OUTPUT AFX_DIALOG_LAYOUT
 BEGIN
     0
 END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
