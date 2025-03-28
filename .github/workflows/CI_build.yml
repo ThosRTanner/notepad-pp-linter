@@ -40,4 +40,4 @@ jobs:
       if: matrix.build_configuration == 'Release' && inputs.release
       uses: softprops/action-gh-release@v1
       with:
-        path: Linter++\${{ matrix.build_platform }}\${{ matrix.build_configuration }}
+        files: Linter++\${{ matrix.build_platform }}\${{ matrix.build_configuration }}\*
