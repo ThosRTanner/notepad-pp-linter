@@ -38,6 +38,18 @@ jobs:
 
     - name: Upload artifacts when pushing tags
       if: matrix.build_configuration == 'Release' && inputs.release
-      uses: softprops/action-gh-release@v1
-      with:
-        files: Linter++/${{ matrix.build_platform }}/${{ matrix.build_configuration }}/*
+      uses: actions/download-artifact@v4
+
+    # I really do not like this approach
+    - name: Upload artifacts when pushing tags
+      if: matrix.build_configuration == 'Release' && inputs.release
+      run: |
+        pwd
+        ls
+        cd ${{github.workspace}}
+        pwd
+        ls
+        $source_path = "Linter++\${{ matrix.build_platform }}\${{ matrix.build_configuration }}"
+        $destination_path = "plugin_dll_${{ matrix.build_platform }}"
+        Compress-Archive -Path $source_path -DestinationPath $destination_path -CompressionLevel "Optimal"
+        gh release upload ${{github.event.release.tag_name}} $destination_path
