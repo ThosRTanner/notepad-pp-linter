@@ -42,10 +42,7 @@ jobs:
       env:
         GH_TOKEN: ${{ github.token }}
       run: |
-        Set-PSDebug -Trace 1
         $source_path = "Linter++\${{ matrix.build_platform }}\${{ matrix.build_configuration }}\*"
-        $destination_path = "plugin_dll_${{ matrix.build_platform }}"
-        echo "source $source_path"
-        echo "dest $destination_path"
+        $destination_path = "plugin_dll_${{ matrix.build_platform }}.zip"
         Compress-Archive -Path "$source_path" -DestinationPath "$destination_path"
         gh release upload "${{github.event.release.tag_name}}" "$destination_path"

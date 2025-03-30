@@ -2,7 +2,7 @@ name: CI_release
 
 on:
   release:
-    type: [published]
+    types: [published]
 permissions:
   contents: write
 
