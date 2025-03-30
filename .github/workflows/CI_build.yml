@@ -36,10 +36,6 @@ jobs:
         name: plugin_dll_${{ matrix.build_platform }}
         path: Linter++\${{ matrix.build_platform }}\${{ matrix.build_configuration }}
 
-    - name: Upload artifacts when pushing tags
-      if: matrix.build_configuration == 'Release' && inputs.release
-      uses: actions/download-artifact@v4
-
     # I really do not like this approach
     - name: Upload artifacts when pushing tags
       if: matrix.build_configuration == 'Release' && inputs.release
