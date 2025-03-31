@@ -11,7 +11,7 @@ if (Test-Path -Path $output_file)
     $current_ver = Get-Content -Path "$output_file" -Tail 1
 }
 
-if ($current_ver -eq $intended_ver)
+if ($current_ver -eq $intended_ver -and $output_dir -ne "")
 {
     Write-Output "Version not changed from $current_ver"
     exit
@@ -52,7 +52,7 @@ $semver_regex = '^' +
 $found = $false
 foreach ($tag in git tag -l --sort=-version:refname)
 {
-    if ($tag -match $semver_regex -and -not $Matches -contains "prerelease")
+    if ($tag -match $semver_regex -and -not $Matches.ContainsKey("prerelease"))
     {
         $found = $true
         break
