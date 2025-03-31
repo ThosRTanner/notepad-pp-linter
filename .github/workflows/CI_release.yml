@@ -2,8 +2,9 @@ name: CI_release
 
 on:
   release:
-    type: published
-permissions: read-all
+    types: [published]
+permissions:
+  contents: write
 
 jobs:
   build-release:

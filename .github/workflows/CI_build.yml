@@ -20,6 +20,7 @@ jobs:
     - name: Checkout repo
       uses: actions/checkout@v4
       with:
+        fetch-depth: 0
         submodules: recursive
 
     - name: Add msbuild to PATH
@@ -36,8 +37,13 @@ jobs:
         name: plugin_dll_${{ matrix.build_platform }}
         path: Linter++\${{ matrix.build_platform }}\${{ matrix.build_configuration }}
 
+    # I really do not like this approach
     - name: Upload artifacts when pushing tags
       if: matrix.build_configuration == 'Release' && inputs.release
-      uses: softprops/action-gh-release@v1
-      with:
-        path: Linter++\${{ matrix.build_platform }}\${{ matrix.build_configuration }}
+      env:
+        GH_TOKEN: ${{ github.token }}
+      run: |
+        $source_path = "Linter++\${{ matrix.build_platform }}\${{ matrix.build_configuration }}\*"
+        $destination_path = "plugin_dll_${{ matrix.build_platform }}.zip"
+        Compress-Archive -Path "$source_path" -DestinationPath "$destination_path"
+        gh release upload "${{github.event.release.tag_name}}" "$destination_path"
