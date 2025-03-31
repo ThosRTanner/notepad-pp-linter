@@ -9,5 +9,24 @@ permissions:
 jobs:
   build-release:
     uses: ./.github/workflows/CI_build.yml
-    with:
-        release: true
+
+  release:
+    runs-on: windows-latest
+    needs: [build-release]
+    steps:
+    - name: get-data
+      uses: actions/download-artifact@v4
+
+    - name: update-notes
+      env:
+        GH_TOKEN: ${{ github.token }}
+      run: |
+        Get-ChildItem -Directory | ForEach-Object {
+            $source = $_.Name
+            $dest = "$source.zip"
+            Compress-Archive -Path "$source/*" -DestinationPath "$dest"
+            $sha256 = (Get-FileHash "$dest").Hash
+            echo "$dest $sha256" >> Notes
+            gh release upload "${{ github.event.release.tag_name }}" "$dest"
+        }
+        gh release edit "${{ github.event.release.tag_name }}" --notes-file Notes
