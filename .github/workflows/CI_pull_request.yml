@@ -12,5 +12,3 @@ permissions: read-all
 jobs:
   build-pr:
     uses: ./.github/workflows/CI_build.yml
-    with:
-        release: false

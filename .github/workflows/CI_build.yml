@@ -2,14 +2,9 @@ name: CI_build
 
 on:
   workflow_call:
-    inputs:
-      release:
-        required: true
-        type: boolean
 
 jobs:
   build:
-
     runs-on: windows-latest
     strategy:
       matrix:
@@ -36,14 +31,3 @@ jobs:
       with:
         name: plugin_dll_${{ matrix.build_platform }}
         path: Linter++\${{ matrix.build_platform }}\${{ matrix.build_configuration }}
-
-    # I really do not like this approach
-    - name: Upload artifacts when pushing tags
-      if: matrix.build_configuration == 'Release' && inputs.release
-      env:
-        GH_TOKEN: ${{ github.token }}
-      run: |
-        $source_path = "Linter++\${{ matrix.build_platform }}\${{ matrix.build_configuration }}\*"
-        $destination_path = "plugin_dll_${{ matrix.build_platform }}.zip"
-        Compress-Archive -Path "$source_path" -DestinationPath "$destination_path"
-        gh release upload "${{github.event.release.tag_name}}" "$destination_path"
