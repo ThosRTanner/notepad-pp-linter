@@ -21,12 +21,13 @@ jobs:
       env:
         GH_TOKEN: ${{ github.token }}
       run: |
+        $repo = "${{ github.repository }}"
         Get-ChildItem -Directory | ForEach-Object {
             $source = $_.Name
             $dest = "$source.zip"
             Compress-Archive -Path "$source/*" -DestinationPath "$dest"
             $sha256 = (Get-FileHash "$dest").Hash
             echo "$dest $sha256" >> Notes
-            gh release upload "${{ github.event.release.tag_name }}" "$dest"
+            gh release upload "${{ github.event.release.tag_name }}" "$dest" -R "$repo"
         }
-        gh release edit "${{ github.event.release.tag_name }}" --notes-file Notes
+        gh release edit "${{ github.event.release.tag_name }}" --notes-file Notes -R "$repo"
