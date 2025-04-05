@@ -25,11 +25,21 @@
 namespace Linter
 {
 
+namespace
+{
+std::unordered_map<std::wstring, uint32_t> default_message_colours = {
+    {L"default", RGB(0,   255, 255)}, // Cyan
+    {L"error",   RGB(255, 0,   0)  }, // Red
+    {L"warning", RGB(255, 127, 0)  }  // Orange
+};
+}
+
 Settings::Settings(::Linter::Linter const &linter) :
     settings_xml_(
         linter.get_plugin_config_dir().append(linter.get_name() + L".xml")
     ),
-    settings_xsd_(linter.get_module_path().replace_extension(".xsd"))
+    settings_xsd_(linter.get_module_path().replace_extension(".xsd")),
+    message_colours_(default_message_colours)
 {
     // Create a schema cache and our xsd to it.
     auto hr = settings_schema_.CoCreateInstance(__uuidof(XMLSchemaCache60));
@@ -45,7 +55,16 @@ Settings::Settings(::Linter::Linter const &linter) :
         throw System_Error(hr, "Can't add to schema pool");
     }
 
-    refresh();
+    //A note: We try to read the settings at this point and quietly ignore errors
+    //if we can't. This isn't great, but not sure where I can put errors.
+    try
+    {
+        refresh();
+    }
+    catch (std::exception const&)
+    {
+        //Nothing we can usefully do.
+    }
 }
 
 uint32_t Settings::get_message_colour(std::wstring const &colour) const noexcept
@@ -64,6 +83,10 @@ uint32_t Settings::get_message_colour(std::wstring const &colour) const noexcept
 
 void Settings::refresh()
 {
+    if (not std::filesystem::exists(settings_xml_))
+    {
+        return;
+    }
     auto const last_write_time{std::filesystem::last_write_time(settings_xml_)};
     if (last_write_time != last_update_time_)
     {
@@ -98,10 +121,7 @@ void Settings::read_indicator(Dom_Document const &settings)
 
 void Settings::read_messages(Dom_Document const &settings)
 {
-    message_colours_.clear();
-    message_colours_[L"default"] = RGB(0, 255, 255);    // Cyan
-    message_colours_[L"error"] = RGB(255, 0, 0);        // Red
-    message_colours_[L"warning"] = RGB(255, 127, 0);    // Orange
+    message_colours_ = default_message_colours;
 
     std::optional<Dom_Node> messages = settings.get_node("//messages");
     if (not messages.has_value())
