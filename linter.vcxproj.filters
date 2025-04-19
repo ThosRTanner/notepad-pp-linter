@@ -230,6 +230,7 @@
     <None Include=".github\workflows\CI_release.yml">
       <Filter>Github\Workflows</Filter>
     </None>
+    <None Include="PSScriptAnalyzerSettings.psd1" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="src\linter.ico">

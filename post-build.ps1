@@ -9,7 +9,7 @@ try {
 	$dest_folder.CopyHere($source_folder.Items(), 16)
 }
 catch {
-	echo "An error occurred at $_.ScriptStackTrace"
-	echo $_
+    echo "An error occurred at $_.ScriptStackTrace"
+    echo $_
 	exit 1
 }

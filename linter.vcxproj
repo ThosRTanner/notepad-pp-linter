@@ -541,6 +541,7 @@ powershell.exe -File "$(ProjectDir)gen_version_h.ps1" "$(IntDir)\"</Command>
     <None Include="gen_version_h.ps1" />
     <None Include="iwyu.bat" />
     <None Include="post-build.ps1" />
+    <None Include="PSScriptAnalyzerSettings.psd1" />
     <None Include="README.md" />
     <None Include="vs2022cpp20.imp" />
   </ItemGroup>
