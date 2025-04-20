@@ -501,7 +501,6 @@ powershell.exe -File "$(ProjectDir)gen_version_h.ps1" "$(IntDir)\"</Command>
     <ClInclude Include="Docking_Dialogue_Interface\Plugin\Non_Modal_Dialogue_Base.h" />
     <ClInclude Include="Docking_Dialogue_Interface\Plugin\Non_Modal_Dialogue_Interface.h" />
     <ClInclude Include="Docking_Dialogue_Interface\Plugin\Plugin.h" />
-    <ClInclude Include="version.h" />
     <ClInclude Include="src\Clipboard.h" />
     <ClInclude Include="src\Dom_Document.h" />
     <ClInclude Include="src\Dom_Node.h" />
@@ -542,6 +541,7 @@ powershell.exe -File "$(ProjectDir)gen_version_h.ps1" "$(IntDir)\"</Command>
     <None Include="gen_version_h.ps1" />
     <None Include="iwyu.bat" />
     <None Include="post-build.ps1" />
+    <None Include="PSScriptAnalyzerSettings.psd1" />
     <None Include="README.md" />
     <None Include="vs2022cpp20.imp" />
   </ItemGroup>

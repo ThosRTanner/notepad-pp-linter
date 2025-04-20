@@ -3,6 +3,8 @@ name: CI_build
 on:
   workflow_call:
 
+permissions: read-all
+
 jobs:
   build:
     runs-on: windows-latest
