@@ -1,6 +1,7 @@
 #include "Linter.h"
 
 #include "Checkstyle_Parser.h"
+#include "Error_Info.h"
 #include "File_Holder.h"
 #include "Menu_Entry.h"
 #include "Output_Dialogue.h"
@@ -15,6 +16,7 @@
 #include "notepad++/Notepad_plus_msgs.h"
 #include "notepad++/PluginInterface.h"
 #include "notepad++/Scintilla.h"
+#include "notepad++/menuCmdID.h"
 
 #include <combaseapi.h>
 #include <comutil.h>
@@ -24,6 +26,7 @@
 #include <synchapi.h>
 #include <threadpoollegacyapiset.h>
 
+#include <codecvt>
 #include <exception>
 #include <map>
 #include <memory>
@@ -234,7 +237,7 @@ void Linter::highlight_errors()
         setup_error_indicator();
     }
 
-    for (Checkstyle_Parser::Error const &error : errors_)
+    for (Error_Info const &error : errors_)
     {
         auto position = send_to_editor(SCI_POSITIONFROMLINE, error.line_ - 1);
         position += Encoding::utfOffset(
@@ -347,7 +350,14 @@ unsigned int Linter::run_linter() noexcept
         }
         catch (std::exception const &e)
         {
-            handle_exception(e, get_plugin_name());
+            std::string const exc(e.what());
+            std::wstring wstr{exc.begin(), exc.end()};
+            Error_Info error = {
+                .message_ = wstr,
+                .severity_ = L"error",
+            };
+            output_dialogue_->add_system_error(error);
+            show_tooltip(wstr);
         }
     }
     catch (std::exception const &e)
@@ -410,48 +420,69 @@ void Linter::apply_linters()
     {
         try
         {
-            auto output = file.exec(command, text);
-            if (output.first.empty() && not output.second.empty())
+            // Try and work out what to do here:
+            auto const [cmdline, output, errout] = file.exec(command, text);
+            if (output.empty() && not errout.empty())
             {
-                throw std::runtime_error(output.second);
+                // Program terminated with error.
+                output_dialogue_->add_system_error(
+                    {.mode_ = Error_Info::Stderr_Found,
+                     .message_ = std::wstring(errout.begin(), errout.end()),
+                     .tool_ = command.program.stem(),
+                     .command_ = cmdline,
+                     .stdout_ = output,
+                     .stderr_ = errout}
+                );
+                continue;
             }
-            std::vector<Checkstyle_Parser::Error> const parseError{
-                Checkstyle_Parser::get_errors(output.first)
-            };
-            errors_.insert(errors_.end(), parseError.begin(), parseError.end());
-            output_dialogue_->add_lint_errors(parseError);
-            if (not output.second.empty())
+            try
             {
-                Checkstyle_Parser::Error error = {
-                    .message_ = std::wstring(
-                        output.second.begin(), output.second.end()
-                    ),
-                    .severity_ = L"warning",
-                    .tool_ = command.program.stem()
+                std::vector<Error_Info> const detected_errors{
+                    Checkstyle_Parser::get_errors(output)
                 };
-                output_dialogue_->add_system_error(error);
+                errors_.insert(
+                    errors_.end(),
+                    detected_errors.begin(),
+                    detected_errors.end()
+                );
+                output_dialogue_->add_lint_errors(detected_errors);
+                if (not errout.empty())
+                {
+                    output_dialogue_->add_system_error(
+                        {.mode_ = Error_Info::Stderr_Found,
+                         .message_ = std::wstring(errout.begin(), errout.end()),
+                         .severity_ = L"warning",
+                         .tool_ = command.program.stem()}
+                    );
+                }
+            }
+            catch (XML_Decode_Error const &e)
+            {
+                std::string exc{e.what()};
+                output_dialogue_->add_system_error(
+                    {.mode_ = Error_Info::Bad_Output,
+                     .line_ = e.line(),
+                     .column_ = e.column(),
+                     .message_ = std::wstring(exc.begin(), exc.end()),
+                     .tool_ = command.program.stem(),
+                     .command_ = cmdline,
+                     .stdout_ = output,
+                     .stderr_ = errout}
+                );
             }
         }
         catch (std::exception const &e)
         {
-            handle_exception(e, command.program.stem());
+            // Really bad things happened. we don't have anything much here we
+            // can log
+            std::string exc{e.what()};
+            output_dialogue_->add_system_error(
+                {.mode_ = Error_Info::Exception,
+                 .message_ = std::wstring(exc.begin(), exc.end()),
+                 .tool_ = command.program.stem()}
+            );
         }
     }
-}
-
-void Linter::Linter::handle_exception(
-    std::exception const &exc, std::wstring const &tool
-)
-{
-    std::string const str(exc.what());
-    std::wstring const wstr{str.begin(), str.end()};
-    Checkstyle_Parser::Error error = {
-        .message_ = wstr,
-        .severity_ = L"error",
-        .tool_ = tool,
-    };
-    output_dialogue_->add_system_error(error);
-    show_tooltip(tool + wstr);
 }
 
 void Linter::show_tooltip()

@@ -506,6 +506,7 @@ powershell.exe -File "$(ProjectDir)gen_version_h.ps1" "$(IntDir)\"</Command>
     <ClInclude Include="src\Dom_Node.h" />
     <ClInclude Include="src\Dom_Node_List.h" />
     <ClInclude Include="src\encoding.h" />
+    <ClInclude Include="src\Error_Info.h" />
     <ClInclude Include="src\File_Holder.h" />
     <ClInclude Include="src\Child_Pipe.h" />
     <ClInclude Include="src\Handle_Wrapper.h" />

@@ -7,7 +7,6 @@ This is a fork of the 'linter' plugin for notepad++ from deadem which provides r
 ![Dockable error window](/img/2.png?raw=true)
 
 ## Installation
-
 - See <https://npp-user-manual.org/docs/plugins/>
 - Use the plugin manager. No, seriously.
 - If you must install manually, run notepad++ in administrator mode and
@@ -38,7 +37,7 @@ A note: Please don't supply empty sections, as this will become an error in the 
 
 You can control all the various settings for a scintilla indicator here. Your xml will look something like this:
 
-``` xml
+```
 <indicator>
   <colour>
     <shade>

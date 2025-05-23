@@ -5,7 +5,7 @@
 
 #include <filesystem>
 #include <string>
-#include <utility>
+#include <tuple>
 
 namespace Linter
 {
@@ -22,7 +22,7 @@ class File_Holder
 
     ~File_Holder();
 
-    std::pair<std::string, std::string> exec(
+    std::tuple<std::wstring, std::string, std::string> exec(
         Settings::Linter::Command const &, std::string const &text
     );
 

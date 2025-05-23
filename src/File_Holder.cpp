@@ -21,7 +21,7 @@
 #include <memory>
 #include <string>
 #include <system_error>
-#include <utility>
+#include <tuple>
 
 namespace Linter
 {
@@ -39,7 +39,7 @@ File_Holder::~File_Holder()
     }
 }
 
-std::pair<std::string, std::string> File_Holder::exec(
+std::tuple<std::wstring, std::string, std::string> File_Holder::exec(
     Settings::Linter::Command const &command, std::string const &text
 )
 {
@@ -128,7 +128,7 @@ std::pair<std::string, std::string> File_Holder::exec(
 
     std::string out = stdout_pipe.reader().readFile();
     std::string err = stderr_pipe.reader().readFile();
-    return std::make_pair(out, err);
+    return std::make_tuple(args, out, err);
 }
 
 void File_Holder::write(std::string const &data)

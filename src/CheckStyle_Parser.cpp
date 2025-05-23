@@ -3,6 +3,7 @@
 #include "Dom_Document.h"
 #include "Dom_Node.h"
 #include "Dom_Node_List.h"
+#include "Error_Info.h"
 
 #include <cstddef>
 #include <string>
@@ -11,7 +12,7 @@
 namespace Linter
 {
 
-std::vector<Checkstyle_Parser::Error> Checkstyle_Parser::get_errors(
+std::vector<Error_Info> Checkstyle_Parser::get_errors(
     std::string const &xml
 )
 {
@@ -32,7 +33,7 @@ std::vector<Checkstyle_Parser::Error> Checkstyle_Parser::get_errors(
     //
     // We use the 1st word in source as the tool.
 
-    std::vector<Checkstyle_Parser::Error> errors;
+    std::vector<Error_Info> errors;
 
     Dom_Node_List nodes(document.get_node_list("//error"));
     for (auto const node : nodes)
@@ -44,7 +45,8 @@ std::vector<Checkstyle_Parser::Error> Checkstyle_Parser::get_errors(
             tool.resize(pos);
         }
 
-        errors.push_back(Error{
+        errors.push_back(Error_Info{
+            .mode_ = Error_Info::Standard,
             .line_ = std::stoi(node.get_attribute(L"line")),
             .column_ = std::stoi(node.get_attribute(L"column")),
             .message_ = node.get_attribute(L"message"),
