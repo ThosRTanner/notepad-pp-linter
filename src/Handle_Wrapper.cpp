@@ -93,12 +93,16 @@ std::string Handle_Wrapper::readFile() const
             }
         }
 
-        if (bytes_read == 0)
+        result.append(buff, bytes_read);
+
+        // Assume partial reads are EOF. Not sure this is ideal, but when
+        // reading from a pipe you can get random hangs if you attempt to read
+        // more.
+        if (bytes_read < BUFFSIZE)
         {
             break;
         }
 
-        result.append(buff, bytes_read);
     }
 
     return result;

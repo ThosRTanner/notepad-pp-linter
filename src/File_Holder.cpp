@@ -106,6 +106,9 @@ std::pair<std::string, std::string> File_Holder::exec(
     }
     stdin_pipe.writer().close();
 
+    // FIXME We really should create a thread to read the stdout and stderr, in
+    // case we get over 64k of output. This may fix the other problems below.
+
     // It does seem that for the first run of this, we don't actually get a
     // result till we change the buffer. Should possibly be using
     // WaitForSingleObject(proc_info.hProcess, INFINITE) somewhere here.
