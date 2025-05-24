@@ -348,15 +348,25 @@ unsigned int Linter::run_linter() noexcept
         {
             apply_linters();
         }
+        catch (XML_Decode_Error const &e)
+        {
+            std::string exc{e.what()};
+            std::wstring wstr{exc.begin(), exc.end()};
+            output_dialogue_->add_system_error(
+                {.mode_ = Error_Info::Bad_Linter_XML,
+                 .line_ = e.line(),
+                 .column_ = e.column(),
+                 .message_ = wstr}
+            );
+            show_tooltip(wstr);
+        }
         catch (std::exception const &e)
         {
             std::string const exc(e.what());
             std::wstring wstr{exc.begin(), exc.end()};
-            Error_Info error = {
-                .message_ = wstr,
-                .severity_ = L"error",
-            };
-            output_dialogue_->add_system_error(error);
+            output_dialogue_->add_system_error(
+                {.mode_ = Error_Info::Exception, .message_ = wstr}
+            );
             show_tooltip(wstr);
         }
     }
@@ -452,7 +462,10 @@ void Linter::apply_linters()
                         {.mode_ = Error_Info::Stderr_Found,
                          .message_ = std::wstring(errout.begin(), errout.end()),
                          .severity_ = L"warning",
-                         .tool_ = command.program.stem()}
+                         .tool_ = command.program.stem(),
+                         .command_ = cmdline,
+                         .stdout_ = output,
+                         .stderr_ = errout}
                     );
                 }
             }

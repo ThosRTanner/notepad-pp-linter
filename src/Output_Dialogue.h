@@ -122,9 +122,6 @@ class Output_Dialogue : protected Docking_Dialogue_Interface
     /** Move to the line/column of the displayed error */
     void show_selected_lint(int selected_item) noexcept;
 
-    /** Opens up a new window, displays command info */
-    void show_selected_detail(int selected_item) noexcept;
-
     /** Copy selected messages to clipboard */
     void copy_to_clipboard();
 

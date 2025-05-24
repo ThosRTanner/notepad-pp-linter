@@ -66,8 +66,7 @@ enum Context_Menu_Entry
 {
     Context_Copy_Lints = 1500,
     Context_Show_Source_Line,
-    Context_Select_All,
-    Context_Show_Details
+    Context_Select_All
 };
 
 }    // namespace
@@ -249,18 +248,6 @@ Output_Dialogue::Message_Return Output_Dialogue::process_dlg_command(
             );
             return TRUE;
 
-        case Context_Show_Details:
-        {
-            int const item = ListView_GetNextItem(
-                current_list_view_, -1, LVIS_FOCUSED | LVIS_SELECTED
-            );
-            if (item != -1)
-            {
-                show_selected_detail(item);
-            }
-            return TRUE;
-        }
-
         default:
             break;
     }
@@ -299,10 +286,6 @@ Output_Dialogue::Message_Return Output_Dialogue::process_dlg_context_menu(
     }
 
     AppendMenu(menu, MF_ENABLED, Context_Select_All, L"Select All");
-    if (current_tab_->tab == Tab::System_Error)
-    {
-        AppendMenu(menu, MF_ENABLED, Context_Show_Details, L"Show Details");
-    }
 
     // determine context menu position
     POINT point{.x = LOWORD(lParam), .y = HIWORD(lParam)};
@@ -605,70 +588,29 @@ void Output_Dialogue::show_selected_lint(int selected_item) noexcept
      * isn't ideal */
     if (current_tab_->tab == Tab::System_Error)
     {
-        // FIXME
-        //  editConfig();
-        // make sure we've selected it...
-        // go to line/col.
-    }
-
-    plugin()->send_to_editor(SCI_GOTOLINE, line);
-
-    // since there is no SCI_GOTOCOLUMN, we move to the right until ...
-    for (;;)
-    {
-        plugin()->send_to_editor(SCI_CHARRIGHT);
-        LRESULT const curPos = plugin()->send_to_editor(SCI_GETCURRENTPOS);
-        LRESULT const curLine =
-            plugin()->send_to_editor(SCI_LINEFROMPOSITION, curPos);
-        if (curLine > line)
+        if (lint_error.mode_ == Error_Info::Bad_Linter_XML)
         {
-            // ... current line is greater than desired line or ...
-            plugin()->send_to_editor(SCI_CHARLEFT);
-            break;
+            plugin()->send_to_notepad(NPPM_DOOPEN, 0, settings_->settings_file().c_str());
         }
-
-        LRESULT const curCol = plugin()->send_to_editor(SCI_GETCOLUMN, curPos);
-        if (curCol > column)
+        else
         {
-            // ... current column is greater than desired column or ...
-            plugin()->send_to_editor(SCI_CHARLEFT);
-            break;
-        }
-
-        if (curCol == column)
-        {
-            // ... we reached desired column.
-            break;
+            plugin()->send_to_notepad(NPPM_MENUCOMMAND, 0, IDM_FILE_NEW);
+            // Slightly unfortunately, the command line is UTF16, and
+            // we need to convert to UTF8. Do the best we can...
+            // Also should underline the sections.
+            plugin()->send_to_editor(
+                SCI_SETTEXT,
+                0,
+                ("Command:\n\n"
+                 + std::wstring_convert<std::codecvt_utf8<wchar_t>>().to_bytes(
+                     lint_error.command_
+                 )
+                 + "\n\n" + "Output:\n\n" + lint_error.stdout_
+                 + "\n\nError:\n\n" + lint_error.stderr_)
+                    .c_str()
+            );
         }
     }
-
-    InvalidateRect();
-}
-
-void Output_Dialogue::show_selected_detail(int selected_item) noexcept
-{
-    LVITEM const item{.mask = LVIF_PARAM, .iItem = selected_item};
-    ListView_GetItem(current_list_view_, &item);
-
-    Error_Info const &lint_error = current_tab_->errors[item.lParam];
-
-    int const line = std::max(lint_error.line_ - 1, 0);
-    int const column = std::max(lint_error.column_ - 1, 0);
-
-    plugin()->send_to_notepad(NPPM_MENUCOMMAND, 0, IDM_FILE_NEW);
-    // Slightly unfortunately, the command line is UTF16, and
-    // we need to convert to UTF8. Do the best we can...
-    plugin()->send_to_editor(
-        SCI_SETTEXT,
-        0,
-        ("Command:\n\n"
-         + std::wstring_convert<std::codecvt_utf8<wchar_t>>().to_bytes(
-             lint_error.command_
-         )
-         + "\n\n" + "Output:\n\n" + lint_error.stdout_ + "\n\nError:\n\n"
-         + lint_error.stderr_)
-            .c_str()
-    );
 
     plugin()->send_to_editor(SCI_GOTOLINE, line);
 
