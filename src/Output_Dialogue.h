@@ -119,6 +119,12 @@ class Output_Dialogue : protected Docking_Dialogue_Interface
     /** Skip to the n-th lint forward or backward */
     void select_lint(int n) noexcept;
 
+    /** Add text to end of buffer */
+    void append_text(std::string_view text) const noexcept;
+
+    /** Add underlined text to end of buffer */
+    void append_text_with_style(std::string_view text, int style) const noexcept;
+
     /** Move to the line/column of the displayed error */
     void show_selected_lint(int selected_item) noexcept;
 

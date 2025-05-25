@@ -574,6 +574,20 @@ void Output_Dialogue::select_lint(int n) noexcept
     show_selected_lint(row);
 }
 
+void Output_Dialogue::append_text(std::string_view text) const noexcept
+{
+    plugin()->send_to_editor(SCI_APPENDTEXT, text.length(), text.data());
+}
+
+void Output_Dialogue::append_text_with_style(std::string_view text, int style)
+    const noexcept
+{
+    auto const old_pos = plugin()->send_to_editor(SCI_GETTEXTLENGTH);
+    append_text(text);
+    plugin()->send_to_editor(SCI_STARTSTYLING, old_pos);
+    plugin()->send_to_editor(SCI_SETSTYLING, text.length(), style);
+}
+
 void Output_Dialogue::show_selected_lint(int selected_item) noexcept
 {
     LVITEM const item{.mask = LVIF_PARAM, .iItem = selected_item};
@@ -581,7 +595,7 @@ void Output_Dialogue::show_selected_lint(int selected_item) noexcept
 
     Error_Info const &lint_error = current_tab_->errors[item.lParam];
 
-    int const line = std::max(lint_error.line_ - 1, 0);
+    int line = std::max(lint_error.line_ - 1, 0);
     int const column = std::max(lint_error.column_ - 1, 0);
 
     /* We only need to do this if we need to pop up linter.xml. The following
@@ -590,25 +604,37 @@ void Output_Dialogue::show_selected_lint(int selected_item) noexcept
     {
         if (lint_error.mode_ == Error_Info::Bad_Linter_XML)
         {
-            plugin()->send_to_notepad(NPPM_DOOPEN, 0, settings_->settings_file().c_str());
+            plugin()->send_to_notepad(
+                NPPM_DOOPEN, 0, settings_->settings_file().c_str()
+            );
         }
         else
         {
             plugin()->send_to_notepad(NPPM_MENUCOMMAND, 0, IDM_FILE_NEW);
-            // Slightly unfortunately, the command line is UTF16, and
-            // we need to convert to UTF8. Do the best we can...
-            // Also should underline the sections.
-            plugin()->send_to_editor(
-                SCI_SETTEXT,
-                0,
-                ("Command:\n\n"
-                 + std::wstring_convert<std::codecvt_utf8<wchar_t>>().to_bytes(
-                     lint_error.command_
-                 )
-                 + "\n\n" + "Output:\n\n" + lint_error.stdout_
-                 + "\n\nError:\n\n" + lint_error.stderr_)
-                    .c_str()
+            plugin()->send_to_editor(SCI_SETILEXER, 0, nullptr);
+            constexpr int style = STYLE_LASTPREDEFINED + 1;
+            plugin()->send_to_editor(SCI_STYLESETUNDERLINE, style, true);
+
+            append_text_with_style("Command:", style);
+            // This should not throw if the command line is valid UTF16. Which
+            // it is.
+            append_text(
+                "\n\n"
+                + std::wstring_convert<std::codecvt_utf8<wchar_t>>().to_bytes(
+                    lint_error.command_
+                )
+                + "\n\n"
             );
+            append_text_with_style("Output:", style);
+            append_text("\n\n");
+            line = static_cast<int>(plugin()->send_to_editor(
+                SCI_LINEFROMPOSITION,
+                plugin()->send_to_editor(SCI_GETTEXTLENGTH)
+            ));
+            append_text(lint_error.stdout_ + "\n\n");
+
+            append_text_with_style("Error:", style);
+            append_text("\n\n" + lint_error.stderr_);
         }
     }
 
