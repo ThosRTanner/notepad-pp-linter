@@ -2,16 +2,13 @@
 
 #include "System_Error.h"
 
-#include <errhandlingapi.h>
 #include <fileapi.h>
 #include <handleapi.h>
 #include <intsafe.h>
-#include <winerror.h>
 
 #include <cstddef>
 #include <limits>
 #include <string>
-#include <utility>
 #include <vector>
 
 namespace Linter
@@ -70,7 +67,7 @@ void Handle_Wrapper::writeFile(std::string const &str) const
     }
 }
 
-std::string Handle_Wrapper::readFile() const
+std::string Handle_Wrapper::read_file() const
 {
     std::string result;
 
@@ -82,27 +79,17 @@ std::string Handle_Wrapper::readFile() const
     for (;;)
     {
         DWORD bytes_read;
-        // The API suggests when the other end closes the pipe, you should get
-        // 0. What appears to happen is that you get broken pipe.
         if (! ReadFile(handle_, buff, BUFFSIZE, &bytes_read, nullptr))
         {
-            DWORD const err = GetLastError();
-            if (err != ERROR_BROKEN_PIPE)
-            {
-                throw System_Error(err);
-            }
+            throw System_Error();
         }
 
-        result.append(buff, bytes_read);
-
-        // Assume partial reads are EOF. Not sure this is ideal, but when
-        // reading from a pipe you can get random hangs if you attempt to read
-        // more.
-        if (bytes_read < BUFFSIZE)
+        if (bytes_read == 0)
         {
             break;
         }
 
+        result.append(buff, bytes_read);
     }
 
     return result;

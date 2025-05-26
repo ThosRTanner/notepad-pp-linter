@@ -106,14 +106,6 @@ std::tuple<std::wstring, std::string, std::string> File_Holder::exec(
     }
     stdin_pipe.writer().close();
 
-    // FIXME We really should create a thread to read the stdout and stderr, in
-    // case we get over 64k of output. This may fix the other problems below.
-
-    // It does seem that for the first run of this, we don't actually get a
-    // result till we change the buffer. Should possibly be using
-    // WaitForSingleObject(proc_info.hProcess, INFINITE) somewhere here.
-    // However, doing that seems to hang indefinitely.
-
     // FIXME use GetExitCodeProcess to get the exit code. However, that always
     // seems to return 0x103
 
@@ -126,9 +118,8 @@ std::tuple<std::wstring, std::string, std::string> File_Holder::exec(
     stderr_pipe.writer().close();
     stdin_pipe.reader().close();
 
-    std::string out = stdout_pipe.reader().readFile();
-    std::string err = stderr_pipe.reader().readFile();
-    return std::make_tuple(args, out, err);
+    auto const res = Child_Pipe::read_output_pipes(stdout_pipe, stderr_pipe);
+    return std::make_tuple(args, res.first, res.second);
 }
 
 void File_Holder::write(std::string const &data)
@@ -139,7 +130,7 @@ void File_Holder::write(std::string const &data)
     temp_file_ = [&]()
     {
         std::filesystem::path temp = path_;
-        temp.concat("linter.tmp").concat(path_.extension().c_str());
+        temp.concat(".linter.tmp").concat(path_.extension().c_str());
         return temp;
     }();
 
