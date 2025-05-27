@@ -32,7 +32,7 @@ File_Holder::File_Holder(std::filesystem::path const &path) : path_(path)
 
 File_Holder::~File_Holder()
 {
-    if (! temp_file_.empty())
+    if (not temp_file_.empty())
     {
         std::error_code errcode;
         std::filesystem::remove(temp_file_, errcode);

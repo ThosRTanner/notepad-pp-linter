@@ -48,8 +48,6 @@ Handle_Wrapper::operator HANDLE() const noexcept
 
 void Handle_Wrapper::writeFile(std::string const &str) const
 {
-    static_assert(sizeof(str[0]) == 1, "Invalid byte size");
-
     auto start = str.begin();
     auto const end = str.end();
     while (start != end)
@@ -59,7 +57,7 @@ void Handle_Wrapper::writeFile(std::string const &str) const
             end - start
         ));
         DWORD written;
-        if (! WriteFile(handle_, &*start, toWrite, &written, nullptr))
+        if (not WriteFile(handle_, &*start, toWrite, &written, nullptr))
         {
             throw System_Error();
         }
@@ -79,7 +77,7 @@ std::string Handle_Wrapper::read_file() const
     for (;;)
     {
         DWORD bytes_read;
-        if (! ReadFile(handle_, buff, BUFFSIZE, &bytes_read, nullptr))
+        if (not ReadFile(handle_, buff, BUFFSIZE, &bytes_read, nullptr))
         {
             throw System_Error();
         }

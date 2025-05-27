@@ -232,7 +232,7 @@ void Linter::highlight_errors()
 {
     clear_error_highlights();
     errors_by_position_.clear();
-    if (! errors_.empty())
+    if (not errors_.empty())
     {
         setup_error_indicator();
     }
@@ -541,7 +541,7 @@ void Linter::show_tooltip(std::wstring message)
             message = L" - ";
         }
 
-        if (! message.empty())
+        if (not message.empty())
         {
 #pragma warning(suppress : 26490)
             ::SendMessage(

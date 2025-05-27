@@ -32,7 +32,7 @@ Linter::Dom_Document::Dom_Document(
 
     // Assign the schema cache to the DOMDocument's schemas collection.
     HRESULT hr = document_->putref_schemas(CComVariant(schemas));
-    if (! SUCCEEDED(hr))
+    if (not SUCCEEDED(hr))
     {
         throw System_Error(hr, "Can't use schema collection");
     }
@@ -62,7 +62,7 @@ Dom_Node_List Dom_Document::get_node_list(std::string const &xpath) const
     CComPtr<IXMLDOMNodeList> nodes;
     HRESULT const hr =
         document_->selectNodes(static_cast<_bstr_t>(xpath.c_str()), &nodes);
-    if (! SUCCEEDED(hr))
+    if (not SUCCEEDED(hr))
     {
         throw System_Error(hr, "Can't execute XPath " + xpath);
     }
@@ -74,7 +74,7 @@ std::optional<Dom_Node> Dom_Document::get_node(std::string const &xpath) const
     CComPtr<IXMLDOMNode> node;
     HRESULT const hr =
         document_->selectSingleNode(static_cast<_bstr_t>(xpath.c_str()), &node);
-    if (! SUCCEEDED(hr))
+    if (not SUCCEEDED(hr))
     {
         throw System_Error(hr, "Can't execute XPath " + xpath);
     }
@@ -88,13 +88,13 @@ std::optional<Dom_Node> Dom_Document::get_node(std::string const &xpath) const
 void Dom_Document::init()
 {
     HRESULT hr = document_.CoCreateInstance(__uuidof(DOMDocument60));
-    if (! SUCCEEDED(hr))
+    if (not SUCCEEDED(hr))
     {
         throw System_Error(hr, "Can't create IID_IXMLDOMDocument2");
     }
 
     hr = document_->put_async(VARIANT_FALSE);
-    if (! SUCCEEDED(hr))
+    if (not SUCCEEDED(hr))
     {
         throw System_Error(hr, "Can't XMLDOMDocument2::put_async");
     }
@@ -102,7 +102,7 @@ void Dom_Document::init()
 
 void Dom_Document::checkLoadResults(VARIANT_BOOL resultcode, HRESULT hr) const
 {
-    if (! SUCCEEDED(hr))
+    if (not SUCCEEDED(hr))
     {
         throw System_Error(hr);
     }
