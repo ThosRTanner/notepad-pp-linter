@@ -625,6 +625,8 @@ void Output_Dialogue::show_selected_lint(int selected_item) noexcept
                 )
                 + "\n\n"
             );
+            append_text_with_style("Return code:", style);
+            append_text(" " + std::to_string(lint_error.result_) + "\n\n");
             append_text_with_style("Output:", style);
             append_text("\n\n");
             line = static_cast<int>(plugin()->send_to_editor(

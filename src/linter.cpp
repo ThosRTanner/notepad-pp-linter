@@ -431,7 +431,7 @@ void Linter::apply_linters()
         try
         {
             // Try and work out what to do here:
-            auto const [cmdline, output, errout] = file.exec(command, text);
+            auto const [cmdline, result, output, errout] = file.exec(command, text);
             if (output.empty() && not errout.empty())
             {
                 // Program terminated with error.
@@ -440,6 +440,7 @@ void Linter::apply_linters()
                      .message_ = std::wstring(errout.begin(), errout.end()),
                      .tool_ = command.program.stem(),
                      .command_ = cmdline,
+                     .result_ = result,
                      .stdout_ = output,
                      .stderr_ = errout}
                 );

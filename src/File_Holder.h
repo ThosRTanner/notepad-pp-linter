@@ -22,7 +22,7 @@ class File_Holder
 
     ~File_Holder();
 
-    std::tuple<std::wstring, std::string, std::string> exec(
+    std::tuple<std::wstring, DWORD, std::string, std::string> exec(
         Settings::Linter::Command const &, std::string const &text
     );
 

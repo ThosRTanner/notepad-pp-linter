@@ -22,6 +22,7 @@ struct Error_Info
     std::wstring severity_ = L"error";
     std::wstring tool_;
     std::wstring command_;
+    DWORD result_;
     std::string stdout_;
     std::string stderr_;
 };

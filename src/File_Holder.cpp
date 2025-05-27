@@ -22,6 +22,7 @@
 #include <string>
 #include <system_error>
 #include <tuple>
+#include <utility>
 
 namespace Linter
 {
@@ -39,7 +40,7 @@ File_Holder::~File_Holder()
     }
 }
 
-std::tuple<std::wstring, std::string, std::string> File_Holder::exec(
+std::tuple<std::wstring, DWORD, std::string, std::string> File_Holder::exec(
     Settings::Linter::Command const &command, std::string const &text
 )
 {
@@ -101,16 +102,26 @@ std::tuple<std::wstring, std::string, std::string> File_Holder::exec(
 
     if (command.use_stdin)
     {
-        // FIXME Use WaitForInputIdle here
+        // FIXME Use WaitForInputIdle here?
         stdin_pipe.writer().writeFile(text);
     }
     stdin_pipe.writer().close();
 
-    // FIXME use GetExitCodeProcess to get the exit code. However, that always
-    // seems to return 0x103
+    // Wait for the process to complete.
+    if (WaitForSingleObject(proc_info.hProcess, INFINITE) == WAIT_FAILED)
+    {
+        throw System_Error();
+    }
 
-    // We need to close all the handles for this end otherwise strange things
-    // happen.
+    DWORD exit_code;
+    if (not GetExitCodeProcess(proc_info.hProcess, &exit_code))
+    {
+        throw System_Error();
+    }
+
+    // We now need to close all the handles for this end otherwise strange
+    // things happen when we try to read the data. This seems a very odd
+    // order in which to do these things.
     CloseHandle(proc_info.hProcess);
     CloseHandle(proc_info.hThread);
 
@@ -119,7 +130,7 @@ std::tuple<std::wstring, std::string, std::string> File_Holder::exec(
     stdin_pipe.reader().close();
 
     auto const res = Child_Pipe::read_output_pipes(stdout_pipe, stderr_pipe);
-    return std::make_tuple(args, res.first, res.second);
+    return std::make_tuple(args, exit_code, res.first, res.second);
 }
 
 void File_Holder::write(std::string const &data)
