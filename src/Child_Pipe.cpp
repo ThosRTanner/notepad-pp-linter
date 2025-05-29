@@ -37,21 +37,29 @@ Child_Pipe Child_Pipe::create_output_pipe()
 }
 
 std::pair<std::string, std::string> Child_Pipe::read_output_pipes(
-    Child_Pipe const &pipe1, Child_Pipe const &pipe2
+    HANDLE process, Child_Pipe const &pipe1, Child_Pipe const &pipe2
 )
 {
-    std::string res1;
-    std::string res2;
-
     constexpr DWORD BUFFSIZE = 0x4000;
     std::vector<char> buffer;
     buffer.resize(BUFFSIZE);
     auto const buff{&*buffer.begin()};
 
+    std::string res1;
+    std::string res2;
+
     bool more_to_read = true;
     while (more_to_read)
     {
         more_to_read = false;
+
+        auto const state = WaitForSingleObject(process, 50);
+        if (state == WAIT_FAILED)
+        {
+            throw System_Error();
+        }
+
+        more_to_read = state == WAIT_TIMEOUT;
 
         DWORD bytes_avail = 0;
         if (not PeekNamedPipe(
@@ -67,7 +75,11 @@ std::pair<std::string, std::string> Child_Pipe::read_output_pipes(
         if (bytes_avail != 0)
         {
             if (not ReadFile(
-                    pipe1.reader(), buff, BUFFSIZE, &bytes_avail, NULL
+                    pipe1.reader(),
+                    buff,
+                    std::min(BUFFSIZE, bytes_avail),
+                    &bytes_avail,
+                    NULL
                 ))
             {
                 throw System_Error();
@@ -89,7 +101,11 @@ std::pair<std::string, std::string> Child_Pipe::read_output_pipes(
         if (bytes_avail != 0)
         {
             if (not ReadFile(
-                    pipe2.reader(), buff, BUFFSIZE, &bytes_avail, NULL
+                    pipe2.reader(),
+                    buff,
+                    std::min(BUFFSIZE, bytes_avail),
+                    &bytes_avail,
+                    NULL
                 ))
             {
                 throw System_Error();
@@ -98,7 +114,6 @@ std::pair<std::string, std::string> Child_Pipe::read_output_pipes(
             more_to_read = true;
         }
     }
-
     return std::make_pair(res1, res2);
 }
 

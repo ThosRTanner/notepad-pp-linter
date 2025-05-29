@@ -107,11 +107,14 @@ std::tuple<std::wstring, DWORD, std::string, std::string> File_Holder::exec(
     }
     stdin_pipe.writer().close();
 
-    // Wait for the process to complete.
-    if (WaitForSingleObject(proc_info.hProcess, INFINITE) == WAIT_FAILED)
-    {
-        throw System_Error();
-    }
+    // Close this end of all the pipes or the other end can hang.
+    stdout_pipe.writer().close();
+    stderr_pipe.writer().close();
+    stdin_pipe.reader().close();
+
+    auto const res = Child_Pipe::read_output_pipes(
+        proc_info.hProcess, stdout_pipe, stderr_pipe
+    );
 
     DWORD exit_code;
     if (not GetExitCodeProcess(proc_info.hProcess, &exit_code))
@@ -119,17 +122,10 @@ std::tuple<std::wstring, DWORD, std::string, std::string> File_Holder::exec(
         throw System_Error();
     }
 
-    // We now need to close all the handles for this end otherwise strange
-    // things happen when we try to read the data. This seems a very odd
-    // order in which to do these things.
+    // And finally clean up.
     CloseHandle(proc_info.hProcess);
     CloseHandle(proc_info.hThread);
 
-    stdout_pipe.writer().close();
-    stderr_pipe.writer().close();
-    stdin_pipe.reader().close();
-
-    auto const res = Child_Pipe::read_output_pipes(stdout_pipe, stderr_pipe);
     return std::make_tuple(args, exit_code, res.first, res.second);
 }
 
