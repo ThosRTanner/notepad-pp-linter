@@ -40,7 +40,8 @@ Dom_Node Dom_Node::get_node(std::string const &xpath) const
     return *node;
 }
 
-std::optional<Dom_Node> Dom_Node::get_optional_node(std::string const &xpath) const
+std::optional<Dom_Node> Dom_Node::get_optional_node(std::string const &xpath
+) const
 {
     CComPtr<IXMLDOMNode> node;
     auto const hr =

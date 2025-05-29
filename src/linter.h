@@ -37,7 +37,7 @@ class Linter : public Plugin
     /** Return the plugin name */
     static wchar_t const *get_plugin_name() noexcept;
 
-    Settings const* settings() const noexcept
+    Settings const *settings() const noexcept
     {
         return settings_.get();
     }

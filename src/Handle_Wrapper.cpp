@@ -9,6 +9,7 @@
 #include <cstddef>
 #include <limits>
 #include <string>
+#include <utility>
 #include <vector>
 
 namespace Linter
@@ -46,7 +47,7 @@ Handle_Wrapper::operator HANDLE() const noexcept
     return handle_;
 }
 
-void Handle_Wrapper::writeFile(std::string const &str) const
+void Handle_Wrapper::write_file(std::string const &str) const
 {
     auto start = str.begin();
     auto const end = str.end();

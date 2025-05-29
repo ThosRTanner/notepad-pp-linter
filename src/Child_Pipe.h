@@ -2,6 +2,8 @@
 
 #include "Handle_Wrapper.h"
 
+#include <winnt.h>
+
 #include <string>
 #include <utility>
 

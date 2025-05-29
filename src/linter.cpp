@@ -353,10 +353,10 @@ unsigned int Linter::run_linter() noexcept
             std::string exc{e.what()};
             std::wstring wstr{exc.begin(), exc.end()};
             output_dialogue_->add_system_error(
-                {.mode_ = Error_Info::Bad_Linter_XML,
+                {.message_ = wstr,
+                 .mode_ = Error_Info::Bad_Linter_XML,
                  .line_ = e.line(),
-                 .column_ = e.column(),
-                 .message_ = wstr}
+                 .column_ = e.column()}
             );
             show_tooltip(wstr);
         }
@@ -365,7 +365,7 @@ unsigned int Linter::run_linter() noexcept
             std::string const exc(e.what());
             std::wstring wstr{exc.begin(), exc.end()};
             output_dialogue_->add_system_error(
-                {.mode_ = Error_Info::Exception, .message_ = wstr}
+                {.message_ = wstr, .mode_ = Error_Info::Exception}
             );
             show_tooltip(wstr);
         }
@@ -431,18 +431,19 @@ void Linter::apply_linters()
         try
         {
             // Try and work out what to do here:
-            auto const [cmdline, result, output, errout] = file.exec(command, text);
+            auto const [cmdline, result, output, errout] =
+                file.exec(command, text);
             if (output.empty() && not errout.empty())
             {
                 // Program terminated with error.
                 output_dialogue_->add_system_error(
-                    {.mode_ = Error_Info::Stderr_Found,
-                     .message_ = std::wstring(errout.begin(), errout.end()),
+                    {.message_ = std::wstring(errout.begin(), errout.end()),
                      .tool_ = command.program.stem(),
                      .command_ = cmdline,
-                     .result_ = result,
                      .stdout_ = output,
-                     .stderr_ = errout}
+                     .stderr_ = errout,
+                     .mode_ = Error_Info::Stderr_Found,
+                     .result_ = result}
                 );
                 continue;
             }
@@ -460,13 +461,13 @@ void Linter::apply_linters()
                 if (not errout.empty())
                 {
                     output_dialogue_->add_system_error(
-                        {.mode_ = Error_Info::Stderr_Found,
-                         .message_ = std::wstring(errout.begin(), errout.end()),
+                        {.message_ = std::wstring(errout.begin(), errout.end()),
                          .severity_ = L"warning",
                          .tool_ = command.program.stem(),
                          .command_ = cmdline,
                          .stdout_ = output,
-                         .stderr_ = errout}
+                         .stderr_ = errout,
+                         .mode_ = Error_Info::Stderr_Found}
                     );
                 }
             }
@@ -474,14 +475,14 @@ void Linter::apply_linters()
             {
                 std::string exc{e.what()};
                 output_dialogue_->add_system_error(
-                    {.mode_ = Error_Info::Bad_Output,
-                     .line_ = e.line(),
-                     .column_ = e.column(),
-                     .message_ = std::wstring(exc.begin(), exc.end()),
+                    {.message_ = std::wstring(exc.begin(), exc.end()),
                      .tool_ = command.program.stem(),
                      .command_ = cmdline,
                      .stdout_ = output,
-                     .stderr_ = errout}
+                     .stderr_ = errout,
+                     .mode_ = Error_Info::Bad_Output,
+                     .line_ = e.line(),
+                     .column_ = e.column()}
                 );
             }
         }
@@ -491,9 +492,9 @@ void Linter::apply_linters()
             // can log
             std::string exc{e.what()};
             output_dialogue_->add_system_error(
-                {.mode_ = Error_Info::Exception,
-                 .message_ = std::wstring(exc.begin(), exc.end()),
-                 .tool_ = command.program.stem()}
+                {.message_ = std::wstring(exc.begin(), exc.end()),
+                 .tool_ = command.program.stem(),
+                 .mode_ = Error_Info::Exception}
             );
         }
     }

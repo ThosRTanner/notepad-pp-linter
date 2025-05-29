@@ -112,9 +112,7 @@ class Output_Dialogue : protected Docking_Dialogue_Interface
     void update_displayed_counts();
 
     /** Add list of errors to the appropriate tab */
-    void add_errors(
-        Tab tab, std::vector<Error_Info> const &lints
-    );
+    void add_errors(Tab tab, std::vector<Error_Info> const &lints);
 
     /** Skip to the n-th lint forward or backward */
     void select_lint(int n) noexcept;
@@ -123,7 +121,8 @@ class Output_Dialogue : protected Docking_Dialogue_Interface
     void append_text(std::string_view text) const noexcept;
 
     /** Add underlined text to end of buffer */
-    void append_text_with_style(std::string_view text, int style) const noexcept;
+    void append_text_with_style(std::string_view text, int style)
+        const noexcept;
 
     /** Move to the line/column of the displayed error */
     void show_selected_lint(int selected_item) noexcept;

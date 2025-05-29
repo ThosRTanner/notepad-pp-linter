@@ -12,9 +12,7 @@
 namespace Linter
 {
 
-std::vector<Error_Info> Checkstyle_Parser::get_errors(
-    std::string const &xml
-)
+std::vector<Error_Info> Checkstyle_Parser::get_errors(std::string const &xml)
 {
     Dom_Document document{xml};
 
@@ -46,12 +44,12 @@ std::vector<Error_Info> Checkstyle_Parser::get_errors(
         }
 
         errors.push_back(Error_Info{
-            .mode_ = Error_Info::Standard,
-            .line_ = std::stoi(node.get_attribute(L"line")),
-            .column_ = std::stoi(node.get_attribute(L"column")),
             .message_ = node.get_attribute(L"message"),
             .severity_ = node.get_attribute(L"severity"),
-            .tool_ = tool
+            .tool_ = tool,
+            .mode_ = Error_Info::Standard,
+            .line_ = std::stoi(node.get_attribute(L"line")),
+            .column_ = std::stoi(node.get_attribute(L"column"))
         });
     }
 

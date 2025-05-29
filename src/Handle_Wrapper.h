@@ -3,7 +3,6 @@
 #include <winnt.h>    // For HANDLE
 
 #include <string>
-#include <utility>
 
 namespace Linter
 {
@@ -26,7 +25,7 @@ class Handle_Wrapper
      *
      * @param str - string to write
      */
-    void writeFile(std::string const &str) const;
+    void write_file(std::string const &str) const;
 
     /** Read the entire file
      *

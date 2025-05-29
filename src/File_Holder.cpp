@@ -103,7 +103,7 @@ std::tuple<std::wstring, DWORD, std::string, std::string> File_Holder::exec(
     if (command.use_stdin)
     {
         // FIXME Use WaitForInputIdle here?
-        stdin_pipe.writer().writeFile(text);
+        stdin_pipe.writer().write_file(text);
     }
     stdin_pipe.writer().close();
 
@@ -151,7 +151,7 @@ void File_Holder::write(std::string const &data)
         nullptr
     )};
 
-    handle.writeFile(data);
+    handle.write_file(data);
 }
 
 void File_Holder::setup_environment() const

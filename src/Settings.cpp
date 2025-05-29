@@ -55,15 +55,16 @@ Settings::Settings(::Linter::Linter const &linter) :
         throw System_Error(hr, "Can't add to schema pool");
     }
 
-    //A note: We try to read the settings at this point and quietly ignore errors
-    //if we can't. This isn't great, but not sure where I can put errors.
+    // A note: We try to read the settings at this point and quietly ignore
+    // errors if we can't. This isn't great, but not sure where I can put
+    // errors.
     try
     {
         refresh();
     }
-    catch (std::exception const&)
+    catch (std::exception const &)
     {
-        //Nothing we can usefully do.
+        // Nothing we can usefully do.
     }
 }
 

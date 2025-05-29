@@ -1,5 +1,7 @@
 #pragma once
 
+#include <intsafe.h>
+
 #include <string>
 
 namespace Linter
@@ -15,16 +17,18 @@ struct Error_Info
         Stderr_Found,      // Information found in stderr
         Exception,         // Unexpected exception when processing file
         Other              // Other exception when processing
-    } mode_;
-    int line_ = 0;
-    int column_ = 0;
+    };
+
     std::wstring message_;
     std::wstring severity_ = L"error";
     std::wstring tool_;
     std::wstring command_;
-    DWORD result_;
     std::string stdout_;
     std::string stderr_;
+    Mode mode_;
+    int line_ = 0;
+    int column_ = 0;
+    DWORD result_;
 };
 
 }    // namespace Linter

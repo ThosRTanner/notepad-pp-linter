@@ -9,5 +9,7 @@
 	{ symbol: ["memcpy", "private", "<string.h>", "public"] },
 	{ symbol: ["std::string_view", "private", "<string_view>", "public"] },
 	{ symbol: ["std::wstring_view", "private", "<string_view>", "public"] },
-	{ symbol: ["_countof", "private", "<vcruntime.h>", "public" ] }
+	{ symbol: ["towlower", "private", "<cwctype>", "public" ] },
+	{ symbol: ["wint_t", "private", "<cwctype>", "public" ] },
+	{ symbol: ["_countof", "private", "<vcruntime.h>", "public" ] },
 ]

@@ -3,6 +3,8 @@
 // Fixme do we extract the command substructure somewhere?
 #include "Settings.h"
 
+#include <intsafe.h>
+
 #include <filesystem>
 #include <string>
 #include <tuple>
