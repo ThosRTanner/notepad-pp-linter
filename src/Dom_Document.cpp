@@ -28,7 +28,7 @@ Linter::Dom_Document::Dom_Document(
 
     document_->put_validateOnParse(VARIANT_TRUE);
     // Not sure what this does but it doesn't seem to be  necessary.
-    // pXD->put_resolveExternals(VARIANT_TRUE); 
+    // pXD->put_resolveExternals(VARIANT_TRUE);
 
     // Assign the schema cache to the DOMDocument's schemas collection.
     HRESULT hr = document_->putref_schemas(CComVariant(schemas));

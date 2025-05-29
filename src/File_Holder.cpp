@@ -147,7 +147,7 @@ void File_Holder::write(std::string const &data)
         0,
         nullptr,
         CREATE_ALWAYS,
-        FILE_ATTRIBUTE_HIDDEN,
+        FILE_ATTRIBUTE_HIDDEN | FILE_ATTRIBUTE_TEMPORARY,
         nullptr
     )};
 
