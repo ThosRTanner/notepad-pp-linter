@@ -506,6 +506,7 @@ powershell.exe -File "$(ProjectDir)gen_version_h.ps1" "$(IntDir)\"</Command>
     <ClInclude Include="src\Dom_Node.h" />
     <ClInclude Include="src\Dom_Node_List.h" />
     <ClInclude Include="src\encoding.h" />
+    <ClInclude Include="src\Error_Info.h" />
     <ClInclude Include="src\File_Holder.h" />
     <ClInclude Include="src\Child_Pipe.h" />
     <ClInclude Include="src\Handle_Wrapper.h" />
@@ -538,6 +539,10 @@ powershell.exe -File "$(ProjectDir)gen_version_h.ps1" "$(IntDir)\"</Command>
     <None Include=".github\workflows\CI_pull_request.yml" />
     <None Include=".github\workflows\CI_release.yml" />
     <None Include=".github\workflows\codeql-analysis.yml" />
+    <None Include="Changes.md">
+      <SubType>
+      </SubType>
+    </None>
     <None Include="gen_version_h.ps1" />
     <None Include="iwyu.bat" />
     <None Include="post-build.ps1" />

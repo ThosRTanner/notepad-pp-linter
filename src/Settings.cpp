@@ -43,27 +43,28 @@ Settings::Settings(::Linter::Linter const &linter) :
 {
     // Create a schema cache and our xsd to it.
     auto hr = settings_schema_.CoCreateInstance(__uuidof(XMLSchemaCache60));
-    if (! SUCCEEDED(hr))
+    if (not SUCCEEDED(hr))
     {
         throw System_Error(hr, "Can't create XMLSchemaCache60");
     }
 
     CComVariant xsd{settings_xsd_.c_str()};
     hr = settings_schema_->add(bstr_t(""), xsd);
-    if (! SUCCEEDED(hr))
+    if (not SUCCEEDED(hr))
     {
         throw System_Error(hr, "Can't add to schema pool");
     }
 
-    //A note: We try to read the settings at this point and quietly ignore errors
-    //if we can't. This isn't great, but not sure where I can put errors.
+    // A note: We try to read the settings at this point and quietly ignore
+    // errors if we can't. This isn't great, but not sure where I can put
+    // errors.
     try
     {
         refresh();
     }
-    catch (std::exception const&)
+    catch (std::exception const &)
     {
-        //Nothing we can usefully do.
+        // Nothing we can usefully do.
     }
 }
 

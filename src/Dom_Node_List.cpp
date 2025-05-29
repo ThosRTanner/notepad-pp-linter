@@ -20,7 +20,7 @@ Dom_Node Dom_Node_List::iterator::operator*() const
 {
     CComPtr<IXMLDOMNode> node;
     auto const hr = node_list_->get_item(item_, &node);
-    if (! SUCCEEDED(hr))
+    if (not SUCCEEDED(hr))
     {
         throw System_Error(hr, "Can't get item detail");
     }
@@ -31,7 +31,7 @@ Dom_Node_List::Dom_Node_List(CComPtr<IXMLDOMNodeList> node_list) :
     node_list_(node_list)
 {
     HRESULT const hr = node_list->get_length(&num_items_);
-    if (! SUCCEEDED(hr))
+    if (not SUCCEEDED(hr))
     {
         throw System_Error(hr, "Can't get number of items in node list");
     }

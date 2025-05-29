@@ -21,6 +21,7 @@
 #include <memory>
 #include <string>
 #include <system_error>
+#include <tuple>
 #include <utility>
 
 namespace Linter
@@ -32,14 +33,14 @@ File_Holder::File_Holder(std::filesystem::path const &path) : path_(path)
 
 File_Holder::~File_Holder()
 {
-    if (! temp_file_.empty())
+    if (not temp_file_.empty())
     {
         std::error_code errcode;
         std::filesystem::remove(temp_file_, errcode);
     }
 }
 
-std::pair<std::string, std::string> File_Holder::exec(
+std::tuple<std::wstring, DWORD, std::string, std::string> File_Holder::exec(
     Settings::Linter::Command const &command, std::string const &text
 )
 {
@@ -101,31 +102,31 @@ std::pair<std::string, std::string> File_Holder::exec(
 
     if (command.use_stdin)
     {
-        // FIXME Use WaitForInputIdle here
-        stdin_pipe.writer().writeFile(text);
+        // FIXME Use WaitForInputIdle here?
+        stdin_pipe.writer().write_file(text);
     }
     stdin_pipe.writer().close();
 
-    // It does seem that for the first run of this, we don't actually get a
-    // result till we change the buffer. Should possibly be using
-    // WaitForSingleObject(proc_info.hProcess, INFINITE) somewhere here.
-    // However, doing that seems to hang indefinitely.
-
-    // FIXME use GetExitCodeProcess to get the exit code. However, that always
-    // seems to return 0x103
-
-    // We need to close all the handles for this end otherwise strange things
-    // happen.
-    CloseHandle(proc_info.hProcess);
-    CloseHandle(proc_info.hThread);
-
+    // Close this end of all the pipes or the other end can hang.
     stdout_pipe.writer().close();
     stderr_pipe.writer().close();
     stdin_pipe.reader().close();
 
-    std::string out = stdout_pipe.reader().readFile();
-    std::string err = stderr_pipe.reader().readFile();
-    return std::make_pair(out, err);
+    auto const res = Child_Pipe::read_output_pipes(
+        proc_info.hProcess, stdout_pipe, stderr_pipe
+    );
+
+    DWORD exit_code;
+    if (not GetExitCodeProcess(proc_info.hProcess, &exit_code))
+    {
+        throw System_Error();
+    }
+
+    // And finally clean up.
+    CloseHandle(proc_info.hProcess);
+    CloseHandle(proc_info.hThread);
+
+    return std::make_tuple(args, exit_code, res.first, res.second);
 }
 
 void File_Holder::write(std::string const &data)
@@ -136,7 +137,7 @@ void File_Holder::write(std::string const &data)
     temp_file_ = [&]()
     {
         std::filesystem::path temp = path_;
-        temp.concat("linter.tmp").concat(path_.extension().c_str());
+        temp.concat(".linter.tmp").concat(path_.extension().c_str());
         return temp;
     }();
 
@@ -146,11 +147,11 @@ void File_Holder::write(std::string const &data)
         0,
         nullptr,
         CREATE_ALWAYS,
-        FILE_ATTRIBUTE_HIDDEN,
+        FILE_ATTRIBUTE_HIDDEN | FILE_ATTRIBUTE_TEMPORARY,
         nullptr
     )};
 
-    handle.writeFile(data);
+    handle.write_file(data);
 }
 
 void File_Holder::setup_environment() const

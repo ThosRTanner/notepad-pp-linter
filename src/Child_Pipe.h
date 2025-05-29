@@ -2,6 +2,11 @@
 
 #include "Handle_Wrapper.h"
 
+#include <winnt.h>
+
+#include <string>
+#include <utility>
+
 namespace Linter
 {
 
@@ -20,6 +25,10 @@ class Child_Pipe
 
     static Child_Pipe create_output_pipe();
     static Child_Pipe create_input_pipe();
+
+    static std::pair<std::string, std::string> read_output_pipes(
+        HANDLE process, Child_Pipe const &pipe1, Child_Pipe const &pipe2
+    );
 
   private:
     struct Pipes

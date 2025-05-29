@@ -202,6 +202,9 @@
     <ClInclude Include="src\Indicator.h">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\Error_Info.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="src\Resource.rc">
@@ -231,6 +234,7 @@
       <Filter>Github\Workflows</Filter>
     </None>
     <None Include="PSScriptAnalyzerSettings.psd1" />
+    <None Include="Changes.md" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="src\linter.ico">

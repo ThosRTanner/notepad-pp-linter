@@ -25,10 +25,13 @@ class Handle_Wrapper
      *
      * @param str - string to write
      */
-    void writeFile(std::string const &str) const;
+    void write_file(std::string const &str) const;
 
-    /** Read the entire file */
-    std::string readFile() const;
+    /** Read the entire file
+     *
+     * It is NOT advised to use this for stdout/stderr pipes.
+     */
+    std::string read_file() const;
 
   private:
     mutable HANDLE handle_;
