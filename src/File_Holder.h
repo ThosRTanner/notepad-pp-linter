@@ -3,9 +3,11 @@
 // Fixme do we extract the command substructure somewhere?
 #include "Settings.h"
 
+#include <intsafe.h>
+
 #include <filesystem>
 #include <string>
-#include <utility>
+#include <tuple>
 
 namespace Linter
 {
@@ -22,7 +24,7 @@ class File_Holder
 
     ~File_Holder();
 
-    std::pair<std::string, std::string> exec(
+    std::tuple<std::wstring, DWORD, std::string, std::string> exec(
         Settings::Linter::Command const &, std::string const &text
     );
 

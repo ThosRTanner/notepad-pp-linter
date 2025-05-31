@@ -4,15 +4,19 @@
 
 #include "Checkstyle_Parser.h"
 #include "Clipboard.h"
+#include "Error_Info.h"
 #include "Linter.h"
 #include "Settings.h"
 #include "System_Error.h"
+
+#include "notepad++/menuCmdID.h"
 
 #include "resource.h"
 
 #include <CommCtrl.h>
 #include <intsafe.h>
 
+#include <codecvt>
 #include <cstddef>
 #include <sstream>
 #include <string>
@@ -121,16 +125,13 @@ void Output_Dialogue::clear_lint_info()
     update_displayed_counts();
 }
 
-void Output_Dialogue::add_system_error(Checkstyle_Parser::Error const &err)
+void Output_Dialogue::add_system_error(Error_Info const &err)
 {
-    std::vector<Checkstyle_Parser::Error> errs;
-    errs.push_back(err);
+    std::vector<Error_Info> errs = {err};
     add_errors(Tab::System_Error, errs);
 }
 
-void Output_Dialogue::add_lint_errors(
-    std::vector<Checkstyle_Parser::Error> const &errs
-)
+void Output_Dialogue::add_lint_errors(std::vector<Error_Info> const &errs)
 {
     add_errors(Tab::Lint_Error, errs);
 }
@@ -470,9 +471,7 @@ void Output_Dialogue::update_displayed_counts()
     }
 }
 
-void Output_Dialogue::add_errors(
-    Tab tab, std::vector<Checkstyle_Parser::Error> const &lints
-)
+void Output_Dialogue::add_errors(Tab tab, std::vector<Error_Info> const &lints)
 {
     auto &tab_def = tab_definitions_[tab];
     HWND const list_view = tab_def.list_view;
@@ -575,23 +574,70 @@ void Output_Dialogue::select_lint(int n) noexcept
     show_selected_lint(row);
 }
 
+void Output_Dialogue::append_text(std::string_view text) const noexcept
+{
+    plugin()->send_to_editor(SCI_APPENDTEXT, text.length(), text.data());
+}
+
+void Output_Dialogue::append_text_with_style(std::string_view text, int style)
+    const noexcept
+{
+    auto const old_pos = plugin()->send_to_editor(SCI_GETTEXTLENGTH);
+    append_text(text);
+    plugin()->send_to_editor(SCI_STARTSTYLING, old_pos);
+    plugin()->send_to_editor(SCI_SETSTYLING, text.length(), style);
+}
+
 void Output_Dialogue::show_selected_lint(int selected_item) noexcept
 {
     LVITEM const item{.mask = LVIF_PARAM, .iItem = selected_item};
     ListView_GetItem(current_list_view_, &item);
 
-    Checkstyle_Parser::Error const &lint_error =
-        current_tab_->errors[item.lParam];
+    Error_Info const &lint_error = current_tab_->errors[item.lParam];
 
-    int const line = std::max(lint_error.line_ - 1, 0);
+    int line = std::max(lint_error.line_ - 1, 0);
     int const column = std::max(lint_error.column_ - 1, 0);
 
     /* We only need to do this if we need to pop up linter.xml. The following
      * isn't ideal */
     if (current_tab_->tab == Tab::System_Error)
     {
-        // FIXME
-        //  editConfig();
+        if (lint_error.mode_ == Error_Info::Bad_Linter_XML)
+        {
+            plugin()->send_to_notepad(
+                NPPM_DOOPEN, 0, settings_->settings_file().c_str()
+            );
+        }
+        else
+        {
+            plugin()->send_to_notepad(NPPM_MENUCOMMAND, 0, IDM_FILE_NEW);
+            plugin()->send_to_editor(SCI_SETILEXER, 0, nullptr);
+            constexpr int style = STYLE_LASTPREDEFINED + 1;
+            plugin()->send_to_editor(SCI_STYLESETUNDERLINE, style, true);
+
+            append_text_with_style("Command:", style);
+            // This should not throw if the command line is valid UTF16. Which
+            // it is.
+            append_text(
+                "\n\n"
+                + std::wstring_convert<std::codecvt_utf8<wchar_t>>().to_bytes(
+                    lint_error.command_
+                )
+                + "\n\n"
+            );
+            append_text_with_style("Return code:", style);
+            append_text(" " + std::to_string(lint_error.result_) + "\n\n");
+            append_text_with_style("Output:", style);
+            append_text("\n\n");
+            line = static_cast<int>(plugin()->send_to_editor(
+                SCI_LINEFROMPOSITION,
+                plugin()->send_to_editor(SCI_GETTEXTLENGTH)
+            ));
+            append_text(lint_error.stdout_ + "\n\n");
+
+            append_text_with_style("Error:", style);
+            append_text("\n\n" + lint_error.stderr_);
+        }
     }
 
     plugin()->send_to_editor(SCI_GOTOLINE, line);
@@ -676,9 +722,7 @@ int CALLBACK Output_Dialogue::sort_call_function(
 {
     // FIXME pass pointer to appropriate errors
     auto const &errs =
-        *cast_to<std::vector<Checkstyle_Parser::Error> const *, LPARAM>(
-            lParamSort
-        );
+        *cast_to<std::vector<Error_Info> const *, LPARAM>(lParamSort);
     int res = errs[row1_index].line_ - errs[row2_index].line_;
     if (res == 0)
     {

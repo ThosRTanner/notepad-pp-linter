@@ -2,11 +2,9 @@
 
 #include "System_Error.h"
 
-#include <errhandlingapi.h>
 #include <fileapi.h>
 #include <handleapi.h>
 #include <intsafe.h>
-#include <winerror.h>
 
 #include <cstddef>
 #include <limits>
@@ -49,10 +47,8 @@ Handle_Wrapper::operator HANDLE() const noexcept
     return handle_;
 }
 
-void Handle_Wrapper::writeFile(std::string const &str) const
+void Handle_Wrapper::write_file(std::string const &str) const
 {
-    static_assert(sizeof(str[0]) == 1, "Invalid byte size");
-
     auto start = str.begin();
     auto const end = str.end();
     while (start != end)
@@ -62,7 +58,7 @@ void Handle_Wrapper::writeFile(std::string const &str) const
             end - start
         ));
         DWORD written;
-        if (! WriteFile(handle_, &*start, toWrite, &written, nullptr))
+        if (not WriteFile(handle_, &*start, toWrite, &written, nullptr))
         {
             throw System_Error();
         }
@@ -70,7 +66,7 @@ void Handle_Wrapper::writeFile(std::string const &str) const
     }
 }
 
-std::string Handle_Wrapper::readFile() const
+std::string Handle_Wrapper::read_file() const
 {
     std::string result;
 
@@ -82,15 +78,9 @@ std::string Handle_Wrapper::readFile() const
     for (;;)
     {
         DWORD bytes_read;
-        // The API suggests when the other end closes the pipe, you should get
-        // 0. What appears to happen is that you get broken pipe.
-        if (! ReadFile(handle_, buff, BUFFSIZE, &bytes_read, nullptr))
+        if (not ReadFile(handle_, buff, BUFFSIZE, &bytes_read, nullptr))
         {
-            DWORD const err = GetLastError();
-            if (err != ERROR_BROKEN_PIPE)
-            {
-                throw System_Error(err);
-            }
+            throw System_Error();
         }
 
         if (bytes_read == 0)

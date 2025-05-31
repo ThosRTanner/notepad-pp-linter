@@ -37,7 +37,7 @@ class Linter : public Plugin
     /** Return the plugin name */
     static wchar_t const *get_plugin_name() noexcept;
 
-    Settings const* settings() const noexcept
+    Settings const *settings() const noexcept
     {
         return settings_.get();
     }
@@ -81,9 +81,6 @@ class Linter : public Plugin
     // Apply all the applicable linters to the current buffer.
     void apply_linters();
 
-    // Pop up a message on an exception caught when running linters
-    void handle_exception(std::exception const &exc, std::wstring const &tool);
-
     // Shows tooltip in notepad++ window.
     void show_tooltip();
 
@@ -112,7 +109,7 @@ class Linter : public Plugin
     bool file_changed_ = true;
 
     // List of errors picked up in latest lint(s)
-    std::vector<Checkstyle_Parser::Error> errors_;
+    std::vector<Error_Info> errors_;
 
     // Same but by position in window
     std::map<LRESULT, std::wstring> errors_by_position_;

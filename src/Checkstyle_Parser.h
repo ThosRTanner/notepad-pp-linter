@@ -6,19 +6,12 @@
 namespace Linter
 {
 
+struct Error_Info;
+
 class Checkstyle_Parser
 {
   public:
-    struct Error
-    {
-        int line_;
-        int column_;
-        std::wstring message_;
-        std::wstring severity_;
-        std::wstring tool_;
-    };
-
-    static std::vector<Error> get_errors(std::string const &xml);
+    static std::vector<Error_Info> get_errors(std::string const &xml);
 };
 
 }    // namespace Linter

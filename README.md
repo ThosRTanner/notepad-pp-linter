@@ -7,7 +7,6 @@ This is a fork of the 'linter' plugin for notepad++ from deadem which provides r
 ![Dockable error window](/img/2.png?raw=true)
 
 ## Installation
-
 - See <https://npp-user-manual.org/docs/plugins/>
 - Use the plugin manager. No, seriously.
 - If you must install manually, run notepad++ in administrator mode and
@@ -38,7 +37,7 @@ A note: Please don't supply empty sections, as this will become an error in the 
 
 You can control all the various settings for a scintilla indicator here. Your xml will look something like this:
 
-``` xml
+```xml
 <indicator>
   <colour>
     <shade>
@@ -53,7 +52,7 @@ You can control all the various settings for a scintilla indicator here. Your xm
   <draw_under/>
   <hover>
     <style>box</style>
-    <colour> <red>20</red> <green>20</green> <blue>250</blue> </colour> 
+    <colour> <red>20</red> <green>20</green> <blue>250</blue> </colour>
   </hover>
 </indicator>
 ```
@@ -106,8 +105,8 @@ For instance, you may wish to use eslint, jscs and jshint on all files with .js 
 
 ```xml
 <linters>
-  <linter>  
-    <extensions> 
+  <linter>
+    <extensions>
      <extension>.js</extension>
      <extension>.jsm</extension>
     </extensions>
@@ -159,7 +158,7 @@ If you don't specify `%LINTER_TARGET%` or `%%` in your `<args>` element, it is a
 Putting all those together, we get this:
 
 ```xml
-<?xml version="1.0" encoding="utf-8" ?> 
+<?xml version="1.0" encoding="utf-8" ?>
 <LinterPP>
   <indicator>
     <colour>
@@ -174,23 +173,23 @@ Putting all those together, we get this:
     <outline_opacity>255</outline_opacity>
     <draw_under/>
   </indicator>
-  
+
   <messages>
     <default> <red>0</red> <green>255</green> <blue>255</blue> </default>
     <error> <red>255</red> <green>0</green> <blue>0</blue> </error>
     <warning> <red>127</red> <green>127</green> <blue>0</blue> </warning>
   </messages>
- 
+
   <shortcuts>
     <edit><alt/><ctrl/><key>F5</key></edit>
     <show><shift/><ctrl/><key>F6</key></show>
     <previous><ctrl/><key>F7</key></previous>
     <next>><key>F8</key></next>
   </shortcuts>
-  
+
   <linters>
-    <linter>  
-      <extensions> 
+    <linter>
+      <extensions>
        <extension>.js</extension>
        <extension>.jsm</extension>
       </extensions>
