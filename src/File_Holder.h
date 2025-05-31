@@ -9,13 +9,15 @@
 #include <string>
 #include <tuple>
 
+class Plugin;
+
 namespace Linter
 {
 
 class File_Holder
 {
   public:
-    explicit File_Holder(std::filesystem::path const &);
+    explicit File_Holder(std::filesystem::path const &, Plugin const &);
 
     File_Holder(File_Holder const &) = delete;
     File_Holder(File_Holder &&) = delete;
@@ -39,6 +41,7 @@ class File_Holder
 
     std::filesystem::path path_;
     std::filesystem::path temp_file_;
+    Plugin const &plugin_;
 };
 
 }    // namespace Linter

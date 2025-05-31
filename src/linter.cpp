@@ -420,7 +420,7 @@ void Linter::apply_linters()
 
     auto const text = get_document_text();
 
-    File_Holder file{full_path};
+    File_Holder file{full_path, *this};
     if (needs_file)
     {
         file.write(text);

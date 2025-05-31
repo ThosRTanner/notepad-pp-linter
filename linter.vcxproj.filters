@@ -27,6 +27,9 @@
     <Filter Include="Git Submodules\Notepad++\DockingFeature">
       <UniqueIdentifier>{920caa76-4406-4c90-b6a5-d9fc88287be5}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Tools">
+      <UniqueIdentifier>{ede8516c-f06b-48fa-a025-d6c5f716e506}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Clipboard.cpp">
@@ -235,6 +238,7 @@
     </None>
     <None Include="PSScriptAnalyzerSettings.psd1" />
     <None Include="Changes.md" />
+    <None Include=".remarkrc.yaml" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="src\linter.ico">
@@ -248,8 +252,14 @@
     </Image>
   </ItemGroup>
   <ItemGroup>
-    <Xsd Include="src\Linter++.xsd">
+    <CopyFileToFolders Include="tools\powershell-linter.ps1">
+      <Filter>Tools</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="tools\remark-linter.ps1">
+      <Filter>Tools</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="src\Linter++.xsd">
       <Filter>Resource Files</Filter>
-    </Xsd>
+    </CopyFileToFolders>
   </ItemGroup>
 </Project>

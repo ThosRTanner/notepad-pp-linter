@@ -5,6 +5,8 @@
 #include "Settings.h"
 #include "System_Error.h"
 
+#include "Plugin/Plugin.h"
+
 #include <comutil.h>
 #include <errhandlingapi.h>
 #include <fileapi.h>
@@ -27,7 +29,11 @@
 namespace Linter
 {
 
-File_Holder::File_Holder(std::filesystem::path const &path) : path_(path)
+File_Holder::File_Holder(
+    std::filesystem::path const &path, Plugin const &plugin
+) :
+    path_(path),
+    plugin_(plugin)
 {
 }
 
@@ -158,6 +164,12 @@ void File_Holder::setup_environment() const
 {
     // Set up the supported environment variables.
     if (not SetEnvironmentVariable(L"LINTER_TARGET", temp_file_.c_str()))
+    {
+        throw System_Error();
+    }
+    if (not SetEnvironmentVariable(
+            L"LINTER_DIR", plugin_.get_module_path().parent_path().c_str()
+        ))
     {
         throw System_Error();
     }
