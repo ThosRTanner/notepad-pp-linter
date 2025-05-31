@@ -9,6 +9,11 @@ on:
   schedule:
     - cron: '0 6 * * 4'
 
+permissions:
+  actions: read
+  contents: read
+  security-events: write
+
 jobs:
   analyze:
     name: Analyze
@@ -17,13 +22,17 @@ jobs:
     steps:
     - name: Checkout repository
       uses: actions/checkout@v4
+      with:
+        submodules: recursive
 
     # Initializes the CodeQL tools for scanning.
     - name: Initialize CodeQL
       uses: github/codeql-action/init@v3
-      # Override language selection by uncommenting this and choosing your languages
-      # with:
+      with:
+        languages: actions, c, cpp
+      # The default language selection appears to be
       #   languages: go, javascript, csharp, python, cpp, java
+      # irrespective of what your repo actually contains.
 
     # Autobuild attempts to build any compiled languages  (C/C++, C#, or Java).
     # If this step fails, then you should remove it and run the build manually (see below)
@@ -42,11 +51,11 @@ jobs:
     #   make release
 
     - name: Add msbuild to PATH
-      uses: microsoft/setup-msbuild@v1
+      uses: microsoft/setup-msbuild@v2
 
     - name: MSBuild of plugin dll
       working-directory: .\
-      run: msbuild linter.vcxproj /m /p:configuration="Debug" /p:platform="x64" /p:PlatformToolset="v142"
+      run: msbuild linter.vcxproj /m /p:configuration="Debug" /p:platform="x64" /p:PlatformToolset="v143" /p:PostBuildEventUseInBuild=false
 
     - name: Perform CodeQL Analysis
       uses: github/codeql-action/analyze@v3
