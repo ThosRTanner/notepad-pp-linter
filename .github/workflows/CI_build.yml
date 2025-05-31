@@ -1,37 +1,35 @@
 name: CI_build
 
-on: [push, pull_request]
+on:
+  workflow_call:
+
+permissions: read-all
 
 jobs:
   build:
-
     runs-on: windows-latest
     strategy:
       matrix:
         build_configuration: [Release, Debug]
-        build_platform: [x64, Win32]
-        
+        build_platform: [x64, Win32, ARM64]
+
     steps:
     - name: Checkout repo
       uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+        submodules: recursive
 
     - name: Add msbuild to PATH
       uses: microsoft/setup-msbuild@v2
 
     - name: MSBuild of plugin dll
       working-directory: .\
-      run: msbuild linter.vcxproj /m /p:configuration="${{ matrix.build_configuration }}" /p:platform="${{ matrix.build_platform }}" /p:PlatformToolset="v142"
+      run: msbuild linter.vcxproj /m /p:configuration="${{ matrix.build_configuration }}" /p:platform="${{ matrix.build_platform }}" /p:PlatformToolset="v143" /p:PostBuildEventUseInBuild=false
 
-    - name: Archive artifacts for x64
-      if: matrix.build_platform == 'x64' && matrix.build_configuration == 'Release'
-      uses: actions/upload-artifact@v3
+    - name: Archive artifacts release build
+      if: matrix.build_configuration == 'Release'
+      uses: actions/upload-artifact@v4
       with:
-          name: plugin_dll_x64
-          path: ${{ matrix.build_platform }}\${{ matrix.build_configuration }}\linter.dll
-
-    - name: Archive artifacts for Win32
-      if: matrix.build_platform == 'Win32' && matrix.build_configuration == 'Release'
-      uses: actions/upload-artifact@v3
-      with:
-          name: plugin_dll_x86
-          path: ${{ matrix.build_configuration }}\linter.dll
+        name: plugin_dll_${{ matrix.build_platform }}
+        path: Linter++\${{ matrix.build_platform }}\${{ matrix.build_configuration }}
