@@ -2,7 +2,7 @@
 
 #include "Checkstyle_Parser.h"
 #include "Error_Info.h"
-#include "File_Holder.h"
+#include "File_Linter.h"
 #include "Menu_Entry.h"
 #include "Output_Dialogue.h"
 #include "Settings.h"
@@ -420,11 +420,12 @@ void Linter::apply_linters()
 
     auto const text = get_document_text();
 
-    File_Holder file{full_path, *this};
-    if (needs_file)
-    {
-        file.write(text);
-    }
+    File_Linter file{
+        full_path,
+        this->get_module_path().parent_path(),
+        this->get_plugin_config_dir(),
+        text
+    };
 
     for (auto const &command : commands)
     {
@@ -432,7 +433,7 @@ void Linter::apply_linters()
         {
             // Try and work out what to do here:
             auto const [cmdline, result, output, errout] =
-                file.exec(command, text);
+                file.run_linter(command);
             if (output.empty() && not errout.empty())
             {
                 // Program terminated with error.

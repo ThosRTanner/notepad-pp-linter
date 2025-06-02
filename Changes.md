@@ -11,6 +11,12 @@ This probably fixes a few issues where the extension could hang or decide it had
 
 Fixed an issue where the first file was taking a long time to process (see #13).
 
+Adds 2 new environment variables:
+- LINTER_PLUGIN_DIR - Directory where linter++.dll is installed
+- LINTER_CONFIG_DIR - Directory where your linter++.xml is installed.
+
+I've added a couple of powershell scripts into the plugin dir which I've used for validation to LINTER_PLUGIN_DIR. You can stick your own scripts into LINTER_CONFIG_DIR if you wish.
+
 ## 1.0.0
 
 Initial release

@@ -41,7 +41,7 @@
     <ClCompile Include="src\encoding.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\File_Holder.cpp">
+    <ClCompile Include="src\File_Linter.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\Child_Pipe.cpp">
@@ -115,7 +115,7 @@
     <ClInclude Include="src\encoding.h">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\File_Holder.h">
+    <ClInclude Include="src\File_Linter.h">
       <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="src\Child_Pipe.h">

@@ -478,7 +478,7 @@
     <ClCompile Include="src\Dom_Node.cpp" />
     <ClCompile Include="src\Dom_Node_List.cpp" />
     <ClCompile Include="src\encoding.cpp" />
-    <ClCompile Include="src\File_Holder.cpp" />
+    <ClCompile Include="src\File_Linter.cpp" />
     <ClCompile Include="src\Child_Pipe.cpp" />
     <ClCompile Include="src\Handle_Wrapper.cpp" />
     <ClCompile Include="src\Indicator.cpp" />
@@ -519,7 +519,7 @@
     <ClInclude Include="src\Dom_Node_List.h" />
     <ClInclude Include="src\encoding.h" />
     <ClInclude Include="src\Error_Info.h" />
-    <ClInclude Include="src\File_Holder.h" />
+    <ClInclude Include="src\File_Linter.h" />
     <ClInclude Include="src\Child_Pipe.h" />
     <ClInclude Include="src\Handle_Wrapper.h" />
     <ClInclude Include="src\Indicator.h" />

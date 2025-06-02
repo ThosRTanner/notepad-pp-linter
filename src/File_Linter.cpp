@@ -1,4 +1,4 @@
-#include "File_Holder.h"
+#include "File_Linter.h"
 
 #include "Child_Pipe.h"
 #include "Handle_Wrapper.h"
@@ -29,27 +29,35 @@
 namespace Linter
 {
 
-File_Holder::File_Holder(
-    std::filesystem::path const &path, Plugin const &plugin
+File_Linter::File_Linter(
+    std::filesystem::path const &target,
+    std::filesystem::path const &plugin_dir,
+    std::filesystem::path const &settings_dir, std::string const &text
 ) :
-    path_(path),
-    plugin_(plugin)
+    target_{target},
+    plugin_dir_{plugin_dir},
+    settings_dir_{settings_dir},
+    temp_file_{get_temp_file_name()},
+    text_{text},
+    created_temp_file_{false}
 {
+    setup_environment();
 }
 
-File_Holder::~File_Holder()
+File_Linter::~File_Linter()
 {
-    if (not temp_file_.empty())
+    std::error_code errcode;
+    std::filesystem::remove(temp_file_, errcode);
+}
+
+std::tuple<std::wstring, DWORD, std::string, std::string>
+File_Linter::run_linter(Settings::Linter::Command const &command)
+{
+    if (not command.use_stdin)
     {
-        std::error_code errcode;
-        std::filesystem::remove(temp_file_, errcode);
+        ensure_temp_file_exists();
     }
-}
 
-std::tuple<std::wstring, DWORD, std::string, std::string> File_Holder::exec(
-    Settings::Linter::Command const &command, std::string const &text
-)
-{
     auto const stdout_pipe = Child_Pipe::create_output_pipe();
     auto const stderr_pipe = Child_Pipe::create_output_pipe();
     auto const stdin_pipe = Child_Pipe::create_input_pipe();
@@ -63,8 +71,6 @@ std::tuple<std::wstring, DWORD, std::string, std::string> File_Holder::exec(
     };
 
     PROCESS_INFORMATION proc_info = {0};
-
-    setup_environment();
 
     auto program{expand_variables(command.program)};
     auto args{expand_arg_values(command.args)};
@@ -94,8 +100,8 @@ std::tuple<std::wstring, DWORD, std::string, std::string> File_Holder::exec(
             TRUE,                // handles are inherited
             CREATE_NO_WINDOW,    // creation flags
             nullptr,             // use parent's environment
-            path_.parent_path().c_str(),    // use parent's current directory
-            &startup_info,                  // STARTUPINFO pointer
+            target_.parent_path().c_str(),    // use parent's current directory
+            &startup_info,                    // STARTUPINFO pointer
             &proc_info
         ))
     {
@@ -108,14 +114,9 @@ std::tuple<std::wstring, DWORD, std::string, std::string> File_Holder::exec(
 
     if (command.use_stdin)
     {
-        // FIXME Use WaitForInputIdle here?
-        stdin_pipe.writer().write_file(text);
+        stdin_pipe.writer().write_file(text_);
     }
     stdin_pipe.writer().close();
-
-    // Close this end of all the pipes or the other end can hang.
-    stdout_pipe.writer().close();
-    stderr_pipe.writer().close();
     stdin_pipe.reader().close();
 
     auto const res = Child_Pipe::read_output_pipes(
@@ -135,18 +136,26 @@ std::tuple<std::wstring, DWORD, std::string, std::string> File_Holder::exec(
     return std::make_tuple(args, exit_code, res.first, res.second);
 }
 
-void File_Holder::write(std::string const &data)
+std::filesystem::path File_Linter::get_temp_file_name() const
 {
     // We cannot put these files in temp dir because the tools search for
     // configuration in the directory the file is being processed. Therefore we
     // create the file in the same directory but mark it hidden.
-    temp_file_ = [&]()
-    {
-        std::filesystem::path temp = path_;
-        temp.concat(".linter.tmp").concat(path_.extension().c_str());
-        return temp;
-    }();
+    std::filesystem::path temp = target_;
+    temp.concat(".linter.tmp").concat(target_.extension().c_str());
+    return temp;
+}
 
+void File_Linter::ensure_temp_file_exists()
+{
+    if (created_temp_file_)
+    {
+        return;
+    }
+
+    // Ideally we'd make this read-write and dup the handle whenever we needed
+    // to pass as stdin, but it seems some things like to open their input
+    // exclusively
     Handle_Wrapper handle{CreateFile(
         temp_file_.c_str(),
         GENERIC_WRITE,
@@ -157,43 +166,51 @@ void File_Holder::write(std::string const &data)
         nullptr
     )};
 
-    handle.write_file(data);
+    handle.write_file(text_);
+
+    created_temp_file_ = true;
 }
 
-void File_Holder::setup_environment() const
+void File_Linter::setup_environment() const
 {
     // Set up the supported environment variables.
     if (not SetEnvironmentVariable(L"LINTER_TARGET", temp_file_.c_str()))
     {
         throw System_Error();
     }
+
+    if (not SetEnvironmentVariable(L"LINTER_PLUGIN_DIR", plugin_dir_.c_str()))
+    {
+        throw System_Error();
+    }
+    if (not SetEnvironmentVariable(L"LINTER_CONFIG_DIR", settings_dir_.c_str()))
+    {
+        throw System_Error();
+    }
+
+    if (not SetEnvironmentVariable(L"TARGET", target_.c_str()))
+    {
+        throw System_Error();
+    }
     if (not SetEnvironmentVariable(
-            L"LINTER_DIR", plugin_.get_module_path().parent_path().c_str()
+            L"TARGET_DIR", target_.parent_path().c_str()
         ))
     {
         throw System_Error();
     }
-    if (not SetEnvironmentVariable(L"TARGET", path_.c_str()))
-    {
-        throw System_Error();
-    }
-    if (not SetEnvironmentVariable(L"TARGET_DIR", path_.parent_path().c_str()))
-    {
-        throw System_Error();
-    }
-    if (not SetEnvironmentVariable(L"TARGET_EXT", path_.extension().c_str()))
+    if (not SetEnvironmentVariable(L"TARGET_EXT", target_.extension().c_str()))
     {
         throw System_Error();
     }
     if (not SetEnvironmentVariable(
-            L"TARGET_FILENAME", path_.filename().c_str()
+            L"TARGET_FILENAME", target_.filename().c_str()
         ))
     {
         throw System_Error();
     }
 }
 
-std::wstring File_Holder::expand_arg_values(std::wstring args) const
+std::wstring File_Linter::expand_arg_values(std::wstring args) const
 {
     // We treat a trailing %% as a reference to the linter temp file.
     if (args.ends_with(L"%%"))
@@ -203,7 +220,7 @@ std::wstring File_Holder::expand_arg_values(std::wstring args) const
     return expand_variables(args);
 }
 
-std::wstring File_Holder::expand_variables(std::wstring const &text) const
+std::wstring File_Linter::expand_variables(std::wstring const &text) const
 {
     // Replace all %x% stuff a-la windows command line.
 
