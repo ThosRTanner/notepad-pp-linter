@@ -232,6 +232,12 @@
     </xs:sequence>
   </xs:complexType>
 
+  <xs:simpleType name="nonemptystring">
+    <xs:restriction base="xs:string">
+      <xs:minLength value="1"/>
+    </xs:restriction>
+  </xs:simpleType>
+
   <xs:complexType name="command">
     <xs:annotation>
       <xs:documentation>
@@ -256,8 +262,8 @@
       </xs:documentation>
     </xs:annotation>
     <xs:sequence>
-      <xs:element name="program" type="xs:string" />
-      <xs:element name="args" type="xs:string" />
+      <xs:element name="program" type="nonemptystring"/>
+      <xs:element name="args" type="xs:string"/>
     </xs:sequence>
   </xs:complexType>
 
@@ -296,6 +302,42 @@
     </xs:sequence>
   </xs:complexType>
 
+  <xs:complexType name="variable">
+    <xs:annotation>
+      <xs:documentation>
+        A variable is a name and a command to run. When the command is run,
+        the contents of STDOUT are stored as the variable value.
+
+        You can use the value of an existing variable when calculating a new
+        one if you wish, but note that variables are evaluated in the order
+        they're defined in the xml.
+
+        At the moment the effect of output to STDERR or non-zero return codes
+        are not well defined.
+      </xs:documentation>
+    </xs:annotation>
+    <xs:sequence>
+      <xs:element name="name" type="nonemptystring"/>
+      <xs:element name="command" type="command"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="variables">
+    <xs:annotation>
+      <xs:documentation>
+        You can set up variable values in this section - the given command is
+        run and the contents of STDOUT are stored as the variable value.
+
+        The values are used when evaluating commands and arguments, they are
+        not passed to the called program. They are however evaluated for each
+        file when it is linted.
+      </xs:documentation>
+    </xs:annotation>
+    <xs:sequence>
+      <xs:element maxOccurs="unbounded" name="variable" type="variable"/>
+    </xs:sequence>
+  </xs:complexType>
+  
   <xs:element name="LinterPP">
     <xs:annotation>
       <xs:documentation>
@@ -309,6 +351,7 @@
         <xs:element name="shortcuts" type="shortcuts" minOccurs="0"/>
         <xs:element name="messages" type="messages" minOccurs="0"/>
         <xs:element name="indicator" type="indicator" minOccurs="0"/>
+        <xs:element name="variables" type="variables" minOccurs="0"/>
       </xs:all>
     </xs:complexType>
   </xs:element>
