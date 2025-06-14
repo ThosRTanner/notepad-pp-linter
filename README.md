@@ -7,15 +7,9 @@ This is a fork of the 'linter' plugin for notepad++ from deadem which provides r
 ![Dockable error window](/img/2.png?raw=true)
 
 ## Installation
-- See <https://npp-user-manual.org/docs/plugins/>
-- Use the plugin manager. No, seriously.
-- If you must install manually, run notepad++ in administrator mode and
-  - Go to Settings -> Import -> import plugin(s)...
-  - This pops up a filer window. Find where you put linter++.dll and 'open' it.
-  - You should get a popup telling you to restart notepad++. If you don't, you probably forgot to run in admin mode.
-  - Restart notepad++ in normal mode.
-- Go to Plugins -> Linter++ -> Edit config.
-  - This will give you a blank configuration file. Edit to taste.
+
+1. See <https://npp-user-manual.org/docs/plugins/> and use the plugin manager.
+1. Go to Plugins -> Linter++ -> Edit config. This will give you a blank configuration file. Edit to taste.
 
 ## Changes from the linter plugin
 
@@ -139,8 +133,18 @@ For instance, you may wish to use eslint, jscs and jshint on all files with .js 
 </linters>
 ```
 
-As you can see you can use windows environment variables in your command line. There are also some pseudo environment variables provided by linter++:
+### Environment Variables
 
+As you can see you can use windows environment variables in your command line. linter++ also provides some of its own variables and allows you to define your own variables.
+
+Please note that these variables also get passed to the called linters as environment variables.
+
+#### Predefined variables
+
+There are also some pseudo environment variables provided by linter++:
+
+- %LINTER_PLUGIN_DIR% - Directory where linter++.dll is installed
+- %LINTER_CONFIG_DIR% - Directory where your linter++.xml is installed.
 - %LINTER_TARGET% - temporary linter file
 - %TARGET% - original file (e.g. `c:\users\me\fred.js`)
 - %TARGET_DIR% - directory of original file (e.g. `c:\users\me`)
@@ -152,6 +156,26 @@ You will need to ensure that spaces are properly quoted in the `<args>` elements
 The `<args>` element will accept `%%` as the last two characters as a shortcut for `"%LINTER_TARGET%"`.
 
 If you don't specify `%LINTER_TARGET%` or `%%` in your `<args>` element, it is assumed that your linter process its input from `stdin` (as is the case for the csslint command in the example above).
+
+### User defined variables
+
+You can define your own variables to use if the supplied ones aren't enough, by adding a `<variables>` section to the XML so the following will define a GIT_REPO_ROOT which can be used in linter commands (or other variable definitions).
+
+```xml
+<variables>
+  <variable>
+    <name>GIT_REPO_ROOT%</name>
+    <command>
+      <program>%ProgramFiles%\GIT\cmd\git.exe</program>
+      <args>rev-parse --show-toplevel</args>
+    </command>
+  </variable>
+</variables>
+```
+
+The `<command>` section behaves the same as the `<command>` section above, except that it is assumed that the program you are executing doesn't need a stdin.
+
+Variables are defined in the order in which they appears in the XML, so later ones can depend on earlier ones. Any of them can depend on the automatically defined variables.
 
 ### Example
 
@@ -187,6 +211,16 @@ Putting all those together, we get this:
     <next>><key>F8</key></next>
   </shortcuts>
 
+  <variables>
+    <variable>
+      <name>GIT_REPO_ROOT%</name>
+      <command>
+        <program>%ProgramFiles%\GIT\cmd\git.exe</program>
+        <args>rev-parse --show-toplevel</args>
+      </command>
+    </variable>
+  </variables>
+
   <linters>
     <linter>
       <extensions>
@@ -216,6 +250,17 @@ Putting all those together, we get this:
         <command>
           <program>%AppData%\npm\csslint.cmd</program>
           <args>--format=checkstyle-xml</args>
+        </command>
+      </commands>
+    </linter>
+    <linter>
+      <extensions>
+        <extension>.ps1</extension>
+      </extensions>
+      <commands>
+        <command>
+          <program>%ProgramFiles%\PowerShell\7\pwsh.exe</program>
+          <args>-File "%LINTER_PLUGIN_DIR%\powershell-linter.ps1" -Settings "%GIT_REPO_ROOT%"\PSScriptAnalyzerSettings.psd1 %%</args>
         </command>
       </commands>
     </linter>

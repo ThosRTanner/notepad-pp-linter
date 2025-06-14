@@ -21,6 +21,7 @@ class File_Linter
         std::filesystem::path const &target,
         std::filesystem::path const &plugin_dir,
         std::filesystem::path const &settings_dir,
+        std::vector<Settings::Variable> const &variables,
         std::string const &text
     );
 
@@ -31,25 +32,36 @@ class File_Linter
 
     ~File_Linter();
 
-    std::tuple<std::wstring, DWORD, std::string, std::string> run_linter(
-        Settings::Linter::Command const &);
+    std::tuple<std::wstring, DWORD, std::string, std::string>
+    run_linter(Settings::Command const &);
 
     std::filesystem::path get_temp_file_name() const;
 
     void ensure_temp_file_exists();
-    
+
+    std::vector<std::string> const &warnings() const noexcept
+    {
+        return warnings_;
+    }
+
   private:
-    void setup_environment() const;
+    void setup_environment();
 
-    std::wstring expand_arg_values(std::wstring) const;
+    static std::wstring expand_variables(std::wstring const &);
 
-    std::wstring expand_variables(std::wstring const &) const;
+    std::tuple<DWORD, std::string, std::string> execute(
+        Settings::Command const &, std::string const *const input = nullptr
+    ) const;
 
     std::filesystem::path target_;
     std::filesystem::path plugin_dir_;
     std::filesystem::path settings_dir_;
     std::filesystem::path temp_file_;
-    std::string const &text_;
+    std::vector<Settings::Variable> const &variables_;
+    std::string const text_;
+    wchar_t const *orig_env_;
+
+    std::vector<std::string> warnings_;
 
     bool created_temp_file_;
 };

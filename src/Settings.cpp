@@ -106,6 +106,23 @@ ShortcutKey const *Settings::get_shortcut_key(Menu_Entry entry) const
     return &(res->second);
 }
 
+uint32_t Settings::read_colour_node(Dom_Node const &node)
+{
+    // get the r, g, b values and merge them into What Scintalla Expects
+    Dom_Node_List colours = node.get_node_list("./*");
+    uint32_t bgr = 0;
+    for (auto const colour : colours)
+    {
+        // This always comes back as a BSTR. I have no idea why.
+        auto value = colour.get_value();
+        std::wstringstream data{colour.get_value()};
+        uint32_t val;
+        data >> val;
+        bgr = (bgr >> 8) | (val << 16);
+    }
+    return bgr;
+}
+
 void Settings::read_settings()
 {
     Dom_Document settings{settings_xml_, settings_schema_};
@@ -113,6 +130,7 @@ void Settings::read_settings()
     read_messages(settings);
     read_shortcuts(settings);
     read_linters(settings);
+    read_variables(settings);
 }
 
 void Settings::read_indicator(Dom_Document const &settings)
@@ -219,45 +237,57 @@ void Settings::read_linters(Dom_Document const &settings)
 
         for (auto const command_node : linter.get_node_list(".//command"))
         {
-            Dom_Node const program_node{command_node.get_node(".//program")};
-            std::wstring const program{program_node.get_value()};
-
-            Dom_Node const args_node{command_node.get_node(".//args")};
-            std::wstring const args{args_node.get_value()};
-
-            bool const use_stdin =
-                args.find(L"%LINTER_TARGET%") == std::string::npos
-                and not args.ends_with(L"%%");
+            Settings::Command cmd = read_command(command_node);
+            cmd.use_stdin =
+                cmd.args.find(L"%LINTER_TARGET%") == std::string::npos;
 
             for (auto const &extension : extensions)
             {
-                linters_.push_back({
-                    .extension = extension,
-                    .command =
-                        {.program = program,
-                                  .args = args,
-                                  .use_stdin = use_stdin}
-                });
+                linters_.push_back({.extension = extension, .command = cmd});
             }
         }
     }
 }
 
-uint32_t Settings::read_colour_node(Dom_Node const &node)
+void Settings::read_variables(Dom_Document const &settings)
 {
-    // get the r, g, b values and merge them into What Scintalla Expects
-    Dom_Node_List colours = node.get_node_list("./*");
-    uint32_t bgr = 0;
-    for (auto const colour : colours)
+    variables_.clear();
+
+    for (auto const variable : settings.get_node_list("//variable"))
     {
-        // This always comes back as a BSTR. I have no idea why.
-        auto value = colour.get_value();
-        std::wstringstream data{colour.get_value()};
-        uint32_t val;
-        data >> val;
-        bgr = (bgr >> 8) | (val << 16);
+        Dom_Node const name_node{variable.get_node(".//name")};
+        std::wstring const name{name_node.get_value()};
+        Dom_Node const command_node{variable.get_node(".//command")};
+        Command cmd = read_command(command_node);
+        variables_.push_back(Variable(name, cmd));
     }
-    return bgr;
+}
+
+Settings::Command Settings::read_command(Dom_Node command_node)
+{
+    // Expects either 'cmdline' or 'program' and 'args'
+    // A note: That isn't currently supported in the .xml, because
+    // windows is arcane enough without the strange quoting rules of the
+    // command line.
+    std::wstring program;
+    std::wstring args;
+    if (auto const command = command_node.get_optional_node(".//cmdline"))
+    {
+        args = command->get_value();
+    }
+    else
+    {
+        Dom_Node const program_node{command_node.get_node(".//program")};
+        program = program_node.get_value();
+
+        Dom_Node const args_node{command_node.get_node(".//args")};
+        args = args_node.get_value();
+    }
+    if (args.ends_with(L"%%"))
+    {
+        args = args.substr(0, args.size() - 2) + L"\"%LINTER_TARGET%\"";
+    }
+    return Command({.program = program, .args = args});
 }
 
 }    // namespace Linter

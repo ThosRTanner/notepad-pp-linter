@@ -396,19 +396,16 @@ void Linter::apply_linters()
 
     settings_->refresh();
 
-    std::vector<Settings::Linter::Command> commands;
-    bool needs_file = false;
     auto const full_path = get_document_path();
 
-    auto const extension = full_path.extension();
-    for (auto const &linter : settings_->linters())
+    std::vector<Settings::Command> commands;
     {
-        if (linter.extension == extension)
+        auto const extension = full_path.extension();
+        for (auto const &linter : settings_->linters())
         {
-            commands.emplace_back(linter.command);
-            if (not linter.command.use_stdin)
+            if (linter.extension == extension)
             {
-                needs_file = true;
+                commands.emplace_back(linter.command);
             }
         }
     }
@@ -418,14 +415,22 @@ void Linter::apply_linters()
         return;
     }
 
-    auto const text = get_document_text();
-
     File_Linter file{
         full_path,
-        this->get_module_path().parent_path(),
-        this->get_plugin_config_dir(),
-        text
+        get_module_path().parent_path(),
+        get_plugin_config_dir(),
+        settings_->get_variables(),
+        get_document_text()
     };
+
+    for (auto const &warning : file.warnings())
+    {
+        output_dialogue_->add_system_error(
+            {.message_ = std::wstring(warning.begin(), warning.end()),
+             .severity_ = L"warning",
+             .mode_ = Error_Info::Stderr_Found}
+        );
+    }
 
     for (auto const &command : commands)
     {

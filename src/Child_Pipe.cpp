@@ -79,7 +79,7 @@ std::pair<std::string, std::string> Child_Pipe::read_output_pipes(
     std::string res1;
     std::string res2;
 
-    //Have to close the writers or the outputting process can hang.
+    // Have to close the writers or the outputting process can hang.
     pipe1.writer().close();
     pipe2.writer().close();
 

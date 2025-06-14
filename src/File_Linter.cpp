@@ -32,15 +32,24 @@ namespace Linter
 File_Linter::File_Linter(
     std::filesystem::path const &target,
     std::filesystem::path const &plugin_dir,
-    std::filesystem::path const &settings_dir, std::string const &text
+    std::filesystem::path const &settings_dir,
+    std::vector<Settings::Variable> const &variables, std::string const &text
 ) :
     target_{target},
     plugin_dir_{plugin_dir},
     settings_dir_{settings_dir},
     temp_file_{get_temp_file_name()},
+    variables_{variables},
     text_{text},
-    created_temp_file_{false}
+    created_temp_file_{false},
+    orig_env_(GetEnvironmentStrings())
 {
+    if (orig_env_ == NULL)
+    {
+        // This is a guess. All the documentation says is that it returns null.
+        // It says nothing about how you can determine what the cause was.
+        throw System_Error();
+    }
     setup_environment();
 }
 
@@ -48,92 +57,24 @@ File_Linter::~File_Linter()
 {
     std::error_code errcode;
     std::filesystem::remove(temp_file_, errcode);
+    // Ignore errors...
+    // Restore environment to original state
+    SetEnvironmentStrings(const_cast<wchar_t *>(orig_env_));
+    // And discard the saved buffer.
+    FreeEnvironmentStrings(const_cast<wchar_t *>(orig_env_));
 }
 
 std::tuple<std::wstring, DWORD, std::string, std::string>
-File_Linter::run_linter(Settings::Linter::Command const &command)
+File_Linter::run_linter(Settings::Command const &command)
 {
     if (not command.use_stdin)
     {
         ensure_temp_file_exists();
     }
 
-    auto const stdout_pipe = Child_Pipe::create_output_pipe();
-    auto const stderr_pipe = Child_Pipe::create_output_pipe();
-    auto const stdin_pipe = Child_Pipe::create_input_pipe();
-
-    STARTUPINFO startup_info = {
-        .cb = sizeof(STARTUPINFO),
-        .dwFlags = STARTF_USESTDHANDLES,
-        .hStdInput = stdin_pipe.reader(),
-        .hStdOutput = stdout_pipe.writer(),
-        .hStdError = stderr_pipe.writer()
-    };
-
-    PROCESS_INFORMATION proc_info = {0};
-
-    auto program{expand_variables(command.program)};
-    auto args{expand_arg_values(command.args)};
-    // Microsoft is amazingly evil.
-    // You need to supply the application name to avoid one sort of
-    // vulnerability. However, if you have a .bat or .cmd file, you must either
-    // not supply an application name or you need to supply the correct path to
-    // the system cmd.exe, and surround the *entire* command with double quotes.
-    args = L"\"" + program + L"\" " + args;
-    if (command.program.extension() == L".bat"
-        or command.program.extension() == L".cmd")
-    {
-        program = expand_variables(L"%SystemRoot%\\system32\\cmd.exe");
-        // A note: The insertion of '"program" ' is optional, but the "/c " is
-        // necesssary. I insert the first bit in case an error is produced, to
-        // make it a bit clearer what is happening.
-        args = L"\"" + program + L"\" /c \"" + args + L"\"";
-    }
-    // Oh yes, and this
-    // See https://devblogs.microsoft.com/oldnewthing/20090601-00/?p=18083
-    std::unique_ptr<wchar_t[]> const args_copy{wcsdup(args.c_str())};
-    if (not CreateProcess(
-            program.c_str(),
-            args_copy.get(),
-            nullptr,             // process security attributes
-            nullptr,             // primary thread security attributes
-            TRUE,                // handles are inherited
-            CREATE_NO_WINDOW,    // creation flags
-            nullptr,             // use parent's environment
-            target_.parent_path().c_str(),    // use parent's current directory
-            &startup_info,                    // STARTUPINFO pointer
-            &proc_info
-        ))
-    {
-        DWORD const error{GetLastError()};
-        bstr_t const cmd{args.c_str()};
-        throw System_Error(
-            error, "Can't execute command: " + static_cast<std::string>(cmd)
-        );
-    }
-
-    if (command.use_stdin)
-    {
-        stdin_pipe.writer().write_file(text_);
-    }
-    stdin_pipe.writer().close();
-    stdin_pipe.reader().close();
-
-    auto const res = Child_Pipe::read_output_pipes(
-        proc_info.hProcess, stdout_pipe, stderr_pipe
-    );
-
-    DWORD exit_code;
-    if (not GetExitCodeProcess(proc_info.hProcess, &exit_code))
-    {
-        throw System_Error();
-    }
-
-    // And finally clean up.
-    CloseHandle(proc_info.hProcess);
-    CloseHandle(proc_info.hThread);
-
-    return std::make_tuple(args, exit_code, res.first, res.second);
+    auto const [exit_code, out, err] =
+        execute(command, command.use_stdin ? &text_ : nullptr);
+    return std::make_tuple(command.args, exit_code, out, err);
 }
 
 std::filesystem::path File_Linter::get_temp_file_name() const
@@ -171,7 +112,7 @@ void File_Linter::ensure_temp_file_exists()
     created_temp_file_ = true;
 }
 
-void File_Linter::setup_environment() const
+void File_Linter::setup_environment()
 {
     // Set up the supported environment variables.
     if (not SetEnvironmentVariable(L"LINTER_TARGET", temp_file_.c_str()))
@@ -208,24 +149,39 @@ void File_Linter::setup_environment() const
     {
         throw System_Error();
     }
-}
 
-std::wstring File_Linter::expand_arg_values(std::wstring args) const
-{
-    // We treat a trailing %% as a reference to the linter temp file.
-    if (args.ends_with(L"%%"))
+    for (auto const &[name, command] : variables_)
     {
-        args = args.substr(0, args.size() - 2) + L"\"%LINTER_TARGET%\"";
+        // This consists of a variable name and a command to run.
+        auto const [res, out, err] = execute(command);
+        if (out.length() == 0)
+        {
+            if (err.length() != 0)
+            {
+                // Add a warning
+                warnings_.push_back(err);
+            }
+            continue;
+        }
+        // FIXME do we care about errors?
+        if (not SetEnvironmentVariable(
+                name.c_str(),
+                // FIXME we do this sort of thing a lot (wstring(s.begin(),
+                // s.end()), but actually it's wrong if the string is UTF8
+                std::wstring(out.begin(), out.end() - 1).c_str()
+            ))
+        {
+            throw System_Error();
+        }
     }
-    return expand_variables(args);
 }
 
-std::wstring File_Linter::expand_variables(std::wstring const &text) const
+std::wstring File_Linter::expand_variables(std::wstring const &text)
 {
     // Replace all %x% stuff a-la windows command line.
 
     // First we get the length of the string we'll generate
-    auto len = ExpandEnvironmentStrings(text.c_str(), nullptr, 0);
+    auto const len = ExpandEnvironmentStrings(text.c_str(), nullptr, 0);
     if (len == 0)
     {
         throw System_Error();
@@ -233,15 +189,104 @@ std::wstring File_Linter::expand_variables(std::wstring const &text) const
     std::wstring res;
     res.resize(len);
 
-    // Then we get the actual string.
-    len = ExpandEnvironmentStrings(text.c_str(), &*res.begin(), len);
-    if (len == 0)
+    if (ExpandEnvironmentStrings(text.c_str(), &*res.begin(), len) == 0)
     {
         throw System_Error();
     }
-    // This can't possibly overflow because len cannot be 0!
-    res.resize(len - 1);    // Remove the trailing null
+
+    // We do this because the compiler is too dim to work out that there can't
+    // be an overflow because len can't possibly be zero, because of the check
+    // just above.
+    std::size_t const len2 = len;
+    res.resize(len2 - 1);    // Remove the trailing null
     return res;
+}
+
+std::tuple<DWORD, std::string, std::string> File_Linter::execute(
+    Settings::Command const &command, std::string const *const input
+) const
+{
+    std::wstring program;
+    auto args = expand_variables(command.args);
+    if (not command.program.empty())
+    {
+        program = expand_variables(command.program);
+        // Microsoft is amazingly evil.
+        // You need to supply the application name to avoid one sort of
+        // vulnerability. However, if you have a .bat or .cmd file, you must
+        // either not supply an application name or you need to supply the
+        // correct path to the system cmd.exe, and surround the *entire* command
+        // with double quotes.
+        args = L"\"" + program + L"\" " + args;
+        if (auto const ext = command.program.extension().wstring();
+            ext == L".bat" or ext == L".cmd")
+        {
+            program = expand_variables(L"%SystemRoot%\\system32\\cmd.exe");
+            // A note: The insertion of '"program" ' is optional, but the "/c "
+            // is necesssary. I insert the first bit in case an error is
+            // produced, to make it a bit clearer what is happening.
+            args = L"\"" + program + L"\" /c \"" + args + L"\"";
+        }
+    }
+
+    auto const stdout_pipe = Child_Pipe::create_output_pipe();
+    auto const stderr_pipe = Child_Pipe::create_output_pipe();
+    auto const stdin_pipe = Child_Pipe::create_input_pipe();
+
+    STARTUPINFO startup_info = {
+        .cb = sizeof(STARTUPINFO),
+        .dwFlags = STARTF_USESTDHANDLES,
+        .hStdInput = stdin_pipe.reader(),
+        .hStdOutput = stdout_pipe.writer(),
+        .hStdError = stderr_pipe.writer()
+    };
+
+    PROCESS_INFORMATION proc_info = {0};
+
+    // See https://devblogs.microsoft.com/oldnewthing/20090601-00/?p=18083
+    std::unique_ptr<wchar_t[]> const args_copy{wcsdup(args.c_str())};
+    if (not CreateProcess(
+            program.empty() ? nullptr : program.c_str(),
+            args_copy.get(),
+            nullptr,             // process security attributes
+            nullptr,             // primary thread security attributes
+            TRUE,                // handles are inherited
+            CREATE_NO_WINDOW,    // creation flags
+            nullptr,             // use my environment
+            target_.parent_path().wstring().c_str(),
+            &startup_info,
+            &proc_info
+        ))
+    {
+        DWORD const error{GetLastError()};
+        bstr_t const cmd{args.c_str()};
+        throw System_Error(
+            error, "Can't execute command: " + static_cast<std::string>(cmd)
+        );
+    }
+
+    if (input != nullptr)
+    {
+        stdin_pipe.writer().write_file(*input);
+    }
+    stdin_pipe.writer().close();
+    stdin_pipe.reader().close();
+
+    auto const res = Child_Pipe::read_output_pipes(
+        proc_info.hProcess, stdout_pipe, stderr_pipe
+    );
+
+    DWORD exit_code;
+    if (not GetExitCodeProcess(proc_info.hProcess, &exit_code))
+    {
+        throw System_Error();
+    }
+
+    // And finally clean up.
+    CloseHandle(proc_info.hProcess);
+    CloseHandle(proc_info.hThread);
+
+    return std::make_tuple(exit_code, res.first, res.second);
 }
 
 }    // namespace Linter
