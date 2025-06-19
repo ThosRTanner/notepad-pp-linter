@@ -4,6 +4,7 @@
 #include "Handle_Wrapper.h"
 #include "Settings.h"
 #include "System_Error.h"
+#include "encoding.h"
 
 #include "Plugin/Plugin.h"
 
@@ -154,21 +155,35 @@ void File_Linter::setup_environment()
     {
         // This consists of a variable name and a command to run.
         auto const [res, out, err] = execute(command);
-        if (out.length() == 0)
+        if (err.length() != 0)
         {
-            if (err.length() != 0)
+            // Add a warning
+            warnings_.push_back(
+                "Variable '" + Encoding::convert(name)
+                + "' command produced stderr output " + err
+            );
+        }
+        if (res != 0)
+        {
+            // Add a warning
+            warnings_.push_back(
+                "Variable '" + Encoding::convert(name)
+                + "' command returned non-zero exit code: "
+                + std::to_string(res)
+            );
+        }
+        std::string output{out};
+        if (not output.empty())
+        {
+            // Remove the trailing newline, if any.
+            if (output.back() == '\n')
             {
-                // Add a warning
-                warnings_.push_back(err);
+                output.pop_back();
             }
-            continue;
         }
         // FIXME do we care about errors?
         if (not SetEnvironmentVariable(
-                name.c_str(),
-                // FIXME we do this sort of thing a lot (wstring(s.begin(),
-                // s.end()), but actually it's wrong if the string is UTF8
-                std::wstring(out.begin(), out.end() - 1).c_str()
+                name.c_str(), Encoding::convert(output).c_str()
             ))
         {
             throw System_Error();

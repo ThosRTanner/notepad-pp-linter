@@ -1,6 +1,10 @@
 # Notepad++ Linter++
 
-This is a fork of the 'linter' plugin for notepad++ from deadem which provides realtime code checks of a file with any checkstyle-compatible linter: jshint, eslint, jscs, phpcs, csslint etc.
+This plugin provides realtime code checks of a file with any checkstyle-compatible linter: jshint, eslint, jscs, phpcs, csslint etc.
+
+It is a fork of both:
+- the 'linter' plugin by deadem
+- the now defunct jslintnpp plugin by Martin Vladic.
 
 ![Document window](/img/1.jpg?raw=true)
 
@@ -173,7 +177,7 @@ You can define your own variables to use if the supplied ones aren't enough, by 
 </variables>
 ```
 
-The `<command>` section behaves the same as the `<command>` section above, except that it is assumed that the program you are executing doesn't need a stdin.
+The `<command>` section behaves the same as the `<command>` section above, except that it is assumed that the program you are executing doesn't need a stdin. The command will be run and the output will be stored in the variable, excluding the trailing newline.
 
 Variables are defined in the order in which they appears in the XML, so later ones can depend on earlier ones. Any of them can depend on the automatically defined variables.
 

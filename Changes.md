@@ -11,13 +11,11 @@ This probably fixes a few issues where the extension could hang or decide it had
 
 Fixed an issue where the first file was taking a long time to process (see #13). It can sometimes still take a long time, but it's less long now.
 
-Adds 2 new environment variables:
+Adds support for creating your own environment variables (with the `<variables>` XML tag) and also added two new environment variables:
 - LINTER_PLUGIN_DIR - Directory where linter++.dll is installed
 - LINTER_CONFIG_DIR - Directory where your linter++.xml is installed.
 
-I've added a couple of powershell scripts into the plugin dir which I've used for validation to the plugin directory. You can stick your own scripts into LINTER_CONFIG_DIR if you wish.
-
-Added support for setting your own environment variables with the `<variables>` XML tag.
+I've added a couple of powershell scripts into the plugin directory which can be used for linting markdown files and powershell scripts.
 
 ## 1.0.0
 
