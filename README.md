@@ -1,21 +1,20 @@
 # Notepad++ Linter++
 
-This is a fork of the 'linter' plugin for notepad++ from deadem which provides realtime code checks of a file with any checkstyle-compatible linter: jshint, eslint, jscs, phpcs, csslint etc.
+This plugin provides realtime code checks of a file with any checkstyle-compatible linter: jshint, eslint, jscs, phpcs, csslint etc.
+
+It is a fork of both:
+
+- the 'linter' plugin by deadem
+- the now defunct jslintnpp plugin by Martin Vladic.
 
 ![Document window](/img/1.jpg?raw=true)
 
 ![Dockable error window](/img/2.png?raw=true)
 
 ## Installation
-- See <https://npp-user-manual.org/docs/plugins/>
-- Use the plugin manager. No, seriously.
-- If you must install manually, run notepad++ in administrator mode and
-  - Go to Settings -> Import -> import plugin(s)...
-  - This pops up a filer window. Find where you put linter++.dll and 'open' it.
-  - You should get a popup telling you to restart notepad++. If you don't, you probably forgot to run in admin mode.
-  - Restart notepad++ in normal mode.
-- Go to Plugins -> Linter++ -> Edit config.
-  - This will give you a blank configuration file. Edit to taste.
+
+1. See <https://npp-user-manual.org/docs/plugins/> and use the plugin manager.
+1. Go to Plugins -> Linter++ -> Edit config. This will give you a blank configuration file. Edit to taste.
 
 ## Changes from the linter plugin
 
@@ -97,6 +96,50 @@ Notes:
 1. Changing the shortcuts will not take effect till next time you start notepad++
 1. notepad++ determines which shortcuts get which keypresses, so take care not to clash with shortcuts from other plugins.
 
+### The `<command>` element
+
+You will see below the use of `<command>` elements which contain a `<program>` element and an `<args>` element.
+
+These are used to run the chosen programs. Both of them will have any environment variables (like `%UserProfile%`) expanded before the program is executed. It is recommended for `<args>` elements that you enclose environment variables in double quotes in case the expansion contains spaces. However, you should NOT do that for `<program>` elements.
+
+### Environment Variables
+
+As you can see below, you can use windows environment variables in your command line. linter++ also provides some of its own variables and allows you to define your own variables.
+
+Please note that these variables also get passed to the called linters as environment variables.
+
+#### Predefined variables
+
+There are also some pseudo environment variables provided by linter++:
+
+- %LINTER_PLUGIN_DIR% - Directory where linter++.dll is installed
+- %LINTER_CONFIG_DIR% - Directory where your linter++.xml is installed.
+- %LINTER_TARGET% - temporary linter file
+- %TARGET% - original file (e.g. `c:\users\me\fred.js`)
+- %TARGET_DIR% - directory of original file (e.g. `c:\users\me`)
+- %TARGET_EXT% - extension of original file (e.g. `.js`)
+- %TARGET_FILENAME% - filename of original file (e.g. `fred.js`)
+
+#### User defined variables
+
+You can define your own variables to use if the supplied ones aren't enough, by adding a `<variables>` section to the XML so the following will define a GIT_REPO_ROOT which can be used in linter commands (or other variable definitions).
+
+```xml
+<variables>
+  <variable>
+    <name>GIT_REPO_ROOT</name>
+    <command>
+      <program>%ProgramFiles%\GIT\cmd\git.exe</program>
+      <args>rev-parse --show-toplevel</args>
+    </command>
+  </variable>
+</variables>
+```
+
+The command will be run and the output will be stored in the named variable, excluding the trailing newline.
+
+Variables are defined in the order in which they appears in the XML, so later ones can use earlier ones. Any of them can use the automatically defined variables.
+
 ### Linters
 
 A linter definition consists of a list of extensions to match, and a list of program to run (specified as command line and arguments).
@@ -113,7 +156,11 @@ For instance, you may wish to use eslint, jscs and jshint on all files with .js 
     <commands>
       <command>
         <program>%AppData%\npm\eslint.cmd</program>
-        <args>-c "%USERPROFILE%"\repositories\github\inforss\inforss.eslintrc.yaml --resolve-plugins-relative-to="%AppData%"\npm --format checkstyle %%</args>
+        <args>
+          -c "%USERPROFILE%"\eslintrc.yaml
+          --resolve-plugins-relative-to="%AppData%"\npm
+          --format checkstyle %%
+        </args>
       </command>
       <command>
         <program>%AppData%\npm\jscs.cmd</program>
@@ -139,19 +186,9 @@ For instance, you may wish to use eslint, jscs and jshint on all files with .js 
 </linters>
 ```
 
-As you can see you can use windows environment variables in your command line. There are also some pseudo environment variables provided by linter++:
-
-- %LINTER_TARGET% - temporary linter file
-- %TARGET% - original file (e.g. `c:\users\me\fred.js`)
-- %TARGET_DIR% - directory of original file (e.g. `c:\users\me`)
-- %TARGET_EXT% - extension of original file (e.g. `.js`)
-- %TARGET_FILENAME% - filename of original file (e.g. `fred.js`)
-
-You will need to ensure that spaces are properly quoted in the `<args>` elements, (putting doublequotes round %...% strings is a good practice). This is not necessary in the `<program>` elements.
+If you don't specify `%LINTER_TARGET%` or `%%` in your `<args>` element, it is assumed that your linter process its input from `stdin` (as is the case for the csslint command in the example above).
 
 The `<args>` element will accept `%%` as the last two characters as a shortcut for `"%LINTER_TARGET%"`.
-
-If you don't specify `%LINTER_TARGET%` or `%%` in your `<args>` element, it is assumed that your linter process its input from `stdin` (as is the case for the csslint command in the example above).
 
 ### Example
 
@@ -187,6 +224,16 @@ Putting all those together, we get this:
     <next>><key>F8</key></next>
   </shortcuts>
 
+  <variables>
+    <variable>
+      <name>GIT_REPO_ROOT%</name>
+      <command>
+        <program>%ProgramFiles%\GIT\cmd\git.exe</program>
+        <args>rev-parse --show-toplevel</args>
+      </command>
+    </variable>
+  </variables>
+
   <linters>
     <linter>
       <extensions>
@@ -196,7 +243,12 @@ Putting all those together, we get this:
       <commands>
         <command>
           <program>%AppData%\npm\eslint.cmd</program>
-          <args>-c "%USERPROFILE%"\repositories\github\inforss\inforss.eslintrc.yaml --resolve-plugins-relative-to="%AppData%"\npm --format checkstyle %%</args>
+            <args>
+              -c "%USERPROFILE%"\eslintrc.yaml
+              --resolve-plugins-relative-to="%AppData%"\npm
+              --format checkstyle
+              %%
+            </args>
         </command>
         <command>
           <program>%AppData%\npm\jscs.cmd</program>
@@ -216,6 +268,21 @@ Putting all those together, we get this:
         <command>
           <program>%AppData%\npm\csslint.cmd</program>
           <args>--format=checkstyle-xml</args>
+        </command>
+      </commands>
+    </linter>
+    <linter>
+      <extensions>
+        <extension>.ps1</extension>
+      </extensions>
+      <commands>
+        <command>
+          <program>%ProgramFiles%\PowerShell\7\pwsh.exe</program>
+          <args>
+            -File "%LINTER_PLUGIN_DIR%\powershell-linter.ps1"
+            -Settings "%GIT_REPO_ROOT%"\Settings.psd1
+            %%
+          </args>
         </command>
       </commands>
     </linter>

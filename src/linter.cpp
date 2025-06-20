@@ -2,7 +2,7 @@
 
 #include "Checkstyle_Parser.h"
 #include "Error_Info.h"
-#include "File_Holder.h"
+#include "File_Linter.h"
 #include "Menu_Entry.h"
 #include "Output_Dialogue.h"
 #include "Settings.h"
@@ -396,19 +396,16 @@ void Linter::apply_linters()
 
     settings_->refresh();
 
-    std::vector<Settings::Linter::Command> commands;
-    bool needs_file = false;
     auto const full_path = get_document_path();
 
-    auto const extension = full_path.extension();
-    for (auto const &linter : settings_->linters())
+    std::vector<Settings::Command> commands;
     {
-        if (linter.extension == extension)
+        auto const extension = full_path.extension();
+        for (auto const &linter : settings_->linters())
         {
-            commands.emplace_back(linter.command);
-            if (not linter.command.use_stdin)
+            if (linter.extension == extension)
             {
-                needs_file = true;
+                commands.emplace_back(linter.command);
             }
         }
     }
@@ -418,12 +415,21 @@ void Linter::apply_linters()
         return;
     }
 
-    auto const text = get_document_text();
+    File_Linter file{
+        full_path,
+        get_module_path().parent_path(),
+        get_plugin_config_dir(),
+        settings_->get_variables(),
+        get_document_text()
+    };
 
-    File_Holder file{full_path};
-    if (needs_file)
+    for (auto const &warning : file.warnings())
     {
-        file.write(text);
+        output_dialogue_->add_system_error(
+            {.message_ = std::wstring(warning.begin(), warning.end()),
+             .severity_ = L"warning",
+             .mode_ = Error_Info::Stderr_Found}
+        );
     }
 
     for (auto const &command : commands)
@@ -432,7 +438,7 @@ void Linter::apply_linters()
         {
             // Try and work out what to do here:
             auto const [cmdline, result, output, errout] =
-                file.exec(command, text);
+                file.run_linter(command);
             if (output.empty() && not errout.empty())
             {
                 // Program terminated with error.

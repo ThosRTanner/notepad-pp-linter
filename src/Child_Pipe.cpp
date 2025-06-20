@@ -79,6 +79,10 @@ std::pair<std::string, std::string> Child_Pipe::read_output_pipes(
     std::string res1;
     std::string res2;
 
+    // Have to close the writers or the outputting process can hang.
+    pipe1.writer().close();
+    pipe2.writer().close();
+
     // Unfortunately, WaitForMultiple object doesn't support anonymous pipes and
     // will behave as though they'd had an event every time you call the
     // function. So instead, we call WaitForSingleObject with a short timeout.

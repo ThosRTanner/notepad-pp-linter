@@ -185,10 +185,12 @@
       <Culture>0x0809</Culture>
     </ResourceCompile>
     <PreBuildEvent>
-      <Command>copy "src\Linter++.xsd" "$(TargetDir)"
-powershell.exe -File "$(ProjectDir)gen_version_h.ps1" "$(IntDir)\"</Command>
-      <Message>Copy xsd file and generate version.h from git tags</Message>
+      <Command>powershell.exe -File "$(ProjectDir)gen_version_h.ps1" "$(IntDir)\"</Command>
+      <Message>Generate version.h from git tags</Message>
     </PreBuildEvent>
+    <CopyFileToFolders>
+      <DestinationFolders>$(TargetDir)</DestinationFolders>
+    </CopyFileToFolders>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">
     <ClCompile>
@@ -237,10 +239,12 @@ powershell.exe -File "$(ProjectDir)gen_version_h.ps1" "$(IntDir)\"</Command>
       <Culture>0x0809</Culture>
     </ResourceCompile>
     <PreBuildEvent>
-      <Command>copy "src\Linter++.xsd" "$(TargetDir)"
-powershell.exe -File "$(ProjectDir)gen_version_h.ps1" "$(IntDir)\"</Command>
-      <Message>Copy xsd file and generate version.h from git tags</Message>
+      <Command>powershell.exe -File "$(ProjectDir)gen_version_h.ps1" "$(IntDir)\"</Command>
+      <Message>Generate version.h from git tags</Message>
     </PreBuildEvent>
+    <CopyFileToFolders>
+      <DestinationFolders>$(TargetDir)</DestinationFolders>
+    </CopyFileToFolders>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -287,10 +291,12 @@ powershell.exe -File "$(ProjectDir)gen_version_h.ps1" "$(IntDir)\"</Command>
       <Culture>0x0809</Culture>
     </ResourceCompile>
     <PreBuildEvent>
-      <Command>copy "src\Linter++.xsd" "$(TargetDir)"
-powershell.exe -File "$(ProjectDir)gen_version_h.ps1" "$(IntDir)\"</Command>
-      <Message>Copy xsd file and generate version.h from git tags</Message>
+      <Command>powershell.exe -File "$(ProjectDir)gen_version_h.ps1" "$(IntDir)\"</Command>
+      <Message>Generate version.h from git tags</Message>
     </PreBuildEvent>
+    <CopyFileToFolders>
+      <DestinationFolders>$(TargetDir)</DestinationFolders>
+    </CopyFileToFolders>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -342,10 +348,12 @@ powershell.exe -File "$(ProjectDir)gen_version_h.ps1" "$(IntDir)\"</Command>
       <Culture>0x0809</Culture>
     </ResourceCompile>
     <PreBuildEvent>
-      <Command>copy "src\Linter++.xsd" "$(TargetDir)"
-powershell.exe -File "$(ProjectDir)gen_version_h.ps1" "$(IntDir)\"</Command>
-      <Message>Copy xsd file and generate version.h from git tags</Message>
+      <Command>powershell.exe -File "$(ProjectDir)gen_version_h.ps1" "$(IntDir)\"</Command>
+      <Message>Generate version.h from git tags</Message>
     </PreBuildEvent>
+    <CopyFileToFolders>
+      <DestinationFolders>$(TargetDir)</DestinationFolders>
+    </CopyFileToFolders>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'">
     <ClCompile>
@@ -396,10 +404,12 @@ powershell.exe -File "$(ProjectDir)gen_version_h.ps1" "$(IntDir)\"</Command>
       <Culture>0x0809</Culture>
     </ResourceCompile>
     <PreBuildEvent>
-      <Command>copy "src\Linter++.xsd" "$(TargetDir)"
-powershell.exe -File "$(ProjectDir)gen_version_h.ps1" "$(IntDir)\"</Command>
-      <Message>Copy xsd file and generate version.h from git tags</Message>
+      <Command>powershell.exe -File "$(ProjectDir)gen_version_h.ps1" "$(IntDir)\"</Command>
+      <Message>Generate version.h from git tags</Message>
     </PreBuildEvent>
+    <CopyFileToFolders>
+      <DestinationFolders>$(TargetDir)</DestinationFolders>
+    </CopyFileToFolders>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -448,10 +458,12 @@ powershell.exe -File "$(ProjectDir)gen_version_h.ps1" "$(IntDir)\"</Command>
       <Culture>0x0809</Culture>
     </ResourceCompile>
     <PreBuildEvent>
-      <Command>copy "src\Linter++.xsd" "$(TargetDir)"
-powershell.exe -File "$(ProjectDir)gen_version_h.ps1" "$(IntDir)\"</Command>
-      <Message>Copy xsd file and generate version.h from git tags</Message>
+      <Command>powershell.exe -File "$(ProjectDir)gen_version_h.ps1" "$(IntDir)\"</Command>
+      <Message>Generate version.h from git tags</Message>
     </PreBuildEvent>
+    <CopyFileToFolders>
+      <DestinationFolders>$(TargetDir)</DestinationFolders>
+    </CopyFileToFolders>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Docking_Dialogue_Interface\Plugin\Dialogue_Interface.cpp" />
@@ -466,7 +478,7 @@ powershell.exe -File "$(ProjectDir)gen_version_h.ps1" "$(IntDir)\"</Command>
     <ClCompile Include="src\Dom_Node.cpp" />
     <ClCompile Include="src\Dom_Node_List.cpp" />
     <ClCompile Include="src\encoding.cpp" />
-    <ClCompile Include="src\File_Holder.cpp" />
+    <ClCompile Include="src\File_Linter.cpp" />
     <ClCompile Include="src\Child_Pipe.cpp" />
     <ClCompile Include="src\Handle_Wrapper.cpp" />
     <ClCompile Include="src\Indicator.cpp" />
@@ -507,7 +519,7 @@ powershell.exe -File "$(ProjectDir)gen_version_h.ps1" "$(IntDir)\"</Command>
     <ClInclude Include="src\Dom_Node_List.h" />
     <ClInclude Include="src\encoding.h" />
     <ClInclude Include="src\Error_Info.h" />
-    <ClInclude Include="src\File_Holder.h" />
+    <ClInclude Include="src\File_Linter.h" />
     <ClInclude Include="src\Child_Pipe.h" />
     <ClInclude Include="src\Handle_Wrapper.h" />
     <ClInclude Include="src\Indicator.h" />
@@ -539,6 +551,7 @@ powershell.exe -File "$(ProjectDir)gen_version_h.ps1" "$(IntDir)\"</Command>
     <None Include=".github\workflows\CI_pull_request.yml" />
     <None Include=".github\workflows\CI_release.yml" />
     <None Include=".github\workflows\codeql-analysis.yml" />
+    <None Include=".remarkrc.yaml" />
     <None Include="Changes.md">
       <SubType>
       </SubType>
@@ -548,6 +561,33 @@ powershell.exe -File "$(ProjectDir)gen_version_h.ps1" "$(IntDir)\"</Command>
     <None Include="post-build.ps1" />
     <None Include="PSScriptAnalyzerSettings.psd1" />
     <None Include="README.md" />
+    <CopyFileToFolders Include="tools\powershell-linter.ps1">
+      <FileType>Document</FileType>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">false</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'">false</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="tools\remark-linter.ps1">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
+      <FileType>Document</FileType>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">false</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'">false</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="tools\markdown-linter.ps1">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
+      <FileType>Document</FileType>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">false</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'">false</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
+    </CopyFileToFolders>
     <None Include="vs2022cpp20.imp" />
   </ItemGroup>
   <ItemGroup>
@@ -556,14 +596,7 @@ powershell.exe -File "$(ProjectDir)gen_version_h.ps1" "$(IntDir)\"</Command>
     <Image Include="src\linter.ico" />
   </ItemGroup>
   <ItemGroup>
-    <Xsd Include="src\Linter++.xsd">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
-    </Xsd>
+    <CopyFileToFolders Include="src\Linter++.xsd" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

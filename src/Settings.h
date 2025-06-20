@@ -25,16 +25,20 @@ class Settings
   public:
     explicit Settings(Linter const &linter);
 
+    struct Command
+    {
+        std::filesystem::path program;
+        std::wstring args;
+        bool use_stdin = false;
+    };
+
     struct Linter
     {
         std::wstring extension;
-        struct Command
-        {
-            std::filesystem::path program;
-            std::wstring args;
-            bool use_stdin = false;
-        } command;
+        Command command;
     };
+
+    typedef std::pair<std::wstring, Command> Variable;
 
     /** Returns the configuration path */
     std::filesystem::path const &settings_file() const noexcept
@@ -61,6 +65,11 @@ class Settings
         return indicator_;
     }
 
+    std::vector<Variable> const &get_variables() const noexcept
+    {
+        return variables_;
+    }
+
     static uint32_t read_colour_node(Dom_Node const &node);
 
   private:
@@ -77,6 +86,11 @@ class Settings
 
     /** Process <linters> XML element */
     void read_linters(Dom_Document const &settings);
+
+    /** Process <variables> XML element */
+    void read_variables(Dom_Document const &settings);
+
+    Command read_command(Dom_Node command_node);
 
     // configuration file
     std::filesystem::path const settings_xml_;
@@ -100,6 +114,9 @@ class Settings
     std::unordered_map<Menu_Entry, ShortcutKey> menu_entries_;
 
     Indicator indicator_;
+
+    // List of variables
+    std::vector<Variable> variables_;
 };
 
 }    // namespace Linter
