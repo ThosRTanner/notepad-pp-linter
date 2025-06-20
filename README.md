@@ -28,7 +28,7 @@ It is a fork of both:
 
 You can adjust your configration by editting the file `Linter++.xml` in `%AppData%\plugins\config\Linter++`.
 
-There are 4 sections to the configuration file. You do need to supply a list of linters if you want to actually lint something, but the rest of the configuration is optional.
+There are 5 sections to the configuration file. You do need to supply a list of linters if you want to actually lint something, but the rest of the configuration is optional.
 
 A note: Please don't supply empty sections, as this will become an error in the future. Just leave them out entirely.
 
@@ -96,12 +96,6 @@ Notes:
 1. Changing the shortcuts will not take effect till next time you start notepad++
 1. notepad++ determines which shortcuts get which keypresses, so take care not to clash with shortcuts from other plugins.
 
-### The `<command>` element
-
-You will see below the use of `<command>` elements which contain a `<program>` element and an `<args>` element.
-
-These are used to run the chosen programs. Both of them will have any environment variables (like `%UserProfile%`) expanded before the program is executed. It is recommended for `<args>` elements that you enclose environment variables in double quotes in case the expansion contains spaces. However, you should NOT do that for `<program>` elements.
-
 ### Environment Variables
 
 As you can see below, you can use windows environment variables in your command line. linter++ also provides some of its own variables and allows you to define your own variables.
@@ -139,6 +133,14 @@ You can define your own variables to use if the supplied ones aren't enough, by 
 The command will be run and the output will be stored in the named variable, excluding the trailing newline.
 
 Variables are defined in the order in which they appears in the XML, so later ones can use earlier ones. Any of them can use the automatically defined variables.
+
+#### The `<command>` element
+
+You will see both here and in the linters section below the use of `<command>` elements which contain a `<program>` element and an `<args>` element.
+
+These are used to run the chosen programs. The specified program will be run with the specified arguments. Both will have any environment variables (like `%UserProfile%`) expanded before the program is executed. It is recommended for `<args>` elements that you enclose environment variables in double quotes in case the expansion contains spaces. However, you should NOT do that for `<program>` elements.
+
+Whitespace in the `<args>` element will be trimmed from the start and end, and compacted to a single white space so you can make your xml moderately readable.
 
 ### Linters
 
