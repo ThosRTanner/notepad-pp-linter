@@ -243,8 +243,8 @@
       <xs:documentation>
         A command consists of a program to run and its arguments.
 
-        While these are "Just strings", whitespace and newlines are
-        significant.
+        Note that whitespace and newlines will be collapsed in the args
+        element.
 
         You can use windows environment variables in these strings (e.g.
         %TMPDIR%, %APPDATA%) as well as the following:
@@ -263,7 +263,7 @@
     </xs:annotation>
     <xs:sequence>
       <xs:element name="program" type="nonemptystring"/>
-      <xs:element name="args" type="xs:string"/>
+      <xs:element name="args" type="xs:token"/>
     </xs:sequence>
   </xs:complexType>
 
@@ -337,7 +337,7 @@
       <xs:element maxOccurs="unbounded" name="variable" type="variable"/>
     </xs:sequence>
   </xs:complexType>
-  
+
   <xs:element name="LinterPP">
     <xs:annotation>
       <xs:documentation>

@@ -20,6 +20,7 @@
 #include <cwctype>
 #include <filesystem>
 #include <locale>
+#include <regex>
 #include <sstream>
 
 namespace Linter
@@ -283,6 +284,11 @@ Settings::Command Settings::read_command(Dom_Node command_node)
         Dom_Node const args_node{command_node.get_node(".//args")};
         args = args_node.get_value();
     }
+    // It appears microsoft completely ignores the xs:token type, so we
+    // have to do this ourselves.
+    args = std::regex_replace(args, std::wregex(LR"((^\s+)|(\s+$))"), L"");
+    args = std::regex_replace(args, std::wregex(LR"(\s+)"), L" ");
+    //Should really only do this for linter commands but...
     if (args.ends_with(L"%%"))
     {
         args = args.substr(0, args.size() - 2) + L"\"%LINTER_TARGET%\"";

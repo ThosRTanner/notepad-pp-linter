@@ -49,8 +49,10 @@
     $rule, $tool = $columns[4] -split '\s+'
     # Add the rule to the message for now.
     $message = $columns[3] + ' (' + $rule + ')'
+    # If the message has &s and "s in it, we need to replace them
+    $message = $message.Replace("&", "&amp;").Replace('"', "&quot;")
 
-    echo "        <error line=""$($line_num)"" column=""$($column)"" severity=""$($columns[1])""  message=""$($message)"" source=""$tool.$rule""/>"
+    echo "        <error line=""$line_num"" column=""$column"" severity=""$($columns[1])""  message=""$message"" source=""$tool.$rule""/>"
 } -end {
     echo "    </file>"
     echo "</checkstyle>"

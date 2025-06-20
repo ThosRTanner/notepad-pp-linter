@@ -30,8 +30,15 @@ Linter::Dom_Document::Dom_Document(
     // Not sure what this does but it doesn't seem to be  necessary.
     // pXD->put_resolveExternals(VARIANT_TRUE);
 
+    // Treat whitespace according to the schema.
+    HRESULT hr = document_->put_preserveWhiteSpace(FALSE);
+    if (not SUCCEEDED(hr))
+    {
+        throw System_Error(hr, "Can't set preserveWhiteSpace");
+    }
+
     // Assign the schema cache to the DOMDocument's schemas collection.
-    HRESULT hr = document_->putref_schemas(CComVariant(schemas));
+    hr = document_->putref_schemas(CComVariant(schemas));
     if (not SUCCEEDED(hr))
     {
         throw System_Error(hr, "Can't use schema collection");

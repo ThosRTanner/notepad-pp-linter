@@ -261,5 +261,8 @@
     <CopyFileToFolders Include="src\Linter++.xsd">
       <Filter>Resource Files</Filter>
     </CopyFileToFolders>
+    <CopyFileToFolders Include="tools\markdown-linter.ps1">
+      <Filter>Tools</Filter>
+    </CopyFileToFolders>
   </ItemGroup>
 </Project>

@@ -14,7 +14,11 @@ Invoke-ScriptAnalyzer @args | ForEach-Object -begin {
     if ($severity -eq "parseerror") {
         $severity = "error"
     }
-    echo "        <error line=""$($_.Line)"" column=""1"" severity=""$severity"" message=""$($_.Message)"" source=""pslint.$($_.Rulename)""/>"
+
+    # If the message has &s and "s in it, we need to replace them
+    $message = $_.Message.Replace("&", "&amp;").Replace('"', "&quot;")
+
+    echo "        <error line=""$($_.Line)"" column=""1"" severity=""$severity"" message=""$message)"" source=""pslint.$($_.Rulename)""/>"
 } -end {
     if ($ScriptName -ne "")
     {
