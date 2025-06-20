@@ -28,7 +28,13 @@ It is a fork of both:
 
 You can adjust your configration by editting the file `Linter++.xml` in `%AppData%\plugins\config\Linter++`.
 
-There are 5 sections to the configuration file. You do need to supply a list of linters if you want to actually lint something, but the rest of the configuration is optional.
+There are 5 sections to the configuration file. You do need to supply a list of linters, but the rest of the configuration is optional.
+
+1. Indicator
+1. Messages
+1. Shortcut Keys
+1. Environment Variables
+1. Linters
 
 A note: Please don't supply empty sections, as this will become an error in the future. Just leave them out entirely.
 
@@ -76,9 +82,9 @@ You can change the colours by adding a `<messages>` section, like this:
 
 You don't need to specify all of the entries here, just the ones where you want to override the default.
 
-### Shortcuts
+### Shortcut Keys
 
-You can supply shortcuts for one or more of the menu entries, like this:
+You can supply shortcut keys for one or more of the menu entries, like this:
 
 ```xml
 <shortcuts>
@@ -94,7 +100,7 @@ There may be some shortcut keys which you'd like to use. Please let me know and 
 Notes:
 
 1. Changing the shortcuts will not take effect till next time you start notepad++
-1. notepad++ determines which shortcuts get which keypresses, so take care not to clash with shortcuts from other plugins.
+1. Notepad++ determines which shortcuts get which keypresses, so take care not to clash with shortcuts from other plugins.
 
 ### Environment Variables
 
