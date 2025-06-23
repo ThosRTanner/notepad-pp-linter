@@ -1,10 +1,10 @@
 #include "File_Linter.h"
 
 #include "Child_Pipe.h"
+#include "Encoding.h"
 #include "Handle_Wrapper.h"
 #include "Settings.h"
 #include "System_Error.h"
-#include "encoding.h"
 
 #include "Plugin/Plugin.h"
 

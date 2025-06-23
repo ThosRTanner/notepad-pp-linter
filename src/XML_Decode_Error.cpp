@@ -1,5 +1,7 @@
 #include "XML_Decode_Error.h"
 
+#include "Encoding.h"
+
 #include <comutil.h>
 #include <msxml.h>
 #include <wtypes.h>
@@ -49,7 +51,7 @@ XML_Decode_Error::XML_Decode_Error(IXMLDOMParseError &error)
         &what_string_[0],
         sizeof(what_string_),
         "%s",
-        static_cast<char *>(static_cast<bstr_t>(msg.str().c_str()))
+        Encoding::convert(msg.str()).c_str()
     );
 }
 
