@@ -1,13 +1,13 @@
 #include "Linter.h"
 
 #include "Checkstyle_Parser.h"
+#include "Encoding.h"
 #include "Error_Info.h"
 #include "File_Linter.h"
 #include "Menu_Entry.h"
 #include "Output_Dialogue.h"
 #include "Settings.h"
 #include "XML_Decode_Error.h"
-#include "encoding.h"
 
 #include "Plugin/Callback_Context.h"    // IWYU pragma: keep
 // IWYU requires Plugin/Min_Win_Defs.h because it doesn't understand
@@ -26,7 +26,6 @@
 #include <synchapi.h>
 #include <threadpoollegacyapiset.h>
 
-#include <codecvt>
 #include <exception>
 #include <map>
 #include <memory>
@@ -350,8 +349,8 @@ unsigned int Linter::run_linter() noexcept
         }
         catch (XML_Decode_Error const &e)
         {
-            std::string exc{e.what()};
-            std::wstring wstr{exc.begin(), exc.end()};
+            std::string const exc{e.what()};
+            std::wstring const wstr{Encoding::convert(exc)};
             output_dialogue_->add_system_error(
                 {.message_ = wstr,
                  .mode_ = Error_Info::Bad_Linter_XML,
@@ -363,7 +362,7 @@ unsigned int Linter::run_linter() noexcept
         catch (std::exception const &e)
         {
             std::string const exc(e.what());
-            std::wstring wstr{exc.begin(), exc.end()};
+            std::wstring const wstr{Encoding::convert(exc)};
             output_dialogue_->add_system_error(
                 {.message_ = wstr, .mode_ = Error_Info::Exception}
             );
@@ -372,19 +371,8 @@ unsigned int Linter::run_linter() noexcept
     }
     catch (std::exception const &e)
     {
-        try
-        {
-            message_box(
-                static_cast<wchar_t *>(static_cast<_bstr_t>(e.what())),
-                MB_OK | MB_ICONERROR
-            );
-        }
-        catch (std::exception const &)
-        {
-            message_box(
-                L"Caught exception but cannot get reason", MB_OK | MB_ICONERROR
-            );
-        }
+#pragma warning(suppress : 26447)
+        message_box(Encoding::convert(e.what()), MB_OK | MB_ICONERROR);
     }
     return 0;
 }
@@ -426,7 +414,7 @@ void Linter::apply_linters()
     for (auto const &warning : file.warnings())
     {
         output_dialogue_->add_system_error(
-            {.message_ = std::wstring(warning.begin(), warning.end()),
+            {.message_ = Encoding::convert(warning),
              .severity_ = L"warning",
              .mode_ = Error_Info::Stderr_Found}
         );
@@ -443,7 +431,7 @@ void Linter::apply_linters()
             {
                 // Program terminated with error.
                 output_dialogue_->add_system_error(
-                    {.message_ = std::wstring(errout.begin(), errout.end()),
+                    {.message_ = Encoding::convert(errout),
                      .tool_ = command.program.stem(),
                      .command_ = cmdline,
                      .stdout_ = output,
@@ -467,7 +455,7 @@ void Linter::apply_linters()
                 if (not errout.empty())
                 {
                     output_dialogue_->add_system_error(
-                        {.message_ = std::wstring(errout.begin(), errout.end()),
+                        {.message_ = Encoding::convert(errout),
                          .severity_ = L"warning",
                          .tool_ = command.program.stem(),
                          .command_ = cmdline,
@@ -481,7 +469,7 @@ void Linter::apply_linters()
             {
                 std::string exc{e.what()};
                 output_dialogue_->add_system_error(
-                    {.message_ = std::wstring(exc.begin(), exc.end()),
+                    {.message_ = Encoding::convert(exc),
                      .tool_ = command.program.stem(),
                      .command_ = cmdline,
                      .stdout_ = output,
@@ -498,7 +486,7 @@ void Linter::apply_linters()
             // can log
             std::string exc{e.what()};
             output_dialogue_->add_system_error(
-                {.message_ = std::wstring(exc.begin(), exc.end()),
+                {.message_ = Encoding::convert(exc),
                  .tool_ = command.program.stem(),
                  .mode_ = Error_Info::Exception}
             );

@@ -1,10 +1,16 @@
-#include "encoding.h"
+#include "Encoding.h"
 
 #include <string>
+#include <string_view>
 
 #include <stddef.h>
 
-int Encoding::utfOffset(std::string const &utf8, int unicode_offset) noexcept
+namespace Linter
+{
+namespace Encoding
+{
+
+int utfOffset(std::string const &utf8, int unicode_offset) noexcept
 {
     int result = 0;
     std::string::const_iterator i = utf8.begin();
@@ -29,9 +35,11 @@ int Encoding::utfOffset(std::string const &utf8, int unicode_offset) noexcept
     return result;
 }
 
-std::string Encoding::convert(std::wstring const &str) noexcept
+std::string convert(std::wstring const &str) noexcept
 {
     // The casts here are safe...
+#pragma warning(push)
+#pragma warning(disable : 26472)
     std::string result;
     for (wchar_t const wc : str)
     {
@@ -59,28 +67,31 @@ std::string Encoding::convert(std::wstring const &str) noexcept
             result += '?';
         }
     }
+#pragma warning(pop)
     return result;
 }
 
-std::wstring Encoding::convert(std::string const &utf8) noexcept
+std::wstring convert(std::string_view const str) noexcept
 {
     // The array references are safe, but we could possibly rewrite this
-    //  using iterators insead of indices.
+    // using iterators insead of indices.
+#pragma warning(push)
+#pragma warning(disable : 26446)
     std::wstring result;
     size_t i = 0;
-    while (i < utf8.size())
+    while (i < str.length())
     {
-        unsigned char const c = static_cast<unsigned char>(utf8[i]);
+        unsigned char const c = static_cast<unsigned char>(str[i]);
         if (c < 0x80)
         {
             // 1-byte ASCII
             result += c;
             i += 1;
         }
-        else if ((c & 0xE0) == 0xC0 && i + 1 < utf8.size())
+        else if ((c & 0xE0) == 0xC0 && i + 1 < str.length())
         {
             // 2-byte sequence
-            unsigned char const c1 = static_cast<unsigned char>(utf8[i + 1]);
+            unsigned char const c1 = static_cast<unsigned char>(str[i + 1]);
             if ((c1 & 0xC0) == 0x80)
             {
                 result += ((c & 0x1F) << 6) | (c1 & 0x3F);
@@ -92,11 +103,11 @@ std::wstring Encoding::convert(std::string const &utf8) noexcept
                 i += 1;
             }
         }
-        else if ((c & 0xF0) == 0xE0 && i + 2 < utf8.size())
+        else if ((c & 0xF0) == 0xE0 && i + 2 < str.length())
         {
             // 3-byte sequence
-            unsigned char const c1 = static_cast<unsigned char>(utf8[i + 1]);
-            unsigned char const c2 = static_cast<unsigned char>(utf8[i + 2]);
+            unsigned char const c1 = static_cast<unsigned char>(str[i + 1]);
+            unsigned char const c2 = static_cast<unsigned char>(str[i + 2]);
             if ((c1 & 0xC0) == 0x80 && (c2 & 0xC0) == 0x80)
             {
                 result += ((c & 0x0F) << 12) | ((c1 & 0x3F) << 6) | (c2 & 0x3F);
@@ -115,5 +126,9 @@ std::wstring Encoding::convert(std::string const &utf8) noexcept
             i += 1;
         }
     }
+#pragma warning(pop)
     return result;
 }
+
+}    // namespace Encoding
+}    // namespace Linter

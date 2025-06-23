@@ -4,6 +4,7 @@
 
 #include "Checkstyle_Parser.h"
 #include "Clipboard.h"
+#include "Encoding.h"
 #include "Error_Info.h"
 #include "Linter.h"
 #include "Settings.h"
@@ -16,7 +17,6 @@
 #include <CommCtrl.h>
 #include <intsafe.h>
 
-#include <codecvt>
 #include <cstddef>
 #include <sstream>
 #include <string>
@@ -619,11 +619,7 @@ void Output_Dialogue::show_selected_lint(int selected_item) noexcept
             // This should not throw if the command line is valid UTF16. Which
             // it is.
             append_text(
-                "\n\n"
-                + std::wstring_convert<std::codecvt_utf8<wchar_t>>().to_bytes(
-                    lint_error.command_
-                )
-                + "\n\n"
+                "\n\n" + Encoding::convert(lint_error.command_) + "\n\n"
             );
             append_text_with_style("Return code:", style);
             append_text(" " + std::to_string(lint_error.result_) + "\n\n");
