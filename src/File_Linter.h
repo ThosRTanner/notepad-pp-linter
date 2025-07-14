@@ -6,6 +6,7 @@
 #include <intsafe.h>
 
 #include <filesystem>
+#include <memory>
 #include <string>
 #include <tuple>
 
@@ -13,6 +14,8 @@ class Plugin;
 
 namespace Linter
 {
+
+class Environment_Wrapper;
 
 class File_Linter
 {
@@ -59,7 +62,7 @@ class File_Linter
     std::filesystem::path temp_file_;
     std::vector<Settings::Variable> const &variables_;
     std::string const text_;
-    wchar_t const *orig_env_;
+    std::unique_ptr<Environment_Wrapper> env_;
 
     std::vector<std::string> warnings_;
 
