@@ -39,7 +39,8 @@ System_Error::System_Error(
         std::snprintf(
             &what_string_[0],
             sizeof(what_string_),
-            "%s",
+            "%08lx %s",
+            err,
             std::generic_category().message(err).c_str()
         );
     }
@@ -66,8 +67,9 @@ System_Error::System_Error(
         std::snprintf(
             &what_string_[0],
             sizeof(what_string_),
-            "%s - %s",
+            "%s - %08lx %s",
             info.c_str(),
+            err,
             std::generic_category().message(err).c_str()
         );
     }
@@ -99,7 +101,8 @@ System_Error::System_Error(
         std::snprintf(
             &what_string_[0],
             sizeof(what_string_),
-            "%s",
+            "%08lx %s",
+            err,
             static_cast<char *>(msg)
         );
     }
@@ -130,8 +133,9 @@ System_Error::System_Error(
         std::snprintf(
             &what_string_[0],
             sizeof(what_string_),
-            "%s - %s",
+            "%s - %08lx %s",
             info.c_str(),
+            err,
             static_cast<char *>(msg)
         );
     }
