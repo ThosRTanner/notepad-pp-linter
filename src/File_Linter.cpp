@@ -30,6 +30,43 @@
 namespace Linter
 {
 
+class Environment_Wrapper
+{
+  public:
+#pragma warning(suppress : 26455)
+    Environment_Wrapper() : env_{GetEnvironmentStrings()}
+    {
+        if (env_ == nullptr)
+        {
+            throw System_Error();
+        }
+    }
+
+    /** Prevent copying and moving */
+    Environment_Wrapper(Environment_Wrapper const &) = delete;
+    Environment_Wrapper &operator=(Environment_Wrapper const &) = delete;
+    Environment_Wrapper(Environment_Wrapper &&) = delete;
+    Environment_Wrapper &operator=(Environment_Wrapper &&) = delete;
+
+    /** Free the environment strings */
+    ~Environment_Wrapper() noexcept
+    {
+        // Restore environment to original state
+        SetEnvironmentStrings(env_);
+        // And discard the saved buffer.
+        FreeEnvironmentStrings(env_);
+    }
+
+    /** Get the current environment strings */
+    wchar_t const *get() const noexcept
+    {
+        return env_;
+    }
+
+  private:
+    wchar_t *env_;
+};
+
 File_Linter::File_Linter(
     std::filesystem::path const &target,
     std::filesystem::path const &plugin_dir,
@@ -43,14 +80,8 @@ File_Linter::File_Linter(
     variables_{variables},
     text_{text},
     created_temp_file_{false},
-    orig_env_(GetEnvironmentStrings())
+    env_{std::make_unique<Environment_Wrapper>()}
 {
-    if (orig_env_ == NULL)
-    {
-        // This is a guess. All the documentation says is that it returns null.
-        // It says nothing about how you can determine what the cause was.
-        throw System_Error();
-    }
     setup_environment();
 }
 
@@ -58,11 +89,6 @@ File_Linter::~File_Linter()
 {
     std::error_code errcode;
     std::filesystem::remove(temp_file_, errcode);
-    // Ignore errors...
-    // Restore environment to original state
-    SetEnvironmentStrings(const_cast<wchar_t *>(orig_env_));
-    // And discard the saved buffer.
-    FreeEnvironmentStrings(const_cast<wchar_t *>(orig_env_));
 }
 
 std::tuple<std::wstring, DWORD, std::string, std::string>
