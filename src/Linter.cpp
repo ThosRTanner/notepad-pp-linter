@@ -142,15 +142,7 @@ void Linter::on_notification(SCNotification const *notification)
     switch (notification->nmhdr.code)
     {
         case NPPN_READY:
-            // FIXME need to add this, but the parameter doesn't appear
-            // to be available yet.
-            /*
-            send_to_notepad(
-                NPPM_ADDSCNMODIFIEDFLAGS,
-                0,
-                Modification_Flags
-            );
-            */
+            send_to_notepad(NPPM_ADDSCNMODIFIEDFLAGS, 0, Modification_Flags);
             notepad_is_ready_ = true;
             mark_file_changed();
             break;
