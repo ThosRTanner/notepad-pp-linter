@@ -207,6 +207,13 @@
           </xs:documentation>
         </xs:annotation>
       </xs:element>
+      <xs:element name="enabled" type="key" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation>
+            Shortcut for 'Enabled' toggle
+          </xs:documentation>
+        </xs:annotation>
+      </xs:element>
     </xs:all>
   </xs:complexType>
 

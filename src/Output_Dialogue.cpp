@@ -7,6 +7,7 @@
 #include "Encoding.h"
 #include "Error_Info.h"
 #include "Linter.h"
+#include "Menu_Entry.h"
 #include "Settings.h"
 #include "System_Error.h"
 
@@ -71,7 +72,7 @@ enum Context_Menu_Entry
 
 }    // namespace
 
-Output_Dialogue::Output_Dialogue(int menu_entry, Linter const &plugin) :
+Output_Dialogue::Output_Dialogue(Menu_Entry menu_entry, Linter const &plugin) :
     Super(IDD_OUTPUT, plugin),
     tab_bar_(GetDlgItem(IDC_TABBAR)),
     tab_definitions_({
@@ -91,7 +92,7 @@ Output_Dialogue::Output_Dialogue(int menu_entry, Linter const &plugin) :
     // Possibly one should free the icon up, but I don't see the dialogue memory
     // being freed up anywhere.
     register_dialogue(
-        menu_entry,
+        static_cast<int>(menu_entry),
         Position::Dock_Bottom,
         static_cast<HICON>(::LoadImage(
             plugin.module(),
