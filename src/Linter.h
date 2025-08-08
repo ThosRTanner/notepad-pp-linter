@@ -53,6 +53,7 @@ class Linter : public Plugin
     void show_results() noexcept;
     void select_next_lint() noexcept;
     void select_previous_lint() noexcept;
+    void toggle_enable() noexcept;
 
     // Mark the current file changed and relint if necessary
     void mark_file_changed() noexcept;
@@ -106,13 +107,19 @@ class Linter : public Plugin
     bool notepad_is_ready_{false};
 
     // Set if current file (buffer) has changed
-    bool file_changed_ = true;
+    bool file_changed_{true};
 
     // List of errors picked up in latest lint(s)
     std::vector<Error_Info> errors_;
 
     // Same but by position in window
     std::map<LRESULT, std::wstring> errors_by_position_;
+
+    // Whether the linter is enabled
+    bool enabled_;
+
+    // FIXME - abstract this into the plugin class
+    std::vector<FuncItem> menu_entries_;
 };
 
 }    // namespace Linter

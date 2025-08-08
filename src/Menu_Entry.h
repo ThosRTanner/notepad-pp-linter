@@ -5,12 +5,13 @@
 namespace Linter
 {
 
-enum Menu_Entry
+enum class Menu_Entry : int
 {
-    Menu_Entry_Edit_Config,
-    Menu_Entry_Show_Results,
-    Menu_Entry_Show_Next_Lint,
-    Menu_Entry_Show_Previous_Lint
+    Edit_Config,
+    Show_Results,
+    Show_Next_Lint,
+    Show_Previous_Lint,
+    Toggle_Enabled
 };
 
 /** Get the display string for the menu entry */

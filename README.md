@@ -30,6 +30,7 @@ You can adjust your configration by editting the file `Linter++.xml` in `%AppDat
 
 There are 5 sections to the configuration file. You do need to supply a list of linters, but the rest of the configuration is optional.
 
+1. Miscellaneous
 1. Indicator
 1. Messages
 1. Shortcut Keys
@@ -37,6 +38,19 @@ There are 5 sections to the configuration file. You do need to supply a list of 
 1. Linters
 
 A note: Please don't supply empty sections, as this will become an error in the future. Just leave them out entirely.
+
+### Miscellaneous
+
+This section contains miscellaneous parameters that don't fit in any other
+category. All of them are optional.
+
+```xml
+<misc>
+  <disabled/>
+</misc>
+```
+
+1. disabled - if this is supplied, the plugin will be disabled on startup, as if you'd used the 'Enabled' toggle to switch it off.
 
 ### Indicator
 
@@ -91,11 +105,12 @@ You can supply shortcut keys for one or more of the menu entries, like this:
   <edit><alt/><ctrl/><key>F5</key></edit>
   <show><shift/><ctrl/><key>F6</key></show>
   <previous><ctrl/><key>F7</key></previous>
-  <next>><key>F8</key></next>
+  <next><key>F8</key></next>
+  <on_off><key>F9</key></on_off>
 </shortcuts>
 ```
 
-There may be some shortcut keys which you'd like to use. Please let me know and I'll try to add them.
+There may be some other keys which you'd like to use for shortcuts (only F1-F12, num pad 0-9, and the 6 keys in the insert..page down block are set up currently). Please let me know and I'll try to add them.
 
 Notes:
 

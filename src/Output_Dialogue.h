@@ -18,6 +18,8 @@ namespace Linter
 class Linter;
 class Settings;
 
+enum class Menu_Entry : int;
+
 /** This maintains an output dialogue for the linter plugin.
  *
  * The dialogue consists of:
@@ -29,7 +31,7 @@ class Output_Dialogue : protected Docking_Dialogue_Interface
     typedef Docking_Dialogue_Interface Super;
 
   public:
-    Output_Dialogue(int dlg_num, Linter const &);
+    Output_Dialogue(Menu_Entry dlg_num, Linter const &);
 
     Output_Dialogue(Output_Dialogue const &) = delete;
     Output_Dialogue(Output_Dialogue &&) = delete;

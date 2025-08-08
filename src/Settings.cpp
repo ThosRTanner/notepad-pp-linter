@@ -132,6 +132,7 @@ void Settings::read_settings()
     read_shortcuts(settings);
     read_linters(settings);
     read_variables(settings);
+    read_misc(settings);
 }
 
 void Settings::read_indicator(Dom_Document const &settings)
@@ -181,7 +182,6 @@ void Settings::read_shortcuts(Dom_Document const &settings)
         MAP_KEY(F10),
         MAP_KEY(F11),
         MAP_KEY(F12),
-        MAP_KEY(F10),
         MAP_KEY(NUMPAD0),
         MAP_KEY(NUMPAD1),
         MAP_KEY(NUMPAD2),
@@ -264,6 +264,17 @@ void Settings::read_variables(Dom_Document const &settings)
     }
 }
 
+void Settings::read_misc(Dom_Document const &settings)
+{
+    // Read the enabled state
+    enabled_ = true;
+    std::optional<Dom_Node> enabled_node = settings.get_node("//disabled");
+    if (enabled_node.has_value())
+    {
+        enabled_ = false;
+    }
+}
+
 Settings::Command Settings::read_command(Dom_Node command_node)
 {
     // Expects either 'cmdline' or 'program' and 'args'
@@ -288,7 +299,7 @@ Settings::Command Settings::read_command(Dom_Node command_node)
     // have to do this ourselves.
     args = std::regex_replace(args, std::wregex(LR"((^\s+)|(\s+$))"), L"");
     args = std::regex_replace(args, std::wregex(LR"(\s+)"), L" ");
-    //Should really only do this for linter commands but...
+    // Should really only do this for linter commands but...
     if (args.ends_with(L"%%"))
     {
         args = args.substr(0, args.size() - 2) + L"\"%LINTER_TARGET%\"";

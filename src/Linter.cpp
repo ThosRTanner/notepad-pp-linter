@@ -82,9 +82,10 @@ Linter::Linter(NppData const &data) :
     Super(data, get_plugin_name()),
     settings_(std::make_unique<Settings>(*this)),
     output_dialogue_(
-        std::make_unique<Output_Dialogue>(Menu_Entry_Show_Results, *this)
+        std::make_unique<Output_Dialogue>(Menu_Entry::Show_Results, *this)
     ),
-    timer_queue_(::CreateTimerQueue())
+    timer_queue_(::CreateTimerQueue()),
+    enabled_(settings_->enabled())
 {
 }
 
@@ -100,23 +101,27 @@ wchar_t const *Linter::get_plugin_name() noexcept
 
 std::vector<FuncItem> &Linter::on_get_menu_entries()
 {
-#define MAKE_CALLBACK(entry, method)       \
-    PLUGIN_MENU_MAKE_CALLBACK(             \
-        Linter,                            \
-        entry,                             \
-        get_menu_string(entry),            \
-        method,                            \
-        false,                             \
-        settings_->get_shortcut_key(entry) \
+#define MAKE_CALLBACK_TOGGLE(entry, method, state) \
+    PLUGIN_MENU_MAKE_CALLBACK(                     \
+        Linter,                                    \
+        static_cast<int>(entry),                   \
+        get_menu_string(entry),                    \
+        method,                                    \
+        state,                                     \
+        settings_->get_shortcut_key(entry)         \
     )
 
-    static std::vector<FuncItem> res = {
-        MAKE_CALLBACK(Menu_Entry_Edit_Config, edit_config),
-        MAKE_CALLBACK(Menu_Entry_Show_Results, show_results),
-        MAKE_CALLBACK(Menu_Entry_Show_Previous_Lint, select_previous_lint),
-        MAKE_CALLBACK(Menu_Entry_Show_Next_Lint, select_next_lint)
+#define MAKE_CALLBACK(entry, method) MAKE_CALLBACK_TOGGLE(entry, method, false)
+    menu_entries_ = {
+        MAKE_CALLBACK(Menu_Entry::Edit_Config, edit_config),
+        MAKE_CALLBACK(Menu_Entry::Show_Results, show_results),
+        MAKE_CALLBACK(Menu_Entry::Show_Previous_Lint, select_previous_lint),
+        MAKE_CALLBACK(Menu_Entry::Show_Next_Lint, select_next_lint),
+        MAKE_CALLBACK_TOGGLE(
+            Menu_Entry::Toggle_Enabled, toggle_enable, enabled_
+        )
     };
-    return res;
+    return menu_entries_;
 }
 
 void Linter::on_notification(SCNotification const *notification)
@@ -128,7 +133,10 @@ void Linter::on_notification(SCNotification const *notification)
             ::CloseHandle(bg_linter_thread_handle_);
             bg_linter_thread_handle_ = nullptr;
             highlight_errors();
-            relint_current_file();
+            if (enabled_)
+            {
+                relint_current_file();
+            }
         }
     }
 
@@ -142,15 +150,7 @@ void Linter::on_notification(SCNotification const *notification)
     switch (notification->nmhdr.code)
     {
         case NPPN_READY:
-            // FIXME need to add this, but the parameter doesn't appear
-            // to be available yet.
-            /*
-            send_to_notepad(
-                NPPM_ADDSCNMODIFIEDFLAGS,
-                0,
-                Modification_Flags
-            );
-            */
+            send_to_notepad(NPPM_ADDSCNMODIFIEDFLAGS, 0, Modification_Flags);
             notepad_is_ready_ = true;
             mark_file_changed();
             break;
@@ -201,12 +201,30 @@ void Linter::show_results() noexcept
 
 void Linter::select_next_lint() noexcept
 {
-    output_dialogue_->select_next_lint();
+    if (enabled_)
+    {
+        output_dialogue_->select_next_lint();
+    }
 }
 
 void Linter::select_previous_lint() noexcept
 {
-    output_dialogue_->select_previous_lint();
+    if (enabled_)
+    {
+        output_dialogue_->select_previous_lint();
+    }
+}
+
+void Linter::toggle_enable() noexcept
+{
+    enabled_ = not enabled_;
+    // FIXME abstract this to plugin class?
+    send_to_notepad(
+        NPPM_SETMENUITEMCHECK,
+        menu_entries_[static_cast<int>(Menu_Entry::Toggle_Enabled)]._cmdID,
+        enabled_ ? MF_CHECKED : MF_UNCHECKED
+    );
+    mark_file_changed();    // Force an update
 }
 
 void Linter::mark_file_changed() noexcept
@@ -381,6 +399,16 @@ void Linter::apply_linters()
 {
     errors_.clear();
     output_dialogue_->clear_lint_info();
+
+    if (not enabled_)
+    {
+        std::vector<Error_Info> const detected_errors{
+            {.message_ = L"Linting disabled", .severity_ = L"warning"}
+        };
+        output_dialogue_->add_system_error(detected_errors.at(0));
+        output_dialogue_->add_lint_errors(detected_errors);
+        return;
+    }
 
     settings_->refresh();
 
