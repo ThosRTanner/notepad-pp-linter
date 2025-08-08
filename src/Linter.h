@@ -116,7 +116,7 @@ class Linter : public Plugin
     std::map<LRESULT, std::wstring> errors_by_position_;
 
     // Whether the linter is enabled
-    bool enabled_{true};
+    bool enabled_;
 
     // FIXME - abstract this into the plugin class
     std::vector<FuncItem> menu_entries_;

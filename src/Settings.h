@@ -70,6 +70,11 @@ class Settings
         return variables_;
     }
 
+    bool enabled() const noexcept
+    {
+        return enabled_;
+    }
+
     static uint32_t read_colour_node(Dom_Node const &node);
 
   private:
@@ -90,6 +95,10 @@ class Settings
     /** Process <variables> XML element */
     void read_variables(Dom_Document const &settings);
 
+    /** Process <misc> XML element */
+    void read_misc(Dom_Document const &settings);
+
+    /** Process <command> XML element */
     Command read_command(Dom_Node command_node);
 
     // configuration file
@@ -113,10 +122,14 @@ class Settings
     // Shortcut keys for the menu.
     std::unordered_map<Menu_Entry, ShortcutKey> menu_entries_;
 
+    // Error indicator
     Indicator indicator_;
 
     // List of variables
     std::vector<Variable> variables_;
+
+    // Startup enabled or not
+    bool enabled_{true};
 };
 
 }    // namespace Linter

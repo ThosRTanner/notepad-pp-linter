@@ -132,6 +132,7 @@ void Settings::read_settings()
     read_shortcuts(settings);
     read_linters(settings);
     read_variables(settings);
+    read_misc(settings);
 }
 
 void Settings::read_indicator(Dom_Document const &settings)
@@ -260,6 +261,17 @@ void Settings::read_variables(Dom_Document const &settings)
         Dom_Node const command_node{variable.get_node(".//command")};
         Command cmd = read_command(command_node);
         variables_.push_back(Variable(name, cmd));
+    }
+}
+
+void Settings::read_misc(Dom_Document const &settings)
+{
+    // Read the enabled state
+    enabled_ = true;
+    std::optional<Dom_Node> enabled_node = settings.get_node("//disabled");
+    if (enabled_node.has_value())
+    {
+        enabled_ = false;
     }
 }
 

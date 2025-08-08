@@ -84,7 +84,8 @@ Linter::Linter(NppData const &data) :
     output_dialogue_(
         std::make_unique<Output_Dialogue>(Menu_Entry::Show_Results, *this)
     ),
-    timer_queue_(::CreateTimerQueue())
+    timer_queue_(::CreateTimerQueue()),
+    enabled_(settings_->enabled())
 {
 }
 
@@ -111,14 +112,14 @@ std::vector<FuncItem> &Linter::on_get_menu_entries()
     )
 
 #define MAKE_CALLBACK(entry, method) MAKE_CALLBACK_TOGGLE(entry, method, false)
-
     menu_entries_ = {
         MAKE_CALLBACK(Menu_Entry::Edit_Config, edit_config),
         MAKE_CALLBACK(Menu_Entry::Show_Results, show_results),
         MAKE_CALLBACK(Menu_Entry::Show_Previous_Lint, select_previous_lint),
         MAKE_CALLBACK(Menu_Entry::Show_Next_Lint, select_next_lint),
-        // This needs the current state of the toggle to be saved.
-        MAKE_CALLBACK_TOGGLE(Menu_Entry::Toggle_Enabled, toggle_enable, true)
+        MAKE_CALLBACK_TOGGLE(
+            Menu_Entry::Toggle_Enabled, toggle_enable, enabled_
+        )
     };
     return menu_entries_;
 }

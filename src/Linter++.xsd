@@ -345,6 +345,23 @@
     </xs:sequence>
   </xs:complexType>
 
+  <xs:complexType name="misc">
+    <xs:annotation>
+      <xs:documentation>
+        A bunch of miscellaneous configurable items.
+      </xs:documentation>
+    </xs:annotation>
+    <xs:all>
+      <xs:element name="disabled" type="presence" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation>
+            If present, then plugin will be inactive on startup.
+          </xs:documentation>
+        </xs:annotation>        
+      </xs:element>
+    </xs:all>
+  </xs:complexType>
+  
   <xs:element name="LinterPP">
     <xs:annotation>
       <xs:documentation>
@@ -359,6 +376,7 @@
         <xs:element name="messages" type="messages" minOccurs="0"/>
         <xs:element name="indicator" type="indicator" minOccurs="0"/>
         <xs:element name="variables" type="variables" minOccurs="0"/>
+        <xs:element name="misc" type="misc" minOccurs="0"/>
       </xs:all>
     </xs:complexType>
   </xs:element>

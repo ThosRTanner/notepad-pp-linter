@@ -30,6 +30,7 @@ You can adjust your configration by editting the file `Linter++.xml` in `%AppDat
 
 There are 5 sections to the configuration file. You do need to supply a list of linters, but the rest of the configuration is optional.
 
+1. Miscellaneous
 1. Indicator
 1. Messages
 1. Shortcut Keys
@@ -37,6 +38,19 @@ There are 5 sections to the configuration file. You do need to supply a list of 
 1. Linters
 
 A note: Please don't supply empty sections, as this will become an error in the future. Just leave them out entirely.
+
+### Miscellaneous
+
+This section contains miscellaneous parameters that don't fit in any other
+category. All of them are optional.
+
+```xml
+<misc>
+  <disabled/>
+</misc>
+```
+
+1. disabled - if this is supplied, the plugin will be disabled on startup, as if you'd used the 'Enabled' toggle to switch it off.
 
 ### Indicator
 
