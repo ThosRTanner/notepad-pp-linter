@@ -25,6 +25,8 @@ class Settings
   public:
     explicit Settings(Linter const &linter);
 
+    ~Settings();
+
     struct Command
     {
         std::filesystem::path program;

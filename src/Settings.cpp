@@ -69,6 +69,8 @@ Settings::Settings(::Linter::Linter const &linter) :
     }
 }
 
+Settings::~Settings() = default;
+
 uint32_t Settings::get_message_colour(std::wstring const &colour) const noexcept
 {
     // Note: This won't throw despite the compiler warnings, because the
@@ -99,7 +101,7 @@ void Settings::refresh()
 
 ShortcutKey const *Settings::get_shortcut_key(Menu_Entry entry) const
 {
-    auto res = menu_entries_.find(entry);
+    auto const res = menu_entries_.find(entry);
     if (res == menu_entries_.end())
     {
         return nullptr;

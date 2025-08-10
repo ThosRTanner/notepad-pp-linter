@@ -6,7 +6,6 @@
 #include <handleapi.h>
 #include <intsafe.h>
 
-#include <cstddef>
 #include <limits>
 #include <string>
 #include <utility>
@@ -51,14 +50,24 @@ void Handle_Wrapper::write_file(std::string const &str) const
 {
     auto start = str.begin();
     auto const end = str.end();
+
     while (start != end)
     {
-        auto const toWrite = static_cast<DWORD>(std::min(
-            static_cast<std::ptrdiff_t>(std::numeric_limits<DWORD>::max()),
-            end - start
+        // Very annoyingly, WriteFile() takes a DWORD for the number of bytes to
+        // write, and we have two pointers to work with. The difference between
+        // two pointers is a ptrdiff_t, which is 32 bits signed on 32-bit
+        // systems and 64 bits signed on 64-bit systems. However, a DWORD is
+        // always 32 bits unsigned, so we have to be careful not to overflow it.
+        // As we know end can never be less than start, however, we can safely
+        // cast end - start to unsigned long long and then downcast the result
+        // of std::min
+        DWORD const to_write = static_cast<DWORD>(std::min(
+            static_cast<unsigned long long>(end - start),
+            static_cast<unsigned long long>(std::numeric_limits<DWORD>::max())
         ));
+
         DWORD written;
-        if (not WriteFile(handle_, &*start, toWrite, &written, nullptr))
+        if (not WriteFile(handle_, &*start, to_write, &written, nullptr))
         {
             throw System_Error();
         }

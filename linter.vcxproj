@@ -150,12 +150,10 @@
       <AdditionalOptions>/NOIMPLIB /NOEXP %(AdditionalOptions)</AdditionalOptions>
     </Link>
     <PostBuildEvent>
-      <Command>
-      </Command>
+      <Command>powershell.exe -ExecutionPolicy Bypass -NoProfile -NonInteractive -File post-build.ps1  $(OutDir) $(Platform)</Command>
     </PostBuildEvent>
     <PostBuildEvent>
-      <Message>
-      </Message>
+      <Message>Copy dll to notepad++ plugin directory</Message>
     </PostBuildEvent>
     <PreLinkEvent>
       <Command>iwyu.bat
@@ -185,14 +183,8 @@
     <Link>
       <AdditionalOptions>/NOIMPLIB /NOEXP %(AdditionalOptions)</AdditionalOptions>
     </Link>
-    <PostBuildEvent>
-      <Command>
-      </Command>
-    </PostBuildEvent>
-    <PostBuildEvent>
-      <Message>
-      </Message>
-    </PostBuildEvent>
+    <PostBuildEvent />
+    <PostBuildEvent />
     <PreLinkEvent>
       <Command>iwyu.bat
 </Command>
@@ -222,7 +214,7 @@
       <AdditionalOptions>/NOIMPLIB /NOEXP %(AdditionalOptions)</AdditionalOptions>
     </Link>
     <PostBuildEvent>
-      <Command>powershell.exe -ExecutionPolicy Bypass -NoProfile -NonInteractive -File post-build.ps1  $(OutDir)</Command>
+      <Command>powershell.exe -ExecutionPolicy Bypass -NoProfile -NonInteractive -File post-build.ps1  $(OutDir) $(Platform)</Command>
     </PostBuildEvent>
     <PostBuildEvent>
       <Message>Copy dll to notepad++ plugin directory</Message>
@@ -258,12 +250,10 @@
       <AdditionalOptions>/NOIMPLIB /NOEXP %(AdditionalOptions)</AdditionalOptions>
     </Link>
     <PostBuildEvent>
-      <Command>
-      </Command>
+      <Command>powershell.exe -ExecutionPolicy Bypass -NoProfile -NonInteractive -File post-build.ps1  $(OutDir) $(Platform)</Command>
     </PostBuildEvent>
     <PostBuildEvent>
-      <Message>
-      </Message>
+      <Message>Copy dll to notepad++ plugin directory</Message>
     </PostBuildEvent>
     <PreLinkEvent>
       <Command>iwyu.bat
@@ -295,14 +285,8 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <AdditionalOptions>/NOIMPLIB /NOEXP %(AdditionalOptions)</AdditionalOptions>
     </Link>
-    <PostBuildEvent>
-      <Command>
-      </Command>
-    </PostBuildEvent>
-    <PostBuildEvent>
-      <Message>
-      </Message>
-    </PostBuildEvent>
+    <PostBuildEvent />
+    <PostBuildEvent />
     <PreLinkEvent>
       <Command>iwyu.bat
 </Command>
@@ -334,7 +318,7 @@
       <AdditionalOptions>/NOIMPLIB /NOEXP %(AdditionalOptions)</AdditionalOptions>
     </Link>
     <PostBuildEvent>
-      <Command>powershell.exe -ExecutionPolicy Bypass -NoProfile -NonInteractive -File post-build.ps1  $(OutDir)</Command>
+      <Command>powershell.exe -ExecutionPolicy Bypass -NoProfile -NonInteractive -File post-build.ps1  $(OutDir) $(Platform)</Command>
     </PostBuildEvent>
     <PostBuildEvent>
       <Message>Copy dll to notepad++ plugin directory</Message>

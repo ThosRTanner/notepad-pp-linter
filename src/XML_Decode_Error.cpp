@@ -2,7 +2,8 @@
 
 #include "Encoding.h"
 
-#include <comutil.h>
+// IWYU says you don't need this. But you do...
+#include <comutil.h>    // IWYU pragma: keep
 #include <msxml.h>
 #include <wtypes.h>
 
