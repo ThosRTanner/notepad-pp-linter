@@ -15,7 +15,7 @@ jobs:
     needs: [build-release]
     steps:
     - name: get-data
-      uses: actions/download-artifact@v4
+      uses: actions/download-artifact@v5
 
     - name: update-notes
       env:
