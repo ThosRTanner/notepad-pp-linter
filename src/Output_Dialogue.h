@@ -1,11 +1,13 @@
 #pragma once
 #include "Checkstyle_Parser.h"
+#include "Report_View.h"
 
 #include "Plugin/Docking_Dialogue_Interface.h"
 
 #include <intsafe.h>
 
 #include <array>
+#include <functional>
 #include <optional>
 #include <vector>
 
@@ -78,7 +80,7 @@ class Output_Dialogue : protected Docking_Dialogue_Interface
         wchar_t const *tab_name;
         UINT list_view_id;
         Tab tab;
-        HWND list_view;
+        Report_View report_view;
         std::vector<Error_Info> errors;
     };
 
@@ -88,9 +90,6 @@ class Output_Dialogue : protected Docking_Dialogue_Interface
 
     /** Initialise the output window */
     void initialise_dialogue() noexcept;
-
-    /** Initialise the specified tab */
-    void initialise_tab(TabDefinition &tab) noexcept;
 
     /** Process WM_COMMAND message */
     Message_Return process_dlg_command(WPARAM wParam);
@@ -123,22 +122,23 @@ class Output_Dialogue : protected Docking_Dialogue_Interface
     void append_text(std::string_view text) const noexcept;
 
     /** Add underlined text to end of buffer */
-    void append_text_with_style(std::string_view text, int style)
-        const noexcept;
+    void append_text_with_style(
+        std::string_view text, int style
+    ) const noexcept;
 
     /** Move to the line/column of the displayed error */
-    void show_selected_lint(int selected_item) noexcept;
+    void show_selected_lint(List_View::Data_Row selected_item);
 
     /** Copy selected messages to clipboard */
     void copy_to_clipboard();
 
     /** This is called from the ListView_Sort method */
-    static int __stdcall sort_call_function(
-        LPARAM lParam1, LPARAM lParam2, LPARAM lParamSort
-    ) noexcept;
+    Report_View::Sort_Callback sort_call_function;
 
     HWND tab_bar_;
-    HWND current_list_view_;
+
+    Report_View *current_report_view_{nullptr};
+
     // Current item - used during painting listview entries.
     int current_item_{0};
 
@@ -147,6 +147,9 @@ class Output_Dialogue : protected Docking_Dialogue_Interface
     TabDefinition *current_tab_;
 
     Settings const *settings_;
+
+    // Sorting callback function pointer.
+    std::function<Report_View::Sort_Callback> sort_callback_;
 };
 
 }    // namespace Linter

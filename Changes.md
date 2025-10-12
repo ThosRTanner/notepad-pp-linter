@@ -1,5 +1,9 @@
 # Change log
 
+## 1.0.2
+
+1. Added support for clicking on column headers in the linter results tab to sort by that column. Fixes #72.
+
 ## 1.0.1
 
 1. Added the ability to display error details. If you double click an entry in the system errors tab, either:

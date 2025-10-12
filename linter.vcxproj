@@ -44,7 +44,7 @@
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <CharacterSet>Unicode</CharacterSet>
     <WholeProgramOptimization>true</WholeProgramOptimization>
-    <PlatformToolset>v143</PlatformToolset>
+    <PlatformToolset>v145</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
@@ -62,7 +62,7 @@
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseOfAtl>Static</UseOfAtl>
     <CharacterSet>Unicode</CharacterSet>
-    <PlatformToolset>v143</PlatformToolset>
+    <PlatformToolset>v145</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
@@ -121,6 +121,7 @@
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
     <OutDir>$(SolutionDir)$(ShortProjectName)\$(Platform)\$(Configuration)\</OutDir>
     <IntDir>$(ShortProjectName)\build\$(Platform)\$(Configuration)\</IntDir>
+    <EnableClangTidyCodeAnalysis>false</EnableClangTidyCodeAnalysis>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <OutDir>$(SolutionDir)$(ShortProjectName)\$(Platform)\$(Configuration)\</OutDir>
@@ -209,6 +210,7 @@
       <EnablePREfast>true</EnablePREfast>
       <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
       <ForcedIncludeFiles>stdafx.h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <LanguageStandard>stdcpp23</LanguageStandard>
     </ClCompile>
     <Link>
       <AdditionalOptions>/NOIMPLIB /NOEXP %(AdditionalOptions)</AdditionalOptions>
@@ -357,8 +359,10 @@
     <ClCompile Include="src\Handle_Wrapper.cpp" />
     <ClCompile Include="src\Indicator.cpp" />
     <ClCompile Include="src\Linter.cpp" />
+    <ClCompile Include="src\List_View.cpp" />
     <ClCompile Include="src\Menu_Entry.cpp" />
     <ClCompile Include="src\Output_Dialogue.cpp" />
+    <ClCompile Include="src\Report_View.cpp" />
     <ClCompile Include="src\Settings.cpp" />
     <ClCompile Include="src\stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
@@ -398,8 +402,10 @@
     <ClInclude Include="src\Handle_Wrapper.h" />
     <ClInclude Include="src\Indicator.h" />
     <ClInclude Include="src\Linter.h" />
+    <ClInclude Include="src\List_View.h" />
     <ClInclude Include="src\Menu_Entry.h" />
     <ClInclude Include="src\Output_Dialogue.h" />
+    <ClInclude Include="src\Report_View.h" />
     <ClInclude Include="src\resource.h" />
     <ClInclude Include="src\Settings.h" />
     <ClInclude Include="src\stdafx.h" />
