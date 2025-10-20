@@ -307,6 +307,7 @@ List_View::Data_Row List_View::get_index(int item) const noexcept
     return static_cast<Data_Row>(lvitem.lParam);
 }
 
+#if _HAS_CXX23
 std::generator<List_View::Data_Row> List_View::selected_items() const noexcept
 {
     int item = -1;
@@ -315,6 +316,18 @@ std::generator<List_View::Data_Row> List_View::selected_items() const noexcept
         co_yield get_index(item);
     }
 }
+#else
+std::vector<List_View::Data_Row> List_View::selected_items() const noexcept
+{
+    std::vector<Data_Row> selected;
+    int item = -1;
+    while ((item = ListView_GetNextItem(handle_, item, LVNI_SELECTED)) != -1)
+    {
+        selected.push_back(get_index(item));
+    }
+    return selected;
+}
+#endif
 
 void List_View::show() const noexcept
 {

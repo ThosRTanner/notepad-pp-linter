@@ -26,7 +26,8 @@ jobs:
 
     - name: MSBuild of plugin dll
       working-directory: .\
-      run: msbuild linter.vcxproj /m /p:configuration="${{ matrix.build_configuration }}" /p:platform="${{ matrix.build_platform }}" /p:PlatformToolset="v143" /p:PostBuildEventUseInBuild=false
+      # Force the toolset and c++ version to v143/c++20 till v145 is available on github
+      run: msbuild linter.vcxproj /m /p:configuration="${{ matrix.build_configuration }}" /p:platform="${{ matrix.build_platform }}" /p:PostBuildEventUseInBuild=false /p:PlatformToolset="v143" /p:LanguageStandard=""stdc++20""
 
     - name: Archive artifacts release build
       if: matrix.build_configuration == 'Release'

@@ -4,7 +4,9 @@
 #include <windef.h>       //for HWND, RECT, tagPOINT, tagRECT
 
 #include <functional>
+#if _HAS_CXX23
 #include <generator>
+#endif
 #include <optional>
 #include <string>
 
@@ -188,7 +190,12 @@ class List_View
     Data_Row get_index(int item) const noexcept;
 
     /** Generator for selected item indices */
+#if _HAS_CXX23
     std::generator<List_View::Data_Row> selected_items() const noexcept;
+#else
+    // Fallback for pre-C++23 - returns a vector
+    std::vector<List_View::Data_Row> selected_items() const noexcept;
+#endif
 
     /** Show the list view */
     void show() const noexcept;
