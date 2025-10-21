@@ -104,6 +104,12 @@
     <ClCompile Include="src\Indicator.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\List_View.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Report_View.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Clipboard.h">
@@ -206,6 +212,12 @@
       <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="src\Error_Info.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\List_View.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Report_View.h">
       <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>

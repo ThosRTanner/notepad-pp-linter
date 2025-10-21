@@ -44,7 +44,8 @@ Target_Type cast_to(Orig_Type val) noexcept
  * The windows APIs leave a lot to be desired in the area of const correctness.
  */
 template <typename Orig_Type>
-Orig_Type windows_const_cast(std::remove_pointer_t<Orig_Type> const *val
+Orig_Type windows_const_cast(
+    std::remove_pointer_t<Orig_Type> const *val
 ) noexcept
 {
 #pragma warning(suppress : 26492)
@@ -80,13 +81,16 @@ Output_Dialogue::Output_Dialogue(Menu_Entry menu_entry, Linter const &plugin) :
         TabDefinition{L"System Errors", IDC_LIST_OUTPUT, System_Error, *this}
 }),
     current_tab_(&tab_definitions_.at(0)),
-    settings_(plugin.settings())
+    settings_(plugin.settings()),
+    sort_callback_(
+        [this](
+            LPARAM row1_index, LPARAM row2_index,
+            Report_View::Data_Column column
+        ) { return this->sort_call_function(row1_index, row2_index, column); }
+    )
+
 {
     initialise_dialogue();
-    for (auto &tab : tab_definitions_)
-    {
-        initialise_tab(tab);
-    }
     selected_tab_changed();
 
     // Possibly one should free the icon up, but I don't see the dialogue memory
@@ -119,7 +123,7 @@ void Output_Dialogue::clear_lint_info()
 {
     for (auto &tab : tab_definitions_)
     {
-        ListView_DeleteAllItems(tab.list_view);
+        tab.report_view.clear();
         tab.errors.clear();
     }
 
@@ -185,42 +189,6 @@ void Output_Dialogue::initialise_dialogue() noexcept
     }
 }
 
-void Output_Dialogue::initialise_tab(TabDefinition &tab) noexcept
-{
-    HWND const list_view = tab.list_view;
-
-    ListView_SetExtendedListViewStyle(
-        list_view, LVS_EX_FULLROWSELECT | LVS_EX_AUTOSIZECOLUMNS
-    );
-
-    LVCOLUMN lvc{};
-    lvc.mask = LVCF_FMT | LVCF_WIDTH | LVCF_TEXT | LVCF_SUBITEM;
-
-    lvc.iSubItem = Column_Tool;
-    lvc.pszText = windows_const_cast<wchar_t *>(L"Tool");
-    lvc.cx = 100;
-    lvc.fmt = LVCFMT_LEFT;
-    ListView_InsertColumn(list_view, lvc.iSubItem, &lvc);
-
-    lvc.iSubItem = Column_Line;
-    lvc.pszText = windows_const_cast<wchar_t *>(L"Line");
-    lvc.cx = 50;
-    lvc.fmt = LVCFMT_RIGHT;
-    ListView_InsertColumn(list_view, lvc.iSubItem, &lvc);
-
-    lvc.iSubItem = Column_Position;
-    lvc.pszText = windows_const_cast<wchar_t *>(L"Col");
-    lvc.cx = 50;
-    lvc.fmt = LVCFMT_RIGHT;
-    ListView_InsertColumn(list_view, lvc.iSubItem, &lvc);
-
-    lvc.iSubItem = Column_Message;
-    lvc.pszText = windows_const_cast<wchar_t *>(L"Reason");
-    lvc.cx = 500;
-    lvc.fmt = LVCFMT_LEFT;
-    ListView_InsertColumn(list_view, lvc.iSubItem, &lvc);
-}
-
 Output_Dialogue::Message_Return Output_Dialogue::process_dlg_command(
     WPARAM wParam
 )
@@ -233,9 +201,7 @@ Output_Dialogue::Message_Return Output_Dialogue::process_dlg_command(
 
         case Context_Show_Source_Line:
         {
-            int const item = ListView_GetNextItem(
-                current_list_view_, -1, LVIS_FOCUSED | LVIS_SELECTED
-            );
+            auto const item = current_report_view_->get_first_selected_index();
             if (item != -1)
             {
                 show_selected_lint(item);
@@ -244,9 +210,7 @@ Output_Dialogue::Message_Return Output_Dialogue::process_dlg_command(
         }
 
         case Context_Select_All:
-            ListView_SetItemState(
-                current_list_view_, -1, LVIS_SELECTED, LVIS_SELECTED
-            );
+            current_report_view_->select_all();
             return TRUE;
 
         default:
@@ -263,14 +227,11 @@ Output_Dialogue::Message_Return Output_Dialogue::process_dlg_context_menu(
     // build context menu
     HMENU menu = ::CreatePopupMenu();
 
-    int const numSelected = ListView_GetSelectedCount(current_list_view_);
+    int const numSelected = current_report_view_->num_selected_items();
 
     if (numSelected >= 1)
     {
-        int const iFocused = ListView_GetNextItem(
-            current_list_view_, -1, LVIS_FOCUSED | LVIS_SELECTED
-        );
-        if (iFocused != -1)
+        if (current_report_view_->has_selected_line())
         {
             AppendMenu(menu, MF_ENABLED, Context_Show_Source_Line, L"Show");
         }
@@ -294,7 +255,7 @@ Output_Dialogue::Message_Return Output_Dialogue::process_dlg_context_menu(
     {
         point.x = 0;
         point.y = 0;
-        ClientToScreen(current_list_view_, &point);
+        current_report_view_->get_screen_coordinates(&point);
     }
 
     // show context menu
@@ -317,9 +278,7 @@ Output_Dialogue::Message_Return Output_Dialogue::process_dlg_notify(
                 if (pnkd->wVKey == 'A'
                     && (::GetKeyState(VK_CONTROL) & 0x8000U) != 0)
                 {
-                    ListView_SetItemState(
-                        current_list_view_, -1, LVIS_SELECTED, LVIS_SELECTED
-                    );
+                    current_report_view_->select_all();
                     return TRUE;
                 }
                 else if (pnkd->wVKey == 'C'
@@ -331,6 +290,18 @@ Output_Dialogue::Message_Return Output_Dialogue::process_dlg_notify(
             }
             break;
 
+        case LVN_COLUMNCLICK:
+            if (notify_header->idFrom == current_tab_->list_view_id)
+            {
+                auto const column_click =
+                    cast_to<NMLISTVIEW const *, LPARAM>(lParam);
+                current_report_view_->sort_by_column(
+                    column_click->iSubItem, sort_callback_
+                );
+                return TRUE;
+            }
+            break;
+
         case NM_DBLCLK:
             if (notify_header->idFrom == current_tab_->list_view_id)
             {
@@ -339,7 +310,9 @@ Output_Dialogue::Message_Return Output_Dialogue::process_dlg_notify(
                 int const selected_item = item_activate->iItem;
                 if (selected_item != -1)
                 {
-                    show_selected_lint(selected_item);
+                    show_selected_lint(
+                        current_report_view_->get_index(selected_item)
+                    );
                 }
                 return TRUE;
             }
@@ -385,6 +358,7 @@ Output_Dialogue::Message_Return Output_Dialogue::process_custom_draw(
         case CDDS_ITEMPREPAINT | CDDS_SUBITEM:
             if (custom_draw->iSubItem == Column_Message)
             {
+                // FIXME: Shouldn't we be using the current list view here?
                 LVITEM const item{.mask = LVIF_PARAM, .iItem = current_item_};
                 ListView_GetItem(custom_draw->nmcd.hdr.hwndFrom, &item);
 
@@ -416,10 +390,17 @@ Output_Dialogue::Message_Return Output_Dialogue::process_custom_draw(
 void Output_Dialogue::selected_tab_changed() noexcept
 {
     current_tab_ = &tab_definitions_[TabCtrl_GetCurSel(tab_bar_)];
-    current_list_view_ = current_tab_->list_view;
+    current_report_view_ = &current_tab_->report_view;
     for (auto const &tab : tab_definitions_)
     {
-        ShowWindow(tab.list_view, &tab == current_tab_ ? SW_SHOW : SW_HIDE);
+        if (&tab == current_tab_)
+        {
+            tab.report_view.show();
+        }
+        else
+        {
+            tab.report_view.hide();
+        }
     }
 }
 
@@ -434,16 +415,7 @@ void Output_Dialogue::window_pos_changed() noexcept
     TabCtrl_AdjustRect(tab_bar_, FALSE, &rc);
     for (auto const &tab : tab_definitions_)
     {
-        ::SetWindowPos(
-            tab.list_view,
-            tab_bar_,
-            rc.left,
-            rc.top,
-            rc.right - rc.left,
-            rc.bottom - rc.top,
-            0
-        );
-        ListView_SetColumnWidth(tab.list_view, Column_Message, LVSCW_AUTOSIZE);
+        tab.report_view.set_window_position(tab_bar_, rc);
     }
 }
 
@@ -452,7 +424,7 @@ void Output_Dialogue::update_displayed_counts()
     for (auto const &tab : tab_definitions_)
     {
         std::wstring strTabName;
-        int const count = ListView_GetItemCount(tab.list_view);
+        int const count = tab.report_view.num_items();
         if (count > 0)
         {
             std::wstringstream stream;
@@ -475,75 +447,46 @@ void Output_Dialogue::update_displayed_counts()
 void Output_Dialogue::add_errors(Tab tab, std::vector<Error_Info> const &lints)
 {
     auto &tab_def = tab_definitions_[tab];
-    HWND const list_view = tab_def.list_view;
+    auto const &report_view = tab_def.report_view;
+    auto row = static_cast<int>(tab_def.errors.size());
 
-    std::wstringstream stream;
+    // FIXME Should I add the expected size to the list_view
     for (auto const &lint : lints)
     {
-        auto const item = ListView_GetItemCount(list_view);
-
-        LVITEM const lvI{
-            .mask = LVIF_TEXT | LVIF_STATE | LVIF_PARAM,
-            .iItem = item,
-            .pszText = windows_const_cast<wchar_t *>(L""),
-            .lParam = item
-        };
-        ListView_InsertItem(list_view, &lvI);
-
-        ListView_SetItemText(
-            list_view,
-            item,
-            Column_Message,
-            windows_const_cast<wchar_t *>(lint.message_.c_str())
-        );
-
-        std::wstring strFile = lint.tool_;
-        ListView_SetItemText(
-            list_view,
-            item,
-            Column_Tool,
-            windows_const_cast<wchar_t *>(strFile.c_str())
-        );
-
-        stream.str(L"");
-        stream << lint.line_;
-        std::wstring strLine = stream.str();
-        ListView_SetItemText(
-            list_view,
-            item,
-            Column_Line,
-            windows_const_cast<wchar_t *>(strLine.c_str())
-        );
-
-        stream.str(L"");
-        stream << lint.column_;
-        std::wstring strColumn = stream.str();
-        ListView_SetItemText(
-            list_view,
-            item,
-            Column_Position,
-            windows_const_cast<wchar_t *>(strColumn.c_str())
-        );
-
-        // Ensure the message column is as wide as the widest column.
-        ListView_SetColumnWidth(
-            list_view, Column_Message, LVSCW_AUTOSIZE_USEHEADER
-        );
-
         tab_def.errors.push_back(lint);
+
+        report_view.add_row(row, Report_View::Row_Data{.user_data = row});
+
+        report_view.set_item_text_with_autosize(
+            row, Column_Message, lint.message_
+        );
+
+        report_view.set_item_text(row, Column_Tool, lint.tool_);
+
+        report_view.set_item_text(
+            row, Column_Line, std::to_wstring(lint.line_)
+        );
+
+        report_view.set_item_text(
+            row, Column_Position, std::to_wstring(lint.column_)
+        );
+
+        row += 1;
     }
 
     update_displayed_counts();
 
-    // Not sure we should do this every time we add something, but...
     // Also allow user to sort differently and remember?
-    ListView_SortItemsEx(list_view, sort_call_function, &tab_def.errors);
-    InvalidateRect();
+    if (&tab_def == current_tab_)
+    {
+        report_view.sort_by_column(Column_Line, sort_callback_);
+        InvalidateRect();
+    }
 }
 
 void Output_Dialogue::select_lint(int n) noexcept
 {
-    int const count = ListView_GetItemCount(current_list_view_);
+    int const count = current_report_view_->num_items();
     if (count == 0)
     {
         // no lints, set focus to editor
@@ -551,25 +494,7 @@ void Output_Dialogue::select_lint(int n) noexcept
         return;
     }
 
-    int row = ListView_GetNextItem(
-                  current_list_view_, -1, LVNI_FOCUSED | LVNI_SELECTED
-              )
-        + n;
-    row = (row % count + count) % count;
-
-    // Unselect all the rows.
-    ListView_SetItemState(
-        current_list_view_, -1, 0, LVIS_SELECTED | LVIS_FOCUSED
-    );
-
-    // Select the newly calculated row.
-    ListView_SetItemState(
-        current_list_view_,
-        row,
-        LVIS_SELECTED | LVIS_FOCUSED,
-        LVIS_SELECTED | LVIS_FOCUSED
-    );
-    ListView_EnsureVisible(current_list_view_, row, FALSE);
+    auto const row = current_report_view_->move_selection(n);
 
     // And select the error location in the editor window
     show_selected_lint(row);
@@ -580,8 +505,9 @@ void Output_Dialogue::append_text(std::string_view text) const noexcept
     plugin()->send_to_editor(SCI_APPENDTEXT, text.length(), text.data());
 }
 
-void Output_Dialogue::append_text_with_style(std::string_view text, int style)
-    const noexcept
+void Output_Dialogue::append_text_with_style(
+    std::string_view text, int style
+) const noexcept
 {
     auto const old_pos = plugin()->send_to_editor(SCI_GETTEXTLENGTH);
     append_text(text);
@@ -589,18 +515,15 @@ void Output_Dialogue::append_text_with_style(std::string_view text, int style)
     plugin()->send_to_editor(SCI_SETSTYLING, text.length(), style);
 }
 
-void Output_Dialogue::show_selected_lint(int selected_item) noexcept
+void Output_Dialogue::show_selected_lint(List_View::Data_Row selected_item)
 {
-    LVITEM const item{.mask = LVIF_PARAM, .iItem = selected_item};
-    ListView_GetItem(current_list_view_, &item);
-
-    Error_Info const &lint_error = current_tab_->errors[item.lParam];
+    Error_Info const &lint_error = current_tab_->errors[selected_item];
 
     int line = std::max(lint_error.line_ - 1, 0);
     int const column = std::max(lint_error.column_ - 1, 0);
 
-    /* We only need to do this if we need to pop up linter.xml. The following
-     * isn't ideal */
+    /* We only need to do this if we need to pop up linter.xml. The
+     * following isn't ideal */
     if (current_tab_->tab == Tab::System_Error)
     {
         if (lint_error.mode_ == Error_Info::Bad_Linter_XML)
@@ -617,8 +540,8 @@ void Output_Dialogue::show_selected_lint(int selected_item) noexcept
             plugin()->send_to_editor(SCI_STYLESETUNDERLINE, style, true);
 
             append_text_with_style("Command:", style);
-            // This should not throw if the command line is valid UTF16. Which
-            // it is.
+            // This should not throw if the command line is valid UTF16.
+            // Which it is.
             append_text(
                 "\n\n" + Encoding::convert(lint_error.command_) + "\n\n"
             );
@@ -676,14 +599,9 @@ void Output_Dialogue::copy_to_clipboard()
     std::wstringstream stream;
 
     bool first = true;
-    int row = ListView_GetNextItem(current_list_view_, -1, LVNI_SELECTED);
-    while (row != -1)
+    for (auto row : current_report_view_->selected_items())
     {
-        // Get the actual item for the row
-        LVITEM const item{.mask = LVIF_PARAM, .iItem = row};
-        ListView_GetItem(current_list_view_, &item);
-
-        auto const &lint_error = current_tab_->errors[item.lParam];
+        auto const &lint_error = current_tab_->errors[row];
 
         if (first)
         {
@@ -697,8 +615,6 @@ void Output_Dialogue::copy_to_clipboard()
         stream << L"Line " << lint_error.line_ << L", column "
                << lint_error.column_ << L": " << L"\r\n\t"
                << lint_error.message_ << L"\r\n";
-
-        row = ListView_GetNextItem(current_list_view_, row, LVNI_SELECTED);
     }
 
     std::wstring const str = stream.str();
@@ -713,19 +629,43 @@ void Output_Dialogue::copy_to_clipboard()
     clipboard.copy(str);
 }
 
-int CALLBACK Output_Dialogue::sort_call_function(
-    LPARAM row1_index, LPARAM row2_index, LPARAM lParamSort
-) noexcept
+int Output_Dialogue::sort_call_function(
+    LPARAM row1_index, LPARAM row2_index, Report_View::Data_Column column
+)
 {
-    // FIXME pass pointer to appropriate errors
-    auto const &errs =
-        *cast_to<std::vector<Error_Info> const *, LPARAM>(lParamSort);
-    int res = errs[row1_index].line_ - errs[row2_index].line_;
-    if (res == 0)
+    auto const &errs = current_tab_->errors;
+    switch (column)
     {
-        res = errs[row1_index].column_ - errs[row2_index].column_;
+        case Column_Line:
+        {
+            int res = errs[row1_index].line_ - errs[row2_index].line_;
+            if (res == 0)
+            {
+                res = errs[row1_index].column_ - errs[row2_index].column_;
+            }
+            return res;
+        }
+
+        case Column_Position:
+        {
+            int res = errs[row1_index].column_ - errs[row2_index].column_;
+            if (res == 0)
+            {
+                res = errs[row1_index].line_ - errs[row2_index].line_;
+            }
+            return res;
+        }
+
+        case Column_Tool:
+            return errs[row1_index].tool_.compare(errs[row2_index].tool_);
+
+        case Column_Message:
+            return errs[row1_index].message_.compare(errs[row2_index].message_);
+
+        default:
+            // Not possible!
+            return 0;
     }
-    return res;
 }
 
 Output_Dialogue::TabDefinition::TabDefinition(
@@ -734,12 +674,35 @@ Output_Dialogue::TabDefinition::TabDefinition(
     tab_name(name),
     list_view_id(id),
     tab(tab),
-    list_view(parent.GetDlgItem(id))
+    report_view(parent.GetDlgItem(id))
 {
-    if (list_view == nullptr)
-    {
-        throw ::Linter::System_Error("Could not create list box");
-    }
+    typedef Report_View::Column_Data Column_Data;
+
+    report_view.add_column(
+        Column_Line,
+        {.justification = Column_Data::Justification::Right,
+         .width = 50,
+         .text = L"Line"}
+    );
+    report_view.add_column(
+        Column_Position,
+        {.justification = Column_Data::Justification::Right,
+         .width = 50,
+         .text = L"Col"}
+    );
+    report_view.add_column(
+        Column_Tool,
+        {.justification = Column_Data::Justification::Left,
+         .width = 100,
+         .text = L"Tool"}
+    );
+    report_view.add_column(
+        Column_Message,
+        {.justification = Column_Data::Justification::Left,
+         .width = 100,
+         .text = L"Reason",
+         .subitem = Column_Message}
+    );
 }
 
 }    // namespace Linter

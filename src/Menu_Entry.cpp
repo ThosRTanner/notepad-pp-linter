@@ -1,6 +1,7 @@
 #include "Menu_Entry.h"
 
 #include <unordered_map>
+#include <string>
 #include <utility>
 
 namespace Linter

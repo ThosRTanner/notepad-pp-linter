@@ -19,7 +19,7 @@ typedef Linter::Linter Npp_Plugin;
 
 #include <memory>
 
-std::unique_ptr<Npp_Plugin> plugin;
+static std::unique_ptr<Npp_Plugin> plugin;
 
 extern "C" __declspec(dllexport) wchar_t const *getName()
 {
