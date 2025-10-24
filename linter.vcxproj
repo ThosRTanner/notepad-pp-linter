@@ -391,6 +391,7 @@
     <ClInclude Include="Docking_Dialogue_Interface\Plugin\Non_Modal_Dialogue_Base.h" />
     <ClInclude Include="Docking_Dialogue_Interface\Plugin\Non_Modal_Dialogue_Interface.h" />
     <ClInclude Include="Docking_Dialogue_Interface\Plugin\Plugin.h" />
+    <ClInclude Include="src\Casts.h" />
     <ClInclude Include="src\Clipboard.h" />
     <ClInclude Include="src\Dom_Document.h" />
     <ClInclude Include="src\Dom_Node.h" />

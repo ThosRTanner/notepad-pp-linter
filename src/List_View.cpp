@@ -1,5 +1,6 @@
 #include "List_View.h"
 
+#include "Casts.h"
 #include "System_Error.h"
 
 #include <CommCtrl.h>
@@ -7,24 +8,12 @@
 #include <windef.h>
 #include <winuser.h>
 
+#if __cplusplus >= 202302L
 #include <coroutine>
-#include <type_traits>
+#endif
 
 namespace Linter
 {
-
-/** A cast to wrap const_cast without the warnings.
- *
- * The windows APIs leave a lot to be desired in the area of const correctness.
- */
-template <typename Orig_Type>
-Orig_Type windows_const_cast(
-    std::remove_pointer_t<Orig_Type> const *val
-) noexcept
-{
-#pragma warning(suppress : 26492)
-    return const_cast<Orig_Type>(val);
-}
 
 List_View::List_View(HWND handle) : handle_(handle)
 {
@@ -231,6 +220,11 @@ void List_View::add_row(Data_Row row, Row_Data const &row_data) const noexcept
     ListView_InsertItem(handle_, &lvi);
 }
 
+void Linter::List_View::ensure_rows(int total_rows) const noexcept
+{
+    ListView_SetItemCount(handle_, total_rows);
+}
+
 void List_View::set_item_text(
     Data_Row row, Data_Column col, std::wstring const &message
 ) const noexcept
@@ -307,7 +301,7 @@ List_View::Data_Row List_View::get_index(int item) const noexcept
     return static_cast<Data_Row>(lvitem.lParam);
 }
 
-#if _HAS_CXX23
+#if __cplusplus >= 202302L
 std::generator<List_View::Data_Row> List_View::selected_items() const noexcept
 {
     int item = -1;
@@ -340,23 +334,27 @@ void List_View::hide() const noexcept
 }
 
 void List_View::sort_by_column(
-    Data_Column col, std::function<Sort_Callback> callback
+    Data_Column col, Sort_Callback_Function const &callback
 ) const noexcept
 {
     struct Details
     {
         Data_Column column;
         HWND hwnd;
-        std::function<Sort_Callback> callback;
+        Sort_Callback_Function const &callback;
     } const details{col, handle_, callback};
-    auto callback_fn = [](LPARAM param1, LPARAM param2, LPARAM details) -> int
+    auto callback_fn =
+        [](LPARAM param1, LPARAM param2, LPARAM details) noexcept -> int
     {
-        Details const &params = *reinterpret_cast<Details const *>(details);
+        Details const &params = *cast_to<Details const *, LPARAM>(details);
         // Convert param1 and param2 to Data_Row
-        LVITEM item1{.mask = LVIF_PARAM, .iItem = static_cast<int>(param1)};
+        LVITEM item1{.mask = LVIF_PARAM, .iItem = windows_static_cast<int, LPARAM>(param1)};
         ListView_GetItem(params.hwnd, &item1);
-        LVITEM item2{.mask = LVIF_PARAM, .iItem = static_cast<int>(param2)};
+        LVITEM item2{.mask = LVIF_PARAM, .iItem = windows_static_cast<int, LPARAM>(param2)};
         ListView_GetItem(params.hwnd, &item2);
+#ifndef __cpp_lib_copyable_function
+#pragma warning(suppress : 26447)
+#endif
         return params.callback(item1.lParam, item2.lParam, params.column);
     };
 
