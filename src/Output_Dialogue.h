@@ -127,7 +127,7 @@ class Output_Dialogue : protected Docking_Dialogue_Interface
     ) const noexcept;
 
     /** Move to the line/column of the displayed error */
-    void show_selected_lint(List_View::Data_Row selected_item);
+    void show_selected_lint(List_View::Data_Row selected_item) noexcept;
 
     /** Copy selected messages to clipboard */
     void copy_to_clipboard();
@@ -139,9 +139,6 @@ class Output_Dialogue : protected Docking_Dialogue_Interface
 
     Report_View *current_report_view_{nullptr};
 
-    // Current item - used during painting listview entries.
-    int current_item_{0};
-
     std::array<TabDefinition, Num_Tabs> tab_definitions_;
 
     TabDefinition *current_tab_;
@@ -149,7 +146,7 @@ class Output_Dialogue : protected Docking_Dialogue_Interface
     Settings const *settings_;
 
     // Sorting callback function pointer.
-    std::function<Report_View::Sort_Callback> sort_callback_;
+    Report_View::Sort_Callback_Function sort_callback_;
 };
 
 }    // namespace Linter

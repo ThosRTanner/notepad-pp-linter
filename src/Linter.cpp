@@ -256,7 +256,7 @@ void Linter::highlight_errors()
 
     for (Error_Info const &error : errors_)
     {
-        auto position = send_to_editor(SCI_POSITIONFROMLINE, error.line_ - 1);
+        auto position = send_to_editor(SCI_POSITIONFROMLINE, static_cast<WPARAM>(error.line_) - 1);
         position += Encoding::utfOffset(
             get_line_text(error.line_ - 1), error.column_ - 1
         );
