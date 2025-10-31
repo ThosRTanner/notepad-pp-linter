@@ -1,5 +1,7 @@
 #pragma once
 
+#include "List_View_Types.h"
+
 #include <minwindef.h>    //for LPARAM
 #include <windef.h>       //for HWND, RECT, tagPOINT, tagRECT
 
@@ -25,9 +27,8 @@ class List_View
     // not the position on screen.
     typedef int Data_Row;
 
-    // Data_Column is used to identify the actual column in the list view.
-    // not the position on screen.
-    typedef int Data_Column;
+    using Data_Column = typename List_View_Types::Data_Column;
+    using Sort_Direction = typename List_View_Types::Sort_Direction;
 
     /** Data for defining a column.
      *
@@ -147,7 +148,8 @@ class List_View
     /** Add a row to the list view */
     void add_row(Data_Row, Row_Data const &) const noexcept;
 
-    /** Ensure that there is space for at least total_rows rows in the list view */
+    /** Ensure that there is space for at least total_rows rows in the list view
+     */
     void ensure_rows(int total_rows) const noexcept;
 
     /** Set the text for an item */
@@ -219,12 +221,14 @@ class List_View
     typedef std::function<Sort_Callback> Sort_Callback_Function;
 #endif
 
-    /** Sort displayed list by specified column.
+    /** Sort_Direction displayed list by specified column.
      *
      * Callback function gets called with the lparams of the two items to
      * compare, and the column being sorted by.
      */
-    virtual void sort_by_column(Data_Column, Sort_Callback_Function const &) const noexcept;
+    void sort_by_column(
+        Data_Column, Sort_Callback_Function const &, Sort_Direction
+    ) const noexcept;
 
     /** Get the coordinates of a position in the list view */
     void get_screen_coordinates(POINT *point) const noexcept;

@@ -406,6 +406,7 @@
     <ClInclude Include="src\Indicator.h" />
     <ClInclude Include="src\Linter.h" />
     <ClInclude Include="src\List_View.h" />
+    <ClInclude Include="src\List_View_Types.h" />
     <ClInclude Include="src\Menu_Entry.h" />
     <ClInclude Include="src\Output_Dialogue.h" />
     <ClInclude Include="src\Report_View.h" />

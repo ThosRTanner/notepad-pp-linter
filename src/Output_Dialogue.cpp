@@ -58,10 +58,10 @@ Output_Dialogue::Output_Dialogue(Menu_Entry menu_entry, Linter const &plugin) :
     tab_bar_(GetDlgItem(IDC_TABBAR)),
     tab_definitions_{
         {
-            {L"Lint Errors", IDC_LIST_LINTS, Lint_Error, *this},
-            {L"System Errors", IDC_LIST_OUTPUT, System_Error, *this},
-        }
-    },
+         {L"Lint Errors", IDC_LIST_LINTS, Lint_Error, *this},
+         {L"System Errors", IDC_LIST_OUTPUT, System_Error, *this},
+         }
+},
     current_tab_(&tab_definitions_.at(0)),
     settings_(plugin.settings()),
     sort_callback_(
@@ -281,6 +281,15 @@ Output_Dialogue::Message_Return Output_Dialogue::process_dlg_notify(
             {
                 auto const column_click =
                     cast_to<NMLISTVIEW const *, LPARAM>(lParam);
+                // ENHANCMENT Should check if we've clicked shift key here and
+                // add this column to the sort order rather than replacing it.
+                // Possible behaviour:
+                // - normal click: sort by this column only
+                // - shift click: add this column to sort order
+                // - ctrl click: remove this column from sort order
+                // - shift-ctrl click: toggle this columns sort direction
+                // Arguably multi-column sorting is only applicable to report views,
+                // at least at this sort of level.
                 current_report_view_->sort_by_column(
                     column_click->iSubItem, sort_callback_
                 );
@@ -462,10 +471,9 @@ void Output_Dialogue::add_errors(Tab tab, std::vector<Error_Info> const &lints)
 
     update_displayed_counts();
 
-    // Also allow user to sort differently and remember?
     if (&tab_def == current_tab_)
     {
-        report_view.sort_by_column(Column_Line, sort_callback_);
+        report_view.sort_by_column(sort_callback_);
         InvalidateRect();
     }
 }
@@ -651,7 +659,7 @@ int Output_Dialogue::sort_call_function(
 
         case Column_Line:
         default:
-            //Nothing to do here.
+            // Nothing to do here.
             break;
     }
 

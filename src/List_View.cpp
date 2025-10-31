@@ -1,6 +1,7 @@
 #include "List_View.h"
 
 #include "Casts.h"
+#include "List_View_Types.h"
 #include "System_Error.h"
 
 #include <CommCtrl.h>
@@ -334,31 +335,30 @@ void List_View::hide() const noexcept
 }
 
 void List_View::sort_by_column(
-    Data_Column col, Sort_Callback_Function const &callback
+    Data_Column col, Sort_Callback_Function const &callback,
+    Sort_Direction direction
 ) const noexcept
 {
     struct Details
     {
         Data_Column column;
-        HWND hwnd;
         Sort_Callback_Function const &callback;
-    } const details{col, handle_, callback};
+        int direction;
+    } const details{
+        col, callback, direction == Sort_Direction::Ascending ? 1 : -1
+    };
     auto callback_fn =
         [](LPARAM param1, LPARAM param2, LPARAM details) noexcept -> int
     {
         Details const &params = *cast_to<Details const *, LPARAM>(details);
-        // Convert param1 and param2 to Data_Row
-        LVITEM item1{.mask = LVIF_PARAM, .iItem = windows_static_cast<int, LPARAM>(param1)};
-        ListView_GetItem(params.hwnd, &item1);
-        LVITEM item2{.mask = LVIF_PARAM, .iItem = windows_static_cast<int, LPARAM>(param2)};
-        ListView_GetItem(params.hwnd, &item2);
 #ifndef __cpp_lib_copyable_function
 #pragma warning(suppress : 26447)
 #endif
-        return params.callback(item1.lParam, item2.lParam, params.column);
+        return params.direction
+            * params.callback(param1, param2, params.column);
     };
 
-    ListView_SortItemsEx(handle_, callback_fn, &details);
+    ListView_SortItems(handle_, callback_fn, &details);
 }
 
 void List_View::get_screen_coordinates(POINT *point) const noexcept

@@ -1,5 +1,6 @@
 #pragma once
 #include "List_View.h"
+#include "List_View_Types.h"
 
 #include <windef.h>    // for HWND
 
@@ -26,12 +27,19 @@ class Report_View : public List_View
     // Like I said, you MUST specify which column this is.
     int add_column(Column_Data const &) const noexcept = delete;
 
+    // Sort_Direction by column using the last used column and direction
+    void sort_by_column(Sort_Callback_Function const &) const noexcept;
+
+    // Sort_Direction by column, toggling direction if same column as last time
     void sort_by_column(
         Data_Column, Sort_Callback_Function const &
-    ) const noexcept override;
+    ) const noexcept;
 
- private:
+  private:
     std::unique_ptr<Column_Header> header_;
+    // Initial column and direction for sorting
+    mutable Data_Column current_sort_column_{0};
+    mutable Sort_Direction current_sort_direction_{Sort_Direction::Ascending};
 };
 
 }    // namespace Linter
