@@ -4,13 +4,18 @@
 
 1. Added support for clicking on column headers in the linter results tab to sort by that column. Fixes #72.
 
+   1. The "standard" windows list control up/down arrows in the column header are used to indicate the column being sorted on and the sort order.
+   1. Multiple clicks on the same column cycle through ascending, descending and no sorting
+   1. When sorted, currently the list is sub sorted by line and column, in the currently selected direction.
+   1. When notepad++ starts, the error display will be sorted by line and column. While whatever selection you make is kept throughout the editing session, it is not saved on exit.
+
 ## 1.0.1
 
 1. Added the ability to display error details. If you double click an entry in the system errors tab, either:
 
    1. If the error was in parsing linter++.xml, it will be opened and the cursor set to the position of the error. Fixes #26.
 
-   1. otherwise, a new notepad buffer will be created containing the command that
+   1. Otherwise, a new notepad buffer will be created containing the command that
    was run and any output or error output. Fixes #50.
 
 1. Fixed a few issues where the extension could hang or decide it had received no output (I completely rewrote the code that received output from the linter...)

@@ -1,6 +1,7 @@
 #include "List_View.h"
 
 #include "Casts.h"
+#include "List_View_Types.h"
 #include "System_Error.h"
 
 #include <CommCtrl.h>
@@ -234,14 +235,6 @@ void List_View::set_item_text(
     );
 }
 
-void List_View::set_item_text_with_autosize(
-    Data_Row row, Data_Column col, std::wstring const &message
-) const noexcept
-{
-    set_item_text(row, col, message);
-    ListView_SetColumnWidth(handle_, col, LVSCW_AUTOSIZE);
-}
-
 void List_View::clear() const noexcept
 {
     ListView_DeleteAllItems(handle_);
@@ -254,7 +247,7 @@ void List_View::select_all() const noexcept
 
 List_View::Data_Row List_View::move_selection(int rows) const noexcept
 {
-    int const count = num_items();
+    int const count = get_num_rows();
 
     int row = get_first_selected_item() + rows;
     row = (row % count + count) % count;
@@ -278,7 +271,7 @@ int List_View::num_selected_items() const noexcept
     return ListView_GetSelectedCount(handle_);
 }
 
-int List_View::num_items() const noexcept
+int List_View::get_num_rows() const noexcept
 {
     return ListView_GetItemCount(handle_);
 }
@@ -334,31 +327,38 @@ void List_View::hide() const noexcept
 }
 
 void List_View::sort_by_column(
-    Data_Column col, Sort_Callback_Function const &callback
+    Data_Column col, Sort_Callback_Function const &callback,
+    Sort_Direction direction
 ) const noexcept
 {
     struct Details
     {
         Data_Column column;
-        HWND hwnd;
         Sort_Callback_Function const &callback;
-    } const details{col, handle_, callback};
+        int direction;
+    } const details{
+        col,
+        callback,
+        direction == Sort_Direction::None            ? 0
+            : direction == Sort_Direction::Ascending ? 1
+                                                     : -1
+    };
     auto callback_fn =
         [](LPARAM param1, LPARAM param2, LPARAM details) noexcept -> int
     {
         Details const &params = *cast_to<Details const *, LPARAM>(details);
-        // Convert param1 and param2 to Data_Row
-        LVITEM item1{.mask = LVIF_PARAM, .iItem = windows_static_cast<int, LPARAM>(param1)};
-        ListView_GetItem(params.hwnd, &item1);
-        LVITEM item2{.mask = LVIF_PARAM, .iItem = windows_static_cast<int, LPARAM>(param2)};
-        ListView_GetItem(params.hwnd, &item2);
+        if (params.direction == 0)
+        {
+            return windows_static_cast<int, LPARAM>(param1 - param2);
+        }
 #ifndef __cpp_lib_copyable_function
 #pragma warning(suppress : 26447)
 #endif
-        return params.callback(item1.lParam, item2.lParam, params.column);
+        return params.direction
+            * params.callback(param1, param2, params.column);
     };
 
-    ListView_SortItemsEx(handle_, callback_fn, &details);
+    ListView_SortItems(handle_, callback_fn, &details);
 }
 
 void List_View::get_screen_coordinates(POINT *point) const noexcept
@@ -379,8 +379,6 @@ void List_View::set_window_position(
         rc.bottom - rc.top,
         0
     );
-    // FIXME Need to set up list view columns properly
-    ListView_SetColumnWidth(handle_, 3 /*Column_Message*/, LVSCW_AUTOSIZE);
 }
 
 int List_View::get_first_selected_item() const noexcept

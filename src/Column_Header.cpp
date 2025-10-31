@@ -1,5 +1,7 @@
 #include "Column_Header.h"
 
+#include "List_View_Types.h"
+
 #include <CommCtrl.h>
 
 namespace Linter
@@ -12,7 +14,7 @@ Column_Header::Column_Header(HWND handle) noexcept : handle_(handle)
 Column_Header::~Column_Header() = default;
 
 void Column_Header::set_sort_icon(
-    int column, Sort_Direction sort_direction
+    Data_Column column, Sort_Direction sort_direction
 ) const noexcept
 {
     auto const count = Header_GetItemCount(handle_);
@@ -26,11 +28,11 @@ void Column_Header::set_sort_icon(
         {
             switch (sort_direction)
             {
-                case Sort_Ascending:
+                case Sort_Direction::Ascending:
                     item.fmt |= HDF_SORTUP;
                     break;
 
-                case Sort_Descending:
+                case Sort_Direction::Descending:
                     item.fmt |= HDF_SORTDOWN;
                     break;
 
@@ -40,6 +42,11 @@ void Column_Header::set_sort_icon(
         }
         Header_SetItem(handle_, column_number, &item);
     }
+}
+
+int Column_Header::get_num_columns() const noexcept
+{
+    return Header_GetItemCount(handle_);
 }
 
 }    // namespace Linter

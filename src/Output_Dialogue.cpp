@@ -58,10 +58,10 @@ Output_Dialogue::Output_Dialogue(Menu_Entry menu_entry, Linter const &plugin) :
     tab_bar_(GetDlgItem(IDC_TABBAR)),
     tab_definitions_{
         {
-            {L"Lint Errors", IDC_LIST_LINTS, Lint_Error, *this},
-            {L"System Errors", IDC_LIST_OUTPUT, System_Error, *this},
-        }
-    },
+         {L"Lint Errors", IDC_LIST_LINTS, Lint_Error, *this},
+         {L"System Errors", IDC_LIST_OUTPUT, System_Error, *this},
+         }
+},
     current_tab_(&tab_definitions_.at(0)),
     settings_(plugin.settings()),
     sort_callback_(
@@ -281,6 +281,13 @@ Output_Dialogue::Message_Return Output_Dialogue::process_dlg_notify(
             {
                 auto const column_click =
                     cast_to<NMLISTVIEW const *, LPARAM>(lParam);
+                // ENHANCMENT Should check if we've clicked shift key here and
+                // add this column to the sort order rather than replacing it.
+                // Using the shift key multiple times should cycle between
+                // ascending sort, descending sort, and removal from the sort.
+                //
+                // Arguably multi-column sorting is only applicable to report
+                // views, at least at this sort of level.
                 current_report_view_->sort_by_column(
                     column_click->iSubItem, sort_callback_
                 );
@@ -407,11 +414,11 @@ void Output_Dialogue::update_displayed_counts()
     for (auto const &tab : tab_definitions_)
     {
         std::wstring strTabName;
-        int const count = tab.report_view.num_items();
-        if (count > 0)
+        int const rows = tab.report_view.get_num_rows();
+        if (rows > 0)
         {
             std::wstringstream stream;
-            stream << tab.tab_name << L" (" << count << L")";
+            stream << tab.tab_name << L" (" << rows << L")";
             strTabName = stream.str();
         }
         else
@@ -443,9 +450,7 @@ void Output_Dialogue::add_errors(Tab tab, std::vector<Error_Info> const &lints)
 
         report_view.add_row(row, Report_View::Row_Data{.user_data = row});
 
-        report_view.set_item_text_with_autosize(
-            row, Column_Message, lint.message_
-        );
+        report_view.set_item_text(row, Column_Message, lint.message_);
 
         report_view.set_item_text(row, Column_Tool, lint.tool_);
 
@@ -462,18 +467,18 @@ void Output_Dialogue::add_errors(Tab tab, std::vector<Error_Info> const &lints)
 
     update_displayed_counts();
 
-    // Also allow user to sort differently and remember?
     if (&tab_def == current_tab_)
     {
-        report_view.sort_by_column(Column_Line, sort_callback_);
+        report_view.autosize_columns();
+        report_view.sort_by_column(sort_callback_);
         InvalidateRect();
     }
 }
 
 void Output_Dialogue::select_lint(int n) noexcept
 {
-    int const count = current_report_view_->num_items();
-    if (count == 0)
+    int const rows = current_report_view_->get_num_rows();
+    if (rows == 0)
     {
         // no lints, set focus to editor
         ::SetFocus(plugin()->get_scintilla_window());
@@ -651,7 +656,7 @@ int Output_Dialogue::sort_call_function(
 
         case Column_Line:
         default:
-            //Nothing to do here.
+            // Nothing to do here.
             break;
     }
 
@@ -677,6 +682,8 @@ Output_Dialogue::TabDefinition::TabDefinition(
 {
     typedef Report_View::Column_Data Column_Data;
 
+    // Note: The first column is implicitly left justified so the 'right' here
+    // is a little optimistic.
     report_view.add_column(
         Column_Line,
         {.justification = Column_Data::Justification::Right,
