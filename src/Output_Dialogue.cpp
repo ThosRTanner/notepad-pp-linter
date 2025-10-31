@@ -56,10 +56,12 @@ enum Context_Menu_Entry
 Output_Dialogue::Output_Dialogue(Menu_Entry menu_entry, Linter const &plugin) :
     Super(IDD_OUTPUT, plugin),
     tab_bar_(GetDlgItem(IDC_TABBAR)),
-    tab_definitions_({
-        TabDefinition{L"Lint Errors",   IDC_LIST_LINTS,  Lint_Error,   *this},
-        TabDefinition{L"System Errors", IDC_LIST_OUTPUT, System_Error, *this}
-}),
+    tab_definitions_{
+        {
+            {L"Lint Errors", IDC_LIST_LINTS, Lint_Error, *this},
+            {L"System Errors", IDC_LIST_OUTPUT, System_Error, *this},
+        }
+    },
     current_tab_(&tab_definitions_.at(0)),
     settings_(plugin.settings()),
     sort_callback_(
@@ -629,38 +631,40 @@ int Output_Dialogue::sort_call_function(
 #endif
 {
     auto const &errs = current_tab_->errors;
+    auto const &row1 = errs[row1_index];
+    auto const &row2 = errs[row2_index];
+    int res = 0;
+
     switch (column)
     {
-        case Column_Line:
-        {
-            int res = errs[row1_index].line_ - errs[row2_index].line_;
-            if (res == 0)
-            {
-                res = errs[row1_index].column_ - errs[row2_index].column_;
-            }
-            return res;
-        }
-
         case Column_Position:
-        {
-            int res = errs[row1_index].column_ - errs[row2_index].column_;
-            if (res == 0)
-            {
-                res = errs[row1_index].line_ - errs[row2_index].line_;
-            }
-            return res;
-        }
+            res = row1.column_ - row2.column_;
+            break;
 
         case Column_Tool:
-            return errs[row1_index].tool_.compare(errs[row2_index].tool_);
+            res = row1.tool_.compare(row2.tool_);
+            break;
 
         case Column_Message:
-            return errs[row1_index].message_.compare(errs[row2_index].message_);
+            res = row1.message_.compare(row2.message_);
+            break;
 
+        case Column_Line:
         default:
-            // Not possible!
-            return 0;
+            //Nothing to do here.
+            break;
     }
+
+    // If we still don't know, sort by column and line.
+    if (res == 0)
+    {
+        res = row1.line_ - row2.line_;
+        if (res == 0)
+        {
+            res = row1.column_ - row2.column_;
+        }
+    }
+    return res;
 }
 
 Output_Dialogue::TabDefinition::TabDefinition(

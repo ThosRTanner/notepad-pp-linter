@@ -128,7 +128,7 @@ class List_View
 
     List_View(HWND list_view);
 
-    ~List_View() noexcept;
+    virtual ~List_View() noexcept;
 
     // Prevent copying
     List_View(List_View const &) = delete;
@@ -224,7 +224,7 @@ class List_View
      * Callback function gets called with the lparams of the two items to
      * compare, and the column being sorted by.
      */
-    void sort_by_column(Data_Column, Sort_Callback_Function const &) const noexcept;
+    virtual void sort_by_column(Data_Column, Sort_Callback_Function const &) const noexcept;
 
     /** Get the coordinates of a position in the list view */
     void get_screen_coordinates(POINT *point) const noexcept;
