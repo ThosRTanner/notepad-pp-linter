@@ -2,6 +2,7 @@
 
 #include "Plugin/Plugin.h"
 
+#include "Casts.h"
 #include "Checkstyle_Parser.h"
 #include "Clipboard.h"
 #include "Encoding.h"
@@ -30,27 +31,6 @@ namespace Linter
 
 namespace
 {
-/** A slightly more explicit version of reinterpret_cast which
- * requires both types to be specified, and disables the cast warning.
- */
-template <typename Target_Type, typename Orig_Type>
-Target_Type cast_to(Orig_Type val) noexcept
-{
-#pragma warning(suppress : 26490)
-    return reinterpret_cast<Target_Type>(val);
-}
-
-/** A similar cast to wrap const_cast without the warnings.
- * The windows APIs leave a lot to be desired in the area of const correctness.
- */
-template <typename Orig_Type>
-Orig_Type windows_const_cast(
-    std::remove_pointer_t<Orig_Type> const *val
-) noexcept
-{
-#pragma warning(suppress : 26492)
-    return const_cast<Orig_Type>(val);
-}
 
 /** Columns in the error list */
 enum List_Column
@@ -76,17 +56,23 @@ enum Context_Menu_Entry
 Output_Dialogue::Output_Dialogue(Menu_Entry menu_entry, Linter const &plugin) :
     Super(IDD_OUTPUT, plugin),
     tab_bar_(GetDlgItem(IDC_TABBAR)),
-    tab_definitions_({
-        TabDefinition{L"Lint Errors",   IDC_LIST_LINTS,  Lint_Error,   *this},
-        TabDefinition{L"System Errors", IDC_LIST_OUTPUT, System_Error, *this}
-}),
+    tab_definitions_{
+        {
+         {L"Lint Errors", IDC_LIST_LINTS, Lint_Error, *this},
+         {L"System Errors", IDC_LIST_OUTPUT, System_Error, *this},
+         }
+},
     current_tab_(&tab_definitions_.at(0)),
     settings_(plugin.settings()),
     sort_callback_(
+#ifndef __cpp_lib_copyable_function
+#pragma warning(suppress : 26447)
+#endif
         [this](
             LPARAM row1_index, LPARAM row2_index,
             Report_View::Data_Column column
-        ) { return this->sort_call_function(row1_index, row2_index, column); }
+        ) noexcept
+        { return this->sort_call_function(row1_index, row2_index, column); }
     )
 
 {
@@ -295,6 +281,13 @@ Output_Dialogue::Message_Return Output_Dialogue::process_dlg_notify(
             {
                 auto const column_click =
                     cast_to<NMLISTVIEW const *, LPARAM>(lParam);
+                // ENHANCMENT Should check if we've clicked shift key here and
+                // add this column to the sort order rather than replacing it.
+                // Using the shift key multiple times should cycle between
+                // ascending sort, descending sort, and removal from the sort.
+                //
+                // Arguably multi-column sorting is only applicable to report
+                // views, at least at this sort of level.
                 current_report_view_->sort_by_column(
                     column_click->iSubItem, sort_callback_
                 );
@@ -351,20 +344,17 @@ Output_Dialogue::Message_Return Output_Dialogue::process_custom_draw(
             return CDRF_NOTIFYITEMDRAW;
 
         case CDDS_ITEMPREPAINT:
-#pragma warning(suppress : 26472)
-            current_item_ = static_cast<int>(custom_draw->nmcd.dwItemSpec);
             return CDRF_NOTIFYSUBITEMDRAW;
 
         case CDDS_ITEMPREPAINT | CDDS_SUBITEM:
             if (custom_draw->iSubItem == Column_Message)
             {
-                // FIXME: Shouldn't we be using the current list view here?
-                LVITEM const item{.mask = LVIF_PARAM, .iItem = current_item_};
-                ListView_GetItem(custom_draw->nmcd.hdr.hwndFrom, &item);
-
-#pragma warning(suppress : 26472)
-                if (static_cast<std::size_t>(item.lParam)
-                    >= current_tab_->errors.size())
+                List_View::Data_Row const row = current_report_view_->get_index(
+                    windows_static_cast<int, DWORD_PTR>(
+                        custom_draw->nmcd.dwItemSpec
+                    )
+                );
+                if (static_cast<std::size_t>(row) >= current_tab_->errors.size())
                 {
                     // For reasons I don't entirely understand, windows paints
                     // an entry for a line that doesn't exist. So don't do
@@ -373,7 +363,7 @@ Output_Dialogue::Message_Return Output_Dialogue::process_custom_draw(
                 }
 
                 // Now we colour the text according to the severity level.
-                auto const &lint_error = current_tab_->errors[item.lParam];
+                auto const &lint_error = current_tab_->errors[row];
                 custom_draw->clrText =
                     settings_->get_message_colour(lint_error.severity_);
                 // Tell Windows to paint the control itself.
@@ -424,11 +414,11 @@ void Output_Dialogue::update_displayed_counts()
     for (auto const &tab : tab_definitions_)
     {
         std::wstring strTabName;
-        int const count = tab.report_view.num_items();
-        if (count > 0)
+        int const rows = tab.report_view.get_num_rows();
+        if (rows > 0)
         {
             std::wstringstream stream;
-            stream << tab.tab_name << L" (" << count << L")";
+            stream << tab.tab_name << L" (" << rows << L")";
             strTabName = stream.str();
         }
         else
@@ -448,18 +438,19 @@ void Output_Dialogue::add_errors(Tab tab, std::vector<Error_Info> const &lints)
 {
     auto &tab_def = tab_definitions_[tab];
     auto const &report_view = tab_def.report_view;
-    auto row = static_cast<int>(tab_def.errors.size());
+    auto row = windows_static_cast<int, size_t>(tab_def.errors.size());
 
-    // FIXME Should I add the expected size to the list_view
+    report_view.ensure_rows(
+        row + windows_static_cast<int, size_t>(lints.size())
+    );
+
     for (auto const &lint : lints)
     {
         tab_def.errors.push_back(lint);
 
         report_view.add_row(row, Report_View::Row_Data{.user_data = row});
 
-        report_view.set_item_text_with_autosize(
-            row, Column_Message, lint.message_
-        );
+        report_view.set_item_text(row, Column_Message, lint.message_);
 
         report_view.set_item_text(row, Column_Tool, lint.tool_);
 
@@ -476,18 +467,18 @@ void Output_Dialogue::add_errors(Tab tab, std::vector<Error_Info> const &lints)
 
     update_displayed_counts();
 
-    // Also allow user to sort differently and remember?
     if (&tab_def == current_tab_)
     {
-        report_view.sort_by_column(Column_Line, sort_callback_);
+        report_view.autosize_columns();
+        report_view.sort_by_column(sort_callback_);
         InvalidateRect();
     }
 }
 
 void Output_Dialogue::select_lint(int n) noexcept
 {
-    int const count = current_report_view_->num_items();
-    if (count == 0)
+    int const rows = current_report_view_->get_num_rows();
+    if (rows == 0)
     {
         // no lints, set focus to editor
         ::SetFocus(plugin()->get_scintilla_window());
@@ -515,7 +506,9 @@ void Output_Dialogue::append_text_with_style(
     plugin()->send_to_editor(SCI_SETSTYLING, text.length(), style);
 }
 
-void Output_Dialogue::show_selected_lint(List_View::Data_Row selected_item)
+void Output_Dialogue::show_selected_lint(
+    List_View::Data_Row selected_item
+) noexcept
 {
     Error_Info const &lint_error = current_tab_->errors[selected_item];
 
@@ -545,11 +538,14 @@ void Output_Dialogue::show_selected_lint(List_View::Data_Row selected_item)
             append_text(
                 "\n\n" + Encoding::convert(lint_error.command_) + "\n\n"
             );
-            append_text_with_style("Return code:", style);
-            append_text(" " + std::to_string(lint_error.result_) + "\n\n");
+            append_text_with_style("Return code: ", style);
+            char buff[20];
+            std::snprintf(&buff[0], sizeof(buff), "%uld", lint_error.result_);
+            append_text(&buff[0]);
+            append_text("\n\n");
             append_text_with_style("Output:", style);
             append_text("\n\n");
-            line = static_cast<int>(plugin()->send_to_editor(
+            line = windows_static_cast<int, LRESULT>(plugin()->send_to_editor(
                 SCI_LINEFROMPOSITION,
                 plugin()->send_to_editor(SCI_GETTEXTLENGTH)
             ));
@@ -629,43 +625,51 @@ void Output_Dialogue::copy_to_clipboard()
     clipboard.copy(str);
 }
 
+#ifndef __cpp_lib_copyable_function
+#pragma warning(suppress : 26440)
+#endif
 int Output_Dialogue::sort_call_function(
     LPARAM row1_index, LPARAM row2_index, Report_View::Data_Column column
 )
+#ifdef __cpp_lib_copyable_function
+    const noexcept
+#endif
 {
     auto const &errs = current_tab_->errors;
+    auto const &row1 = errs[row1_index];
+    auto const &row2 = errs[row2_index];
+    int res = 0;
+
     switch (column)
     {
-        case Column_Line:
-        {
-            int res = errs[row1_index].line_ - errs[row2_index].line_;
-            if (res == 0)
-            {
-                res = errs[row1_index].column_ - errs[row2_index].column_;
-            }
-            return res;
-        }
-
         case Column_Position:
-        {
-            int res = errs[row1_index].column_ - errs[row2_index].column_;
-            if (res == 0)
-            {
-                res = errs[row1_index].line_ - errs[row2_index].line_;
-            }
-            return res;
-        }
+            res = row1.column_ - row2.column_;
+            break;
 
         case Column_Tool:
-            return errs[row1_index].tool_.compare(errs[row2_index].tool_);
+            res = row1.tool_.compare(row2.tool_);
+            break;
 
         case Column_Message:
-            return errs[row1_index].message_.compare(errs[row2_index].message_);
+            res = row1.message_.compare(row2.message_);
+            break;
 
+        case Column_Line:
         default:
-            // Not possible!
-            return 0;
+            // Nothing to do here.
+            break;
     }
+
+    // If we still don't know, sort by column and line.
+    if (res == 0)
+    {
+        res = row1.line_ - row2.line_;
+        if (res == 0)
+        {
+            res = row1.column_ - row2.column_;
+        }
+    }
+    return res;
 }
 
 Output_Dialogue::TabDefinition::TabDefinition(
@@ -678,6 +682,8 @@ Output_Dialogue::TabDefinition::TabDefinition(
 {
     typedef Report_View::Column_Data Column_Data;
 
+    // Note: The first column is implicitly left justified so the 'right' here
+    // is a little optimistic.
     report_view.add_column(
         Column_Line,
         {.justification = Column_Data::Justification::Right,

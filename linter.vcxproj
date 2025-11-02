@@ -349,6 +349,7 @@
     <ClCompile Include="Docking_Dialogue_Interface\Plugin\Non_Modal_Dialogue_Interface.cpp" />
     <ClCompile Include="Docking_Dialogue_Interface\Plugin\Plugin.cpp" />
     <ClCompile Include="src\Clipboard.cpp" />
+    <ClCompile Include="src\Column_Header.cpp" />
     <ClCompile Include="src\dllmain.cpp" />
     <ClCompile Include="src\Dom_Document.cpp" />
     <ClCompile Include="src\Dom_Node.cpp" />
@@ -391,7 +392,9 @@
     <ClInclude Include="Docking_Dialogue_Interface\Plugin\Non_Modal_Dialogue_Base.h" />
     <ClInclude Include="Docking_Dialogue_Interface\Plugin\Non_Modal_Dialogue_Interface.h" />
     <ClInclude Include="Docking_Dialogue_Interface\Plugin\Plugin.h" />
+    <ClInclude Include="src\Casts.h" />
     <ClInclude Include="src\Clipboard.h" />
+    <ClInclude Include="src\Column_Header.h" />
     <ClInclude Include="src\Dom_Document.h" />
     <ClInclude Include="src\Dom_Node.h" />
     <ClInclude Include="src\Dom_Node_List.h" />
@@ -403,6 +406,7 @@
     <ClInclude Include="src\Indicator.h" />
     <ClInclude Include="src\Linter.h" />
     <ClInclude Include="src\List_View.h" />
+    <ClInclude Include="src\List_View_Types.h" />
     <ClInclude Include="src\Menu_Entry.h" />
     <ClInclude Include="src\Output_Dialogue.h" />
     <ClInclude Include="src\Report_View.h" />

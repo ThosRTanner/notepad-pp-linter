@@ -1,10 +1,12 @@
 #pragma once
 
+#include "List_View_Types.h"
+
 #include <minwindef.h>    //for LPARAM
 #include <windef.h>       //for HWND, RECT, tagPOINT, tagRECT
 
 #include <functional>
-#if _HAS_CXX23
+#if __cplusplus >= 202302L
 #include <generator>
 #endif
 #include <optional>
@@ -25,9 +27,8 @@ class List_View
     // not the position on screen.
     typedef int Data_Row;
 
-    // Data_Column is used to identify the actual column in the list view.
-    // not the position on screen.
-    typedef int Data_Column;
+    using Data_Column = typename List_View_Types::Data_Column;
+    using Sort_Direction = typename List_View_Types::Sort_Direction;
 
     /** Data for defining a column.
      *
@@ -128,7 +129,7 @@ class List_View
 
     List_View(HWND list_view);
 
-    ~List_View() noexcept;
+    virtual ~List_View() noexcept;
 
     // Prevent copying
     List_View(List_View const &) = delete;
@@ -147,13 +148,12 @@ class List_View
     /** Add a row to the list view */
     void add_row(Data_Row, Row_Data const &) const noexcept;
 
+    /** Ensure that there is space for at least total_rows rows in the list view
+     */
+    void ensure_rows(int total_rows) const noexcept;
+
     /** Set the text for an item */
     void set_item_text(
-        Data_Row row, Data_Column col, std::wstring const &message
-    ) const noexcept;
-
-    /** Set the text for an item, and autosize the column */
-    void set_item_text_with_autosize(
         Data_Row row, Data_Column col, std::wstring const &message
     ) const noexcept;
 
@@ -180,8 +180,8 @@ class List_View
         return get_first_selected_item() != -1;
     }
 
-    /** Total number of items */
-    int num_items() const noexcept;
+    /** Total number of items (rows) */
+    int get_num_rows() const noexcept;
 
     /** Get the index of the first selected item */
     Data_Row get_first_selected_index() const noexcept;
@@ -190,7 +190,7 @@ class List_View
     Data_Row get_index(int item) const noexcept;
 
     /** Generator for selected item indices */
-#if _HAS_CXX23
+#if __cplusplus >= 202302L
     std::generator<List_View::Data_Row> selected_items() const noexcept;
 #else
     // Fallback for pre-C++23 - returns a vector
@@ -205,27 +205,38 @@ class List_View
 
     /** Callback function type for sorting
      *
-     * Note: This *should* be noexcept, but std::function doesn't support that.
+     * Note: This *should* be const noexcept, but std::function doesn't support
+     * that. With c++26 we could use std::copyable_function.
      */
+#ifdef __cpp_lib_copyable_function
+    typedef int(Sort_Callback)(LPARAM, LPARAM, Data_Column) const noexcept;
+    typedef std::copyable_function<Sort_Callback> Sort_Callback_Function;
+#else
     typedef int(Sort_Callback)(LPARAM, LPARAM, Data_Column);
+    typedef std::function<Sort_Callback> Sort_Callback_Function;
+#endif
 
-    /** Sort displayed list by specified column.
+    /** Sort_Direction displayed list by specified column.
      *
      * Callback function gets called with the lparams of the two items to
      * compare, and the column being sorted by.
      */
     void sort_by_column(
-        Data_Column col, std::function<Sort_Callback>
+        Data_Column, Sort_Callback_Function const &, Sort_Direction
     ) const noexcept;
 
     /** Get the coordinates of a position in the list view */
     void get_screen_coordinates(POINT *point) const noexcept;
 
-    /** Move list.
-
-    This sets the width of the last column to fill the space.
-    */
+    /** Adjust position and size of list. */
     void set_window_position(HWND prev_win, RECT const &rc) const noexcept;
+
+  protected:
+    /** Get the handle to the list view */
+    HWND handle() const noexcept
+    {
+        return handle_;
+    }
 
   private:
     HWND handle_;

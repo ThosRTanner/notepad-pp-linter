@@ -110,6 +110,9 @@
     <ClCompile Include="src\Report_View.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\Column_Header.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Clipboard.h">
@@ -218,6 +221,15 @@
       <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="src\Report_View.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Casts.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Column_Header.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\List_View_Types.h">
       <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>
