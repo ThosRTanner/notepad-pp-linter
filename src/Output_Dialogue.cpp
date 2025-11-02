@@ -354,7 +354,7 @@ Output_Dialogue::Message_Return Output_Dialogue::process_custom_draw(
                         custom_draw->nmcd.dwItemSpec
                     )
                 );
-                if (row >= current_tab_->errors.size())
+                if (static_cast<std::size_t>(row) >= current_tab_->errors.size())
                 {
                     // For reasons I don't entirely understand, windows paints
                     // an entry for a line that doesn't exist. So don't do

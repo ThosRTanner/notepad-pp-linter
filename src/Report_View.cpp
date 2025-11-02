@@ -1,6 +1,7 @@
 #include "Report_View.h"
 
 #include "Column_Header.h"
+#include "List_View_Types.h"
 
 #include <CommCtrl.h>
 
