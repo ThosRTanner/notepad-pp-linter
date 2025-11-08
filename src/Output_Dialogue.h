@@ -33,7 +33,7 @@ class Output_Dialogue : protected Docking_Dialogue_Interface
     typedef Docking_Dialogue_Interface Super;
 
   public:
-    Output_Dialogue(Menu_Entry dlg_num, Linter const &);
+    Output_Dialogue(Menu_Entry, Linter const &);
 
     Output_Dialogue(Output_Dialogue const &) = delete;
     Output_Dialogue(Output_Dialogue &&) = delete;
@@ -51,7 +51,7 @@ class Output_Dialogue : protected Docking_Dialogue_Interface
     void add_system_error(Error_Info const &);
 
     /** Add a list of lint errors to the lint error list */
-    void add_lint_errors(std::vector<Error_Info> const &lints);
+    void add_lint_errors(std::vector<Error_Info> const &);
 
     /** Selects the next lint message */
     void select_next_lint() noexcept;

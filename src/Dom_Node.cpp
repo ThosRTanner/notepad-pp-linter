@@ -21,11 +21,11 @@ Dom_Node::Dom_Node(CComPtr<IXMLDOMNode> node) noexcept : node_(node)
 Dom_Node_List Dom_Node::get_node_list(std::string const &xpath) const
 {
     CComPtr<IXMLDOMNodeList> node_list;
-    auto const hr =
+    auto const hres =
         node_->selectNodes(static_cast<bstr_t>(xpath.c_str()), &node_list);
-    if (not SUCCEEDED(hr))
+    if (not SUCCEEDED(hres))
     {
-        throw System_Error(hr, "Can't get node list from " + xpath);
+        throw System_Error(hres, "Can't get node list from " + xpath);
     }
     return Dom_Node_List(node_list);
 }
@@ -40,17 +40,18 @@ Dom_Node Dom_Node::get_node(std::string const &xpath) const
     return *node;
 }
 
-std::optional<Dom_Node> Dom_Node::get_optional_node(std::string const &xpath
+std::optional<Dom_Node> Dom_Node::get_optional_node(
+    std::string const &xpath
 ) const
 {
     CComPtr<IXMLDOMNode> node;
-    auto const hr =
+    auto const hres =
         node_->selectSingleNode(static_cast<bstr_t>(xpath.c_str()), &node);
-    if (not SUCCEEDED(hr))
+    if (not SUCCEEDED(hres))
     {
-        throw System_Error(hr, "Can't get node from xpath " + xpath);
+        throw System_Error(hres, "Can't get node from xpath " + xpath);
     }
-    if (hr == S_FALSE)
+    if (hres == S_FALSE)
     {
         return std::nullopt;
     }
@@ -60,10 +61,10 @@ std::optional<Dom_Node> Dom_Node::get_optional_node(std::string const &xpath
 std::wstring Dom_Node::get_name() const
 {
     CComBSTR name;
-    auto const hr = node_->get_nodeName(&name);
-    if (not SUCCEEDED(hr))
+    auto const hres = node_->get_nodeName(&name);
+    if (not SUCCEEDED(hres))
     {
-        throw System_Error(hr, "Can't get node name");
+        throw System_Error(hres, "Can't get node name");
     }
     return std::wstring(static_cast<BSTR>(name), name.Length());
 }
@@ -71,26 +72,28 @@ std::wstring Dom_Node::get_name() const
 std::wstring Dom_Node::get_value() const
 {
     CComVariant res;
-    auto const hr = node_->get_nodeTypedValue(&res);
-    if (not SUCCEEDED(hr))
+    auto const hres = node_->get_nodeTypedValue(&res);
+    if (not SUCCEEDED(hres))
     {
-        throw System_Error(hr, "Can't get node value");
+        throw System_Error(hres, "Can't get node value");
     }
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-union-access)
     return std::wstring(res.bstrVal, SysStringLen(res.bstrVal));
 }
 
 std::wstring Dom_Node::get_attribute(std::wstring const &attribute) const
 {
-    CComQIPtr<IXMLDOMElement> element(node_);
+    CComQIPtr<IXMLDOMElement> const element(node_);
     CComVariant value;
 
-    auto const hr =
+    auto const hres =
         element->getAttribute(static_cast<bstr_t>(attribute.c_str()), &value);
-    if (not SUCCEEDED(hr))
+    if (not SUCCEEDED(hres))
     {
-        throw System_Error(hr, "Can't get node attribute value");
+        throw System_Error(hres, "Can't get node attribute value");
     }
 
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-union-access)
     return std::wstring(value.bstrVal, SysStringLen(value.bstrVal));
 }
 

@@ -22,13 +22,14 @@
 #include <locale>
 #include <regex>
 #include <sstream>
+#include <vector>
 
 namespace Linter
 {
 
 namespace
 {
-std::unordered_map<std::wstring, uint32_t> default_message_colours = {
+std::unordered_map<std::wstring, uint32_t> const default_message_colours = {
     {L"default", RGB(0,   255, 255)}, // Cyan
     {L"error",   RGB(255, 0,   0)  }, // Red
     {L"warning", RGB(255, 127, 0)  }  // Orange
@@ -43,17 +44,17 @@ Settings::Settings(::Linter::Linter const &linter) :
     message_colours_(default_message_colours)
 {
     // Create a schema cache and our xsd to it.
-    auto hr = settings_schema_.CoCreateInstance(__uuidof(XMLSchemaCache60));
-    if (not SUCCEEDED(hr))
+    auto hres = settings_schema_.CoCreateInstance(__uuidof(XMLSchemaCache60));
+    if (not SUCCEEDED(hres))
     {
-        throw System_Error(hr, "Can't create XMLSchemaCache60");
+        throw System_Error(hres, "Can't create XMLSchemaCache60");
     }
 
-    CComVariant xsd{settings_xsd_.c_str()};
-    hr = settings_schema_->add(bstr_t(""), xsd);
-    if (not SUCCEEDED(hr))
+    CComVariant const xsd{settings_xsd_.c_str()};
+    hres = settings_schema_->add(bstr_t(""), xsd);
+    if (not SUCCEEDED(hres))
     {
-        throw System_Error(hr, "Can't add to schema pool");
+        throw System_Error(hres, "Can't add to schema pool");
     }
 
     // A note: We try to read the settings at this point and quietly ignore
@@ -63,7 +64,7 @@ Settings::Settings(::Linter::Linter const &linter) :
     {
         refresh();
     }
-    catch (std::exception const &)
+    catch (std::exception const &)    // NOLINT(bugprone-empty-catch)
     {
         // Nothing we can usefully do.
     }
@@ -112,14 +113,13 @@ ShortcutKey const *Settings::get_shortcut_key(Menu_Entry entry) const
 uint32_t Settings::read_colour_node(Dom_Node const &node)
 {
     // get the r, g, b values and merge them into What Scintalla Expects
-    Dom_Node_List colours = node.get_node_list("./*");
+    Dom_Node_List const colours = node.get_node_list("./*");
     uint32_t bgr = 0;
     for (auto const colour : colours)
     {
         // This always comes back as a BSTR. I have no idea why.
-        auto value = colour.get_value();
         std::wstringstream data{colour.get_value()};
-        uint32_t val;
+        uint32_t val;    // NOLINT(cppcoreguidelines-init-variables)
         data >> val;
         bgr = (bgr >> 8) | (val << 16);
     }
@@ -128,7 +128,7 @@ uint32_t Settings::read_colour_node(Dom_Node const &node)
 
 void Settings::read_settings()
 {
-    Dom_Document settings{settings_xml_, settings_schema_};
+    Dom_Document const settings{settings_xml_, settings_schema_};
     read_indicator(settings);
     read_messages(settings);
     read_shortcuts(settings);
@@ -153,7 +153,7 @@ void Settings::read_messages(Dom_Document const &settings)
     }
 
     // Set up any custom message colours.
-    Dom_Node_List types = messages->get_node_list("./*");
+    Dom_Node_List const types = messages->get_node_list("./*");
     for (auto const type : types)
     {
         message_colours_[type.get_name()] = read_colour_node(type);
@@ -169,7 +169,10 @@ void Settings::read_shortcuts(Dom_Document const &settings)
         return;
     }
 
-#define MAP_KEY(s) {L#s, VK_##s}
+#define MAP_KEY(s)  \
+    {               \
+        L#s, VK_##s \
+    }
 #undef DELETE
     static std::unordered_map<std::wstring, int> const key_mappings{
         MAP_KEY(F1),
@@ -204,8 +207,7 @@ void Settings::read_shortcuts(Dom_Document const &settings)
 #undef MAP_KEY
 
     // Set up any shortcuts
-    Dom_Node_List menu_entries = shortcuts->get_node_list("./*");
-    for (auto const menu_entry : menu_entries)
+    for (auto const menu_entry : shortcuts->get_node_list("./*"))
     {
         ShortcutKey key = {
             ._isCtrl = menu_entry.get_optional_node("ctrl").has_value(),
@@ -213,15 +215,15 @@ void Settings::read_shortcuts(Dom_Document const &settings)
             ._isShift = menu_entry.get_optional_node("shift").has_value()
         };
         // get the key as well.
-        auto const k = menu_entry.get_value();
-        if (k.size() == 1)
+        auto const key_name = menu_entry.get_value();
+        if (key_name.size() == 1)
         {
 #pragma warning(suppress : 26472)
-            key._key = static_cast<UCHAR>(std::toupper(*k.begin()));
+            key._key = static_cast<UCHAR>(std::toupper(*key_name.begin()));
         }
         else
         {
-            key._key = static_cast<UCHAR>(key_mappings.at(k));
+            key._key = static_cast<UCHAR>(key_mappings.at(key_name));
         }
         menu_entries_[get_menu_entry_from_element(menu_entry.get_name())] = key;
     }
@@ -261,8 +263,8 @@ void Settings::read_variables(Dom_Document const &settings)
         Dom_Node const name_node{variable.get_node(".//name")};
         std::wstring const name{name_node.get_value()};
         Dom_Node const command_node{variable.get_node(".//command")};
-        Command cmd = read_command(command_node);
-        variables_.push_back(Variable(name, cmd));
+        Command const cmd = read_command(command_node);
+        variables_.emplace_back(name, cmd);
     }
 }
 
@@ -270,14 +272,13 @@ void Settings::read_misc(Dom_Document const &settings)
 {
     // Read the enabled state
     enabled_ = true;
-    std::optional<Dom_Node> enabled_node = settings.get_node("//disabled");
-    if (enabled_node.has_value())
+    if (settings.get_node("//disabled").has_value())
     {
         enabled_ = false;
     }
 }
 
-Settings::Command Settings::read_command(Dom_Node command_node)
+Settings::Command Settings::read_command(Dom_Node const &command_node)
 {
     // Expects either 'cmdline' or 'program' and 'args'
     // A note: That isn't currently supported in the .xml, because

@@ -14,7 +14,7 @@ namespace Linter
 
 std::vector<Error_Info> Checkstyle_Parser::get_errors(std::string const &xml)
 {
-    Dom_Document document{xml};
+    Dom_Document const document{xml};
 
     // Sample errors:
     //
@@ -33,7 +33,7 @@ std::vector<Error_Info> Checkstyle_Parser::get_errors(std::string const &xml)
 
     std::vector<Error_Info> errors;
 
-    Dom_Node_List nodes(document.get_node_list("//error"));
+    Dom_Node_List const nodes(document.get_node_list("//error"));
     for (auto const node : nodes)
     {
         std::wstring tool{node.get_attribute(L"source")};

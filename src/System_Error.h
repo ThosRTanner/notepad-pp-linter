@@ -55,7 +55,7 @@ class System_Error : public std::exception
     System_Error &operator=(System_Error const &) noexcept;
     System_Error &operator=(System_Error &&) noexcept;
 
-    ~System_Error();
+    ~System_Error() override;
 
     char const *what() const noexcept override;
 

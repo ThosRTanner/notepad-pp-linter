@@ -38,7 +38,7 @@
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <CharacterSet>Unicode</CharacterSet>
     <WholeProgramOptimization>true</WholeProgramOptimization>
-    <PlatformToolset>v143</PlatformToolset>
+    <PlatformToolset>v145</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
@@ -50,13 +50,13 @@
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <CharacterSet>Unicode</CharacterSet>
     <WholeProgramOptimization>true</WholeProgramOptimization>
-    <PlatformToolset>v143</PlatformToolset>
+    <PlatformToolset>v145</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseOfAtl>Static</UseOfAtl>
     <CharacterSet>Unicode</CharacterSet>
-    <PlatformToolset>v143</PlatformToolset>
+    <PlatformToolset>v145</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
@@ -111,32 +111,55 @@
     <OutDir>$(SolutionDir)$(ShortProjectName)\$(Platform)\$(Configuration)\</OutDir>
     <IntDir>$(ShortProjectName)\build\$(Platform)\$(Configuration)\</IntDir>
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+    <RunCodeAnalysis>true</RunCodeAnalysis>
+    <EnableClangTidyCodeAnalysis>true</EnableClangTidyCodeAnalysis>
+    <ClangTidyExtraArgs>-Isrc/</ClangTidyExtraArgs>
+    <ClangTidyPrependExtraArgs>-Wno-unused-command-line-argument</ClangTidyPrependExtraArgs>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">
     <OutDir>$(SolutionDir)$(ShortProjectName)\$(Platform)\$(Configuration)\</OutDir>
     <IntDir>$(ShortProjectName)\build\$(Platform)\$(Configuration)\</IntDir>
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+    <RunCodeAnalysis>true</RunCodeAnalysis>
+    <EnableClangTidyCodeAnalysis>true</EnableClangTidyCodeAnalysis>
+    <ClangTidyExtraArgs>-Isrc/</ClangTidyExtraArgs>
+    <ClangTidyPrependExtraArgs>-Wno-unused-command-line-argument</ClangTidyPrependExtraArgs>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
     <OutDir>$(SolutionDir)$(ShortProjectName)\$(Platform)\$(Configuration)\</OutDir>
     <IntDir>$(ShortProjectName)\build\$(Platform)\$(Configuration)\</IntDir>
-    <EnableClangTidyCodeAnalysis>false</EnableClangTidyCodeAnalysis>
+    <EnableClangTidyCodeAnalysis>true</EnableClangTidyCodeAnalysis>
+    <ClangTidyPrependExtraArgs>-Wno-unused-command-line-argument</ClangTidyPrependExtraArgs>
+    <ClangTidyExtraArgs>-Isrc/</ClangTidyExtraArgs>
+    <RunCodeAnalysis>true</RunCodeAnalysis>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <OutDir>$(SolutionDir)$(ShortProjectName)\$(Platform)\$(Configuration)\</OutDir>
     <IntDir>$(ShortProjectName)\build\$(Platform)\$(Configuration)\</IntDir>
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+    <RunCodeAnalysis>true</RunCodeAnalysis>
+    <EnableClangTidyCodeAnalysis>true</EnableClangTidyCodeAnalysis>
+    <ClangTidyExtraArgs>-Isrc/</ClangTidyExtraArgs>
+    <ClangTidyPrependExtraArgs>-Wno-unused-command-line-argument</ClangTidyPrependExtraArgs>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'">
     <OutDir>$(SolutionDir)$(ShortProjectName)\$(Platform)\$(Configuration)\</OutDir>
     <IntDir>$(ShortProjectName)\build\$(Platform)\$(Configuration)\</IntDir>
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+    <RunCodeAnalysis>true</RunCodeAnalysis>
+    <EnableClangTidyCodeAnalysis>true</EnableClangTidyCodeAnalysis>
+    <ClangTidyExtraArgs>-Isrc/</ClangTidyExtraArgs>
+    <ClangTidyPrependExtraArgs>-Wno-unused-command-line-argument</ClangTidyPrependExtraArgs>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
     <OutDir>$(SolutionDir)$(ShortProjectName)\$(Platform)\$(Configuration)\</OutDir>
     <IntDir>$(ShortProjectName)\build\$(Platform)\$(Configuration)\</IntDir>
+    <RunCodeAnalysis>true</RunCodeAnalysis>
+    <EnableClangTidyCodeAnalysis>true</EnableClangTidyCodeAnalysis>
+    <ClangTidyExtraArgs>-Isrc/</ClangTidyExtraArgs>
+    <ClangTidyPrependExtraArgs>-Wno-unused-command-line-argument</ClangTidyPrependExtraArgs>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -146,6 +169,7 @@
       <EnablePREfast>true</EnablePREfast>
       <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
       <ForcedIncludeFiles>stdafx.h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <LanguageStandard>stdcpp23</LanguageStandard>
     </ClCompile>
     <Link>
       <AdditionalOptions>/NOIMPLIB /NOEXP %(AdditionalOptions)</AdditionalOptions>
@@ -180,6 +204,7 @@
       <EnablePREfast>true</EnablePREfast>
       <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
       <ForcedIncludeFiles>stdafx.h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <LanguageStandard>stdcpp23</LanguageStandard>
     </ClCompile>
     <Link>
       <AdditionalOptions>/NOIMPLIB /NOEXP %(AdditionalOptions)</AdditionalOptions>
@@ -245,6 +270,7 @@
       <EnablePREfast>true</EnablePREfast>
       <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
       <ForcedIncludeFiles>stdafx.h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <LanguageStandard>stdcpp23</LanguageStandard>
     </ClCompile>
     <Link>
       <OptimizeReferences>true</OptimizeReferences>
@@ -281,6 +307,7 @@
       <EnablePREfast>true</EnablePREfast>
       <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
       <ForcedIncludeFiles>stdafx.h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <LanguageStandard>stdcpp23</LanguageStandard>
     </ClCompile>
     <Link>
       <OptimizeReferences>true</OptimizeReferences>
@@ -313,6 +340,7 @@
       <EnablePREfast>true</EnablePREfast>
       <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
       <ForcedIncludeFiles>stdafx.h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <LanguageStandard>stdcpp23</LanguageStandard>
     </ClCompile>
     <Link>
       <OptimizeReferences>true</OptimizeReferences>
@@ -430,6 +458,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include=".clang-format" />
+    <None Include=".clang-tidy" />
     <None Include=".github\dependabot.yml" />
     <None Include=".github\workflows\CI_build.yml" />
     <None Include=".github\workflows\CI_pull_request.yml" />

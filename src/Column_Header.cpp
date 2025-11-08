@@ -11,7 +11,7 @@ Column_Header::Column_Header(HWND handle) noexcept : handle_(handle)
 {
 }
 
-Column_Header::~Column_Header() = default;
+//Column_Header::~Column_Header() = default;
 
 void Column_Header::set_sort_icon(
     Data_Column column, Sort_Direction sort_direction

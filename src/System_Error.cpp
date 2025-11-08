@@ -30,13 +30,13 @@ System_Error::System_Error(
 {
 }
 
-System_Error::System_Error(
+System_Error::System_Error( // NOLINT(*-member-init)
     DWORD err, std::source_location const &location
 ) noexcept
 {
     try
     {
-        std::snprintf(
+        std::ignore = std::snprintf(
             &what_string_[0],
             sizeof(what_string_),
             "%08lx %s",
@@ -47,7 +47,7 @@ System_Error::System_Error(
     catch (std::exception const &e)
     {
 #pragma warning(suppress : 26447)    // MS Bug with e.what() decl
-        std::snprintf(
+        std::ignore = std::snprintf(
             &what_string_[0],
             sizeof(what_string_),
             "Error code %08lx then got %s",
@@ -58,13 +58,13 @@ System_Error::System_Error(
     addLocationToMessage(location);
 }
 
-System_Error::System_Error(
+System_Error::System_Error( // NOLINT(*-member-init)
     DWORD err, std::string const &info, std::source_location const &location
 ) noexcept
 {
     try
     {
-        std::snprintf(
+        std::ignore = std::snprintf(
             &what_string_[0],
             sizeof(what_string_),
             "%s - %08lx %s",
@@ -76,7 +76,7 @@ System_Error::System_Error(
     catch (std::exception const &e)
     {
 #pragma warning(suppress : 26447)    // MS Bug with e.what() decl
-        std::snprintf(
+        std::ignore = std::snprintf(
             &what_string_[0],
             sizeof(what_string_),
             "%s - Error code %08lx then got %s",
@@ -88,17 +88,17 @@ System_Error::System_Error(
     addLocationToMessage(location);
 }
 
-System_Error::System_Error(
+System_Error::System_Error( // NOLINT(*-member-init)
     HRESULT err, std::source_location const &location
 ) noexcept
 {
     IErrorInfo *err_info{nullptr};
     std::ignore = GetErrorInfo(0, &err_info);
-    _com_error error{err, err_info};
+    _com_error const error{err, err_info};
     try
     {
         _bstr_t const msg{error.ErrorMessage()};
-        std::snprintf(
+        std::ignore = std::snprintf(
             &what_string_[0],
             sizeof(what_string_),
             "%08lx %s",
@@ -109,7 +109,7 @@ System_Error::System_Error(
     catch (std::exception const &e)
     {
 #pragma warning(suppress : 26447)    // MS Bug with e.what() decl
-        std::snprintf(
+        std::ignore = std::snprintf(
             &what_string_[0],
             sizeof(what_string_),
             "Got error %08lx but couldn't decode because %s",
@@ -120,17 +120,17 @@ System_Error::System_Error(
     addLocationToMessage(location);
 }
 
-System_Error::System_Error(
+System_Error::System_Error( // NOLINT(*-member-init)
     HRESULT err, std::string const &info, std::source_location const &location
 ) noexcept
 {
     IErrorInfo *err_info{nullptr};
     std::ignore = ::GetErrorInfo(0, &err_info);
-    _com_error error{err, err_info};
+    _com_error const error{err, err_info};
     try
     {
         _bstr_t const msg{error.ErrorMessage()};
-        std::snprintf(
+        std::ignore = std::snprintf(
             &what_string_[0],
             sizeof(what_string_),
             "%s - %08lx %s",
@@ -142,7 +142,7 @@ System_Error::System_Error(
     catch (std::exception const &e)
     {
 #pragma warning(suppress : 26447)    // MS Bug with e.what() decl
-        std::snprintf(
+        std::ignore = std::snprintf(
             &what_string_[0],
             sizeof(what_string_),
             "%s - Got error %08lx but couldn't decode because %s",
@@ -169,13 +169,14 @@ char const *System_Error::what() const noexcept
     return &what_string_[0];
 }
 
-void System_Error::addLocationToMessage(std::source_location const &location
+void System_Error::addLocationToMessage(
+    std::source_location const &location
 ) noexcept
 {
-    auto const full_path = location.file_name();
+    char const *const full_path = location.file_name();
     char const *const file_name = std::strrchr(full_path, '\\');
     std::size_t const used{std::strlen(&what_string_[0])};
-    std::snprintf(
+    std::ignore = std::snprintf(
         &what_string_[used],
         sizeof(what_string_) - used,
         " at %s:%u %s",

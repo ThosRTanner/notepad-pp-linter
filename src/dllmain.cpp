@@ -13,13 +13,19 @@
 // Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
 #include "Linter.h"
-typedef Linter::Linter Npp_Plugin;
+using Npp_Plugin = Linter::Linter;
 
 #include "notepad++/PluginInterface.h"
 
 #include <memory>
 
-static std::unique_ptr<Npp_Plugin> plugin;
+namespace
+{
+
+// NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
+std::unique_ptr<Npp_Plugin> plugin;
+
+}    // namespace
 
 extern "C" __declspec(dllexport) wchar_t const *getName()
 {

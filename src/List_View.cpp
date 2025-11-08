@@ -1,8 +1,9 @@
 #include "List_View.h"
 
-#include "Casts.h"
 #include "List_View_Types.h"
 #include "System_Error.h"
+
+#include "Plugin/Casts.h"
 
 #include <CommCtrl.h>
 #include <minwindef.h>
@@ -31,9 +32,9 @@ List_View::List_View(HWND handle) : handle_(handle)
 List_View::~List_View() noexcept = default;
 
 // Allow moving
-List_View::List_View(List_View &&) = default;
+List_View::List_View(List_View &&) noexcept = default;
 
-List_View &List_View::operator=(List_View &&) = default;
+List_View &List_View::operator=(List_View &&) noexcept = default;
 
 int List_View::add_column(Column_Data const &col) const noexcept
 {
@@ -337,16 +338,18 @@ void List_View::sort_by_column(
         Sort_Callback_Function const &callback;
         int direction;
     } const details{
-        col,
-        callback,
-        direction == Sort_Direction::None            ? 0
-            : direction == Sort_Direction::Ascending ? 1
-                                                     : -1
+        .column = col,
+        .callback = callback,
+        .direction = direction == Sort_Direction::None ? 0
+            : direction == Sort_Direction::Ascending   ? 1
+                                                       : -1
     };
     auto callback_fn =
+        // NOLINTNEXTLINE(bugprone-easily-swappable-parameters)
         [](LPARAM param1, LPARAM param2, LPARAM details) noexcept -> int
     {
-        Details const &params = *cast_to<Details const *, LPARAM>(details);
+        Details const &params =
+            *windows_cast_to<Details const *, LPARAM>(details);
         if (params.direction == 0)
         {
             return windows_static_cast<int, LPARAM>(param1 - param2);
@@ -367,16 +370,16 @@ void List_View::get_screen_coordinates(POINT *point) const noexcept
 }
 
 void List_View::set_window_position(
-    HWND prev_win, RECT const &rc
+    HWND prev_win, RECT const &rect
 ) const noexcept
 {
     ::SetWindowPos(
         handle_,
         prev_win,
-        rc.left,
-        rc.top,
-        rc.right - rc.left,
-        rc.bottom - rc.top,
+        rect.left,
+        rect.top,
+        rect.right - rect.left,
+        rect.bottom - rect.top,
         0
     );
 }

@@ -15,7 +15,7 @@ class XML_Decode_Error : public std::exception
     XML_Decode_Error(XML_Decode_Error &&) noexcept;
     XML_Decode_Error &operator=(XML_Decode_Error const &) noexcept;
     XML_Decode_Error &operator=(XML_Decode_Error &&) noexcept;
-    ~XML_Decode_Error();
+    ~XML_Decode_Error() override;
 
     /** Returns user-readable string describing error */
     char const *what() const noexcept override;

@@ -11,6 +11,7 @@
 
 namespace Linter
 {
+
 class Dom_Node;
 class Dom_Node_List;
 
@@ -47,7 +48,7 @@ class Dom_Document
     void init();
 
     /* Check the result of doing a load, die if it didn't complete */
-    void checkLoadResults(VARIANT_BOOL resultcode, HRESULT hr) const;
+    void checkLoadResults(VARIANT_BOOL resultcode, HRESULT hres) const;
 
     CComPtr<IXMLDOMDocument2> document_;
 };

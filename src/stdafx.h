@@ -6,7 +6,7 @@
 #pragma once
 
 #define WIN32
-#define _SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING
+//#define _SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING    // NOLINT
 
 #include "targetver.h"
 
@@ -16,6 +16,7 @@
 // Windows Header Files:
 #include <windows.h>
 
+// NOLINTNEXTLINE
 #define _ATL_CSTRING_EXPLICIT_CONSTRUCTORS    // some CString constructors will
                                               // be explicit
 

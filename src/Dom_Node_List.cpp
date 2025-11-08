@@ -19,21 +19,22 @@ Dom_Node_List::iterator::iterator(
 Dom_Node Dom_Node_List::iterator::operator*() const
 {
     CComPtr<IXMLDOMNode> node;
-    auto const hr = node_list_->get_item(item_, &node);
-    if (not SUCCEEDED(hr))
+    auto const hres = node_list_->get_item(item_, &node);
+    if (not SUCCEEDED(hres))
     {
-        throw System_Error(hr, "Can't get item detail");
+        throw System_Error(hres, "Can't get item detail");
     }
     return Dom_Node(node);
 }
 
+// NOLINTNEXTLINE(*-member-init)
 Dom_Node_List::Dom_Node_List(CComPtr<IXMLDOMNodeList> node_list) :
     node_list_(node_list)
 {
-    HRESULT const hr = node_list->get_length(&num_items_);
-    if (not SUCCEEDED(hr))
+    HRESULT const hres = node_list->get_length(&num_items_);
+    if (not SUCCEEDED(hres))
     {
-        throw System_Error(hr, "Can't get number of items in node list");
+        throw System_Error(hres, "Can't get number of items in node list");
     }
 }
 

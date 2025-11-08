@@ -14,9 +14,9 @@
 namespace Linter
 {
 
-Handle_Wrapper::Handle_Wrapper(HANDLE h) : handle_(h)
+Handle_Wrapper::Handle_Wrapper(HANDLE hand) : handle_(hand)
 {
-    if (h == INVALID_HANDLE_VALUE)
+    if (hand == INVALID_HANDLE_VALUE)
     {
         throw System_Error();
     }
@@ -36,8 +36,7 @@ void Handle_Wrapper::close() const noexcept
 {
     if (handle_ != INVALID_HANDLE_VALUE)
     {
-        HANDLE h{std::exchange(handle_, INVALID_HANDLE_VALUE)};
-        CloseHandle(h);
+        CloseHandle(std::exchange(handle_, INVALID_HANDLE_VALUE));
     }
 }
 
@@ -66,7 +65,7 @@ void Handle_Wrapper::write_file(std::string const &str) const
             static_cast<unsigned long long>(std::numeric_limits<DWORD>::max())
         ));
 
-        DWORD written;
+        DWORD written;    // NOLINT(cppcoreguidelines-init-variables)
         if (not WriteFile(handle_, &*start, to_write, &written, nullptr))
         {
             throw System_Error();
@@ -82,11 +81,11 @@ std::string Handle_Wrapper::read_file() const
     constexpr DWORD BUFFSIZE = 0x4000;
     std::vector<char> buffer;
     buffer.resize(BUFFSIZE);
-    auto const buff{&*buffer.begin()};
+    auto * const buff{&*buffer.begin()};
 
     for (;;)
     {
-        DWORD bytes_read;
+        DWORD bytes_read; // NOLINT(cppcoreguidelines-init-variables)
         if (not ReadFile(handle_, buff, BUFFSIZE, &bytes_read, nullptr))
         {
             throw System_Error();

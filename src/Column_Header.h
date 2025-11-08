@@ -10,9 +10,15 @@ class Column_Header
 {
   public:
 
-    Column_Header(HWND handle) noexcept;
+    explicit Column_Header(HWND handle) noexcept;
 
-    ~Column_Header();
+    // No copy or move
+    Column_Header(Column_Header const &) = delete;
+    Column_Header &operator=(Column_Header const &) = delete;
+    Column_Header(Column_Header &&) = delete;
+    Column_Header &operator=(Column_Header &&) = delete;
+
+    ~Column_Header() = default;
 
     using Data_Column = typename List_View_Types::Data_Column;
     using Sort_Direction = typename List_View_Types::Sort_Direction;

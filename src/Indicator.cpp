@@ -26,7 +26,7 @@ std::wstring to_lower(std::wstring_view data)
         data.begin(),
         data.end(),
         std::back_inserter(res),
-        [](wchar_t c) noexcept { return std::towlower(c); }
+        [](wchar_t chr) noexcept { return std::towlower(chr); }
     );
     return res;
 }
@@ -35,7 +35,7 @@ std::wstring to_lower(std::wstring_view data)
 bool Indicator::colour_as_message() const noexcept
 {
 #pragma warning(suppress : 26447)
-    return properties_.at(Dynamic_Colour);
+    return properties_.at(Dynamic_Colour) != 0;
 }
 
 void Indicator::read_config(std::optional<Dom_Node> node)
@@ -134,7 +134,7 @@ void Indicator::read_config(std::optional<Dom_Node> node)
         // This is not ideal, but C++ doesn't have decimal numbers at the time
         // of writing, so I'll have to fudge the input.
         std::wistringstream val{stroke_width->get_value()};
-        int whole;
+        int whole; // NOLINT(cppcoreguidelines-init-variables)
         val >> whole;
         auto const left = val.rdbuf()->in_avail();
         int frac = 0;

@@ -10,8 +10,7 @@
 #include "XML_Decode_Error.h"
 
 #include "Plugin/Callback_Context.h"    // IWYU pragma: keep
-// IWYU requires Plugin/Min_Win_Defs.h because it doesn't understand
-// inheritance.
+#include "Plugin/Casts.h"
 
 #include "notepad++/Notepad_plus_msgs.h"
 #include "notepad++/PluginInterface.h"
@@ -269,7 +268,7 @@ void Linter::highlight_errors()
 
 void Linter::highlight_error_at(LRESULT position, uint32_t col) noexcept
 {
-    Save_Selected_Indicator indicator(*this);
+    Save_Selected_Indicator const indicator(*this);
     if (settings_->indicator().colour_as_message())
     {
         send_to_editor(SCI_SETINDICATORVALUE, SC_INDICVALUEBIT | col);
@@ -280,7 +279,7 @@ void Linter::highlight_error_at(LRESULT position, uint32_t col) noexcept
 void Linter::clear_error_highlights() noexcept
 {
     {
-        Save_Selected_Indicator indicator(*this);
+        Save_Selected_Indicator const indicator(*this);
         send_to_editor(
             SCI_INDICATORCLEARRANGE, 0, send_to_editor(SCI_GETLENGTH)
         );
@@ -303,7 +302,7 @@ void Linter::setup_error_indicator() noexcept
         {Indicator::Hover_Colour,    SCI_INDICSETHOVERFORE   },
     };
 
-    for (auto &[command, value] : settings_->indicator().properties())
+    for (auto const &[command, value] : settings_->indicator().properties())
     {
 #pragma warning(suppress : 26447)
         send_to_editor(cmd_map.at(command), Error_Indicator, value);
@@ -326,8 +325,7 @@ void Linter::start_async_timer() noexcept
         return;
     }
     unsigned thread_id{0};
-#pragma warning(suppress : 26490)
-    bg_linter_thread_handle_ = reinterpret_cast<HANDLE>(
+    bg_linter_thread_handle_ = windows_cast_to<HANDLE, uintptr_t>(
         _beginthreadex(nullptr, 0, &run_linter_thread, this, 0, &thread_id)
     );
     file_changed_ = false;
@@ -353,7 +351,7 @@ unsigned int Linter::run_linter_thread(void *self) noexcept
             ::CoUninitialize();
         }
 
-    } wrapper;
+    } const wrapper;
     return static_cast<Linter *>(self)->run_linter();
 }
 
@@ -495,7 +493,7 @@ void Linter::apply_linters()
             }
             catch (XML_Decode_Error const &e)
             {
-                std::string exc{e.what()};
+                std::string const exc{e.what()};
                 output_dialogue_->add_system_error(
                     {.message_ = Encoding::convert(exc),
                      .tool_ = command.program.stem(),
@@ -512,7 +510,7 @@ void Linter::apply_linters()
         {
             // Really bad things happened. we don't have anything much here we
             // can log
-            std::string exc{e.what()};
+            std::string const exc{e.what()};
             output_dialogue_->add_system_error(
                 {.message_ = Encoding::convert(exc),
                  .tool_ = command.program.stem(),
@@ -531,48 +529,45 @@ void Linter::show_tooltip(std::wstring message)
 {
     const LRESULT position = send_to_editor(SCI_GETCURRENTPOS);
 
-    auto npp_statusbar = FindWindowEx(
+    HWND npp_statusbar = FindWindowEx(
         get_notepad_window(), nullptr, L"msctls_statusbar32", nullptr
     );
 
     auto const error = errors_by_position_.find(position);
     if (error != errors_by_position_.end())
     {
-#pragma warning(suppress : 26490)
         ::SendMessage(
             npp_statusbar,
             WM_SETTEXT,
             0,
-            reinterpret_cast<LPARAM>(
+            windows_cast_to<LPARAM, wchar_t const *>(
                 (std::wstring(L" - ") + error->second).c_str()
             )
         );
     }
     else
     {
-        wchar_t const title[256] = {0};
-#pragma warning(suppress : 26490)
+        wchar_t title[256];
         ::SendMessage(
             npp_statusbar,
             WM_GETTEXT,
             sizeof(title) / sizeof(title[0]) - 1,
-            reinterpret_cast<LPARAM>(title)
+            windows_cast_to<LPARAM, wchar_t *>(&title[0])
         );
 
-        std::wstring str(&title[0]);
-        if (message.empty() && str.find(L" - ") == 0)
+        std::wstring const str(&title[0]);
+        if (message.empty() && str.starts_with(L" - "))
         {
             message = L" - ";
         }
 
         if (not message.empty())
         {
-#pragma warning(suppress : 26490)
             ::SendMessage(
                 npp_statusbar,
                 WM_SETTEXT,
                 0,
-                reinterpret_cast<LPARAM>(message.c_str())
+                windows_cast_to<LPARAM, wchar_t const *>(message.c_str())
             );
         }
     }

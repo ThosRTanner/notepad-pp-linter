@@ -79,8 +79,8 @@ File_Linter::File_Linter(
     temp_file_{get_temp_file_name()},
     variables_{variables},
     text_{text},
-    created_temp_file_{false},
-    env_{std::make_unique<Environment_Wrapper>()}
+    env_{std::make_unique<Environment_Wrapper>()},
+    created_temp_file_{false}
 {
     setup_environment();
 }
@@ -124,7 +124,7 @@ void File_Linter::ensure_temp_file_exists()
     // Ideally we'd make this read-write and dup the handle whenever we needed
     // to pass as stdin, but it seems some things like to open their input
     // exclusively
-    Handle_Wrapper handle{CreateFile(
+    Handle_Wrapper const handle{CreateFile(
         temp_file_.c_str(),
         GENERIC_WRITE,
         0,
@@ -181,7 +181,7 @@ void File_Linter::setup_environment()
     {
         // This consists of a variable name and a command to run.
         auto const [res, out, err] = execute(command);
-        if (err.length() != 0)
+        if (not err.empty())
         {
             // Add a warning
             warnings_.push_back(
@@ -282,7 +282,7 @@ std::tuple<DWORD, std::string, std::string> File_Linter::execute(
         .hStdError = stderr_pipe.writer()
     };
 
-    PROCESS_INFORMATION proc_info = {0};
+    PROCESS_INFORMATION proc_info;
 
     // See https://devblogs.microsoft.com/oldnewthing/20090601-00/?p=18083
     std::unique_ptr<wchar_t[]> const args_copy{wcsdup(args.c_str())};
@@ -317,7 +317,7 @@ std::tuple<DWORD, std::string, std::string> File_Linter::execute(
         proc_info.hProcess, stdout_pipe, stderr_pipe
     );
 
-    DWORD exit_code;
+    DWORD exit_code; // NOLINT(cppcoreguidelines-init-variables)
     if (not GetExitCodeProcess(proc_info.hProcess, &exit_code))
     {
         throw System_Error();
