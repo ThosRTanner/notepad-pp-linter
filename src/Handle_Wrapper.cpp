@@ -5,6 +5,7 @@
 #include <fileapi.h>
 #include <handleapi.h>
 #include <intsafe.h>
+#include <minwindef.h>    //For FALSE
 
 #include <limits>
 #include <string>
@@ -66,7 +67,7 @@ void Handle_Wrapper::write_file(std::string const &str) const
         ));
 
         DWORD written;    // NOLINT(cppcoreguidelines-init-variables)
-        if (not WriteFile(handle_, &*start, to_write, &written, nullptr))
+        if (WriteFile(handle_, &*start, to_write, &written, nullptr) == FALSE)
         {
             throw System_Error();
         }
@@ -81,12 +82,12 @@ std::string Handle_Wrapper::read_file() const
     constexpr DWORD BUFFSIZE = 0x4000;
     std::vector<char> buffer;
     buffer.resize(BUFFSIZE);
-    auto * const buff{&*buffer.begin()};
+    auto *const buff{&*buffer.begin()};
 
     for (;;)
     {
-        DWORD bytes_read; // NOLINT(cppcoreguidelines-init-variables)
-        if (not ReadFile(handle_, buff, BUFFSIZE, &bytes_read, nullptr))
+        DWORD bytes_read;    // NOLINT(cppcoreguidelines-init-variables)
+        if (ReadFile(handle_, buff, BUFFSIZE, &bytes_read, nullptr) == FALSE)
         {
             throw System_Error();
         }

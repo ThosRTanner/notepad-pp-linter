@@ -5,6 +5,7 @@
 #include "Dom_Node_List.h"
 #include "Indicator.h"
 #include "Linter.h"
+#include "Menu_Entry.h"
 #include "System_Error.h"
 
 #include "notepad++/PluginInterface.h"
@@ -12,14 +13,19 @@
 #include <atlcomcli.h>
 #include <comutil.h>
 #include <intsafe.h>
-#include <msxml.h>
+//#include <msxml.h>
 #include <msxml6.h>
-#include <oleauto.h>
+//#include <oleauto.h>
+#include <wingdi.h>     // For RGB
+#include <winuser.h>    // For VK_...
 
 #include <chrono>
 #include <cwctype>
+#include <exception>
 #include <filesystem>
-#include <locale>
+#include <list>
+//#include <locale>
+#include <optional>
 #include <regex>
 #include <sstream>
 #include <vector>
@@ -29,19 +35,25 @@ namespace Linter
 
 namespace
 {
-std::unordered_map<std::wstring, uint32_t> const default_message_colours = {
-    {L"default", RGB(0,   255, 255)}, // Cyan
-    {L"error",   RGB(255, 0,   0)  }, // Red
-    {L"warning", RGB(255, 127, 0)  }  // Orange
-};
+
+auto default_message_colours()
+{
+    static std::unordered_map<std::wstring, uint32_t> const colours{
+        {L"default", RGB(0,   255, 255)}, // Cyan
+        {L"error",   RGB(255, 0,   0)  }, // Red
+        {L"warning", RGB(255, 127, 0)  }  // Orange
+    };
+    return colours;
 }
+
+}    // namespace
 
 Settings::Settings(::Linter::Linter const &linter) :
     settings_xml_(
         linter.get_plugin_config_dir().append(linter.get_name() + L".xml")
     ),
     settings_xsd_(linter.get_module_path().replace_extension(".xsd")),
-    message_colours_(default_message_colours)
+    message_colours_(default_message_colours())
 {
     // Create a schema cache and our xsd to it.
     auto hres = settings_schema_.CoCreateInstance(__uuidof(XMLSchemaCache60));
@@ -64,9 +76,10 @@ Settings::Settings(::Linter::Linter const &linter) :
     {
         refresh();
     }
-    catch (std::exception const &)    // NOLINT(bugprone-empty-catch)
+    catch (std::exception const &err)
     {
         // Nothing we can usefully do.
+        std::ignore = err;
     }
 }
 
@@ -144,17 +157,16 @@ void Settings::read_indicator(Dom_Document const &settings)
 
 void Settings::read_messages(Dom_Document const &settings)
 {
-    message_colours_ = default_message_colours;
+    message_colours_ = default_message_colours();
 
-    std::optional<Dom_Node> messages = settings.get_node("//messages");
+    auto const messages = settings.get_node("//messages");
     if (not messages.has_value())
     {
         return;
     }
 
     // Set up any custom message colours.
-    Dom_Node_List const types = messages->get_node_list("./*");
-    for (auto const type : types)
+    for (auto const type : messages->get_node_list("./*"))
     {
         message_colours_[type.get_name()] = read_colour_node(type);
     }
@@ -163,7 +175,7 @@ void Settings::read_messages(Dom_Document const &settings)
 void Settings::read_shortcuts(Dom_Document const &settings)
 {
     menu_entries_.clear();
-    std::optional<Dom_Node> shortcuts = settings.get_node("//shortcuts");
+    auto const shortcuts = settings.get_node("//shortcuts");
     if (not shortcuts.has_value())
     {
         return;
@@ -219,7 +231,7 @@ void Settings::read_shortcuts(Dom_Document const &settings)
         if (key_name.size() == 1)
         {
 #pragma warning(suppress : 26472)
-            key._key = static_cast<UCHAR>(std::toupper(*key_name.begin()));
+            key._key = static_cast<UCHAR>(std::towupper(*key_name.begin()));
         }
         else
         {

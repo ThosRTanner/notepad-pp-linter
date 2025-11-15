@@ -127,7 +127,7 @@ class List_View
          */
     };
 
-    List_View(HWND);
+    explicit List_View(HWND);
 
     virtual ~List_View() noexcept;
 
@@ -222,14 +222,14 @@ class List_View
      * compare, and the column being sorted by.
      */
     void sort_by_column(
-        Data_Column, Sort_Callback_Function const &, Sort_Direction
+        Data_Column, Sort_Callback_Function, Sort_Direction
     ) const noexcept;
 
     /** Get the coordinates of a position in the list view */
     void get_screen_coordinates(POINT *point) const noexcept;
 
     /** Adjust position and size of list. */
-    void set_window_position(HWND prev_win, RECT const &rc) const noexcept;
+    void set_window_position(HWND prev_win, RECT const &rect) const noexcept;
 
   protected:
     /** Get the handle to the list view */

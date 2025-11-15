@@ -55,7 +55,16 @@ jobs:
 
     - name: MSBuild of plugin dll
       working-directory: .\
-      run: msbuild linter.vcxproj /m /p:configuration="Debug" /p:platform="x64" /p:PlatformToolset="v143" /p:PostBuildEventUseInBuild=false
+      # Force the toolset to 143, c++ version to c++20 and clang tidy to off
+      # till available and working on github
+      # FIXME share this with CI_build.yml somehow
+      run: 'msbuild linter.vcxproj /m
+                /p:configuration="Debug"
+                /p:platform="x64"
+                /p:PlatformToolset="v143"
+                /p:LanguageStandard=""stdc++20""
+                /p:EnableClangTidyCodeAnalysis=false
+                /p:PostBuildEventUseInBuild=false'
 
     - name: Perform CodeQL Analysis
       uses: github/codeql-action/analyze@v4

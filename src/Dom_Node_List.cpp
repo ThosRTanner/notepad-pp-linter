@@ -5,13 +5,15 @@
 
 #include <intsafe.h>
 
+#include <utility>    // For std::move
+
 namespace Linter
 {
 
 Dom_Node_List::iterator::iterator(
     CComPtr<IXMLDOMNodeList> node_list, LONG item
 ) noexcept :
-    node_list_(node_list),
+    node_list_(std::move(node_list)),
     item_(item)
 {
 }
@@ -29,9 +31,9 @@ Dom_Node Dom_Node_List::iterator::operator*() const
 
 // NOLINTNEXTLINE(*-member-init)
 Dom_Node_List::Dom_Node_List(CComPtr<IXMLDOMNodeList> node_list) :
-    node_list_(node_list)
+    node_list_(std::move(node_list))
 {
-    HRESULT const hres = node_list->get_length(&num_items_);
+    HRESULT const hres = node_list_->get_length(&num_items_);
     if (not SUCCEEDED(hres))
     {
         throw System_Error(hres, "Can't get number of items in node list");

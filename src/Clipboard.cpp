@@ -13,7 +13,7 @@ namespace Linter
 
 Clipboard::Clipboard(HWND self)
 {
-    if (not ::OpenClipboard(self))
+    if (::OpenClipboard(self) == FALSE)
     {
         throw System_Error("Cannot open the Clipboard");
     }
@@ -31,7 +31,7 @@ Clipboard::~Clipboard()
 // NOLINTNEXTLINE(readability-convert-member-functions-to-static)
 void Clipboard::empty()
 {
-    if (not ::EmptyClipboard())
+    if (::EmptyClipboard() == FALSE)
     {
         throw System_Error("Cannot empty the Clipboard");
     }

@@ -19,6 +19,7 @@ namespace Linter
 
 namespace
 {
+
 std::wstring to_lower(std::wstring_view data)
 {
     std::wstring res;
@@ -30,6 +31,7 @@ std::wstring to_lower(std::wstring_view data)
     );
     return res;
 }
+
 }    // namespace
 
 bool Indicator::colour_as_message() const noexcept

@@ -1,28 +1,37 @@
 #include "Output_Dialogue.h"
 
-#include "Checkstyle_Parser.h"
+//#include "Checkstyle_Parser.h"
 #include "Clipboard.h"
 #include "Encoding.h"
 #include "Error_Info.h"
 #include "Linter.h"
-#include "Menu_Entry.h"
+//#include "Menu_Entry.h"
+#include "Report_View.h"
 #include "Settings.h"
-#include "System_Error.h"
+//#include "System_Error.h"
 
 #include "Plugin/Casts.h"
 #include "Plugin/Plugin.h"
 
 #include "notepad++/menuCmdID.h"
+#include "notepad++/Notepad_plus_msgs.h"
+#include "notepad++/Scintilla.h"
 
 #include "resource.h"
 
 #include <CommCtrl.h>
 #include <intsafe.h>
-
-#include <cstddef>
+#include <winuser.h>    // For tagNMHDR, AppendMenu
+//#include <cstddef>
+#include <cstdio>    // For snprintf
+#include <filesystem>
+#if __cplusplus >= 202302L
+#include <generator>
+#endif
+#include <optional>     // For optional, nullopt
 #include <sstream>
 #include <string>
-#include <type_traits>
+//#include <type_traits>
 #include <utility>
 #include <vector>
 
@@ -125,17 +134,18 @@ void Output_Dialogue::add_lint_errors(std::vector<Error_Info> const &errs)
     add_errors(Tab::Lint_Error, errs);
 }
 
-void Output_Dialogue::select_next_lint() noexcept
+void Output_Dialogue::select_next_lint()
 {
     select_lint(1);
 }
 
-void Output_Dialogue::select_previous_lint() noexcept
+void Output_Dialogue::select_previous_lint()
 {
     select_lint(-1);
 }
 
 Output_Dialogue::Message_Return Output_Dialogue::on_dialogue_message(
+    // NOLINTNEXTLINE(bugprone-easily-swappable-parameters)
     UINT message, WPARAM wParam, LPARAM lParam
 )
 {
@@ -351,7 +361,7 @@ Output_Dialogue::Message_Return Output_Dialogue::process_custom_draw(
         case CDDS_ITEMPREPAINT | CDDS_SUBITEM:
             if (custom_draw->iSubItem == Column_Message)
             {
-                List_View::Data_Row const row = current_report_view_->get_index(
+                Report_View::Data_Row const row = current_report_view_->get_index(
                     windows_static_cast<int, DWORD_PTR>(
                         custom_draw->nmcd.dwItemSpec
                     )
@@ -483,7 +493,7 @@ void Output_Dialogue::add_errors(Tab tab, std::vector<Error_Info> const &lints)
     }
 }
 
-void Output_Dialogue::select_lint(int n) noexcept
+void Output_Dialogue::select_lint(int n)
 {
     int const rows = current_report_view_->get_num_rows();
     if (rows == 0)
@@ -515,8 +525,8 @@ void Output_Dialogue::append_text_with_style(
 }
 
 void Output_Dialogue::show_selected_lint(
-    List_View::Data_Row selected_item
-) noexcept
+    Report_View::Data_Row selected_item
+)
 {
     Error_Info const &lint_error = current_tab_->errors[selected_item];
 
@@ -538,7 +548,7 @@ void Output_Dialogue::show_selected_lint(
             plugin()->send_to_notepad(NPPM_MENUCOMMAND, 0, IDM_FILE_NEW);
             plugin()->send_to_editor(SCI_SETILEXER, 0, nullptr);
             constexpr int style = STYLE_LASTPREDEFINED + 1;
-            plugin()->send_to_editor(SCI_STYLESETUNDERLINE, style, true);
+            plugin()->send_to_editor(SCI_STYLESETUNDERLINE, style, TRUE);
 
             append_text_with_style("Command:", style);
             // This should not throw if the command line is valid UTF16.
@@ -549,7 +559,7 @@ void Output_Dialogue::show_selected_lint(
             append_text_with_style("Return code: ", style);
             char buff[20];    // NOLINT(cppcoreguidelines-init-variables)
             std::ignore = std::snprintf(
-                &buff[0], sizeof(buff), "%uld", lint_error.result_
+                &buff[0], sizeof(buff), "%lu", lint_error.result_
             );
             append_text(&buff[0]);
             append_text("\n\n");
@@ -638,8 +648,8 @@ void Output_Dialogue::copy_to_clipboard()
 #ifndef __cpp_lib_copyable_function
 #pragma warning(suppress : 26440)
 #endif
-//NOLINTNEXTLINE(bugprone-easily-swappable-parameters)
 int Output_Dialogue::sort_call_function(
+    // NOLINTNEXTLINE(bugprone-easily-swappable-parameters)
     LPARAM row1_index, LPARAM row2_index, Report_View::Data_Column column
 )
 #ifdef __cpp_lib_copyable_function
@@ -684,12 +694,12 @@ int Output_Dialogue::sort_call_function(
 }
 
 Output_Dialogue::TabDefinition::TabDefinition(
-    wchar_t const *name, UINT id, Tab tab, Output_Dialogue const &parent
+    wchar_t const *name, UINT view_id, Tab tab_id, Output_Dialogue const &parent
 ) :
     tab_name(name),
-    list_view_id(id),
-    tab(tab),
-    report_view(parent.GetDlgItem(id))
+    list_view_id(view_id),
+    tab(tab_id),
+    report_view(parent.GetDlgItem(windows_static_cast<int, UINT>(view_id)))
 {
     using Column_Data = Report_View::Column_Data;
 

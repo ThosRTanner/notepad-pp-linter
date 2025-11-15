@@ -1,5 +1,7 @@
 #include "System_Error.h"
 
+#include "Plugin/Casts.h"
+
 #include <comdef.h>
 #include <comutil.h>
 #include <errhandlingapi.h>
@@ -41,7 +43,9 @@ System_Error::System_Error( // NOLINT(*-member-init)
             sizeof(what_string_),
             "%08lx %s",
             err,
-            std::generic_category().message(err).c_str()
+            std::generic_category()
+                .message(windows_static_cast<int, DWORD>(err))
+                .c_str()
         );
     }
     catch (std::exception const &e)
@@ -70,7 +74,9 @@ System_Error::System_Error( // NOLINT(*-member-init)
             "%s - %08lx %s",
             info.c_str(),
             err,
-            std::generic_category().message(err).c_str()
+            std::generic_category()
+                .message(windows_static_cast<int, DWORD>(err))
+                .c_str()
         );
     }
     catch (std::exception const &e)

@@ -6,8 +6,6 @@
 #include "Settings.h"
 #include "System_Error.h"
 
-#include "Plugin/Plugin.h"
-
 #include <comutil.h>
 #include <errhandlingapi.h>
 #include <fileapi.h>
@@ -68,17 +66,16 @@ class Environment_Wrapper
 };
 
 File_Linter::File_Linter(
-    std::filesystem::path const &target,
-    std::filesystem::path const &plugin_dir,
-    std::filesystem::path const &settings_dir,
-    std::vector<Settings::Variable> const &variables, std::string const &text
+    std::filesystem::path target, std::filesystem::path plugin_dir,
+    std::filesystem::path settings_dir,
+    std::vector<Settings::Variable> const &variables, std::string text
 ) :
-    target_{target},
-    plugin_dir_{plugin_dir},
-    settings_dir_{settings_dir},
+    target_{std::move(target)},
+    plugin_dir_{std::move(plugin_dir)},
+    settings_dir_{std::move(settings_dir)},
     temp_file_{get_temp_file_name()},
     variables_{variables},
-    text_{text},
+    text_{std::move(text)},
     env_{std::make_unique<Environment_Wrapper>()},
     created_temp_file_{false}
 {
@@ -282,10 +279,11 @@ std::tuple<DWORD, std::string, std::string> File_Linter::execute(
         .hStdError = stderr_pipe.writer()
     };
 
-    PROCESS_INFORMATION proc_info;
-
     // See https://devblogs.microsoft.com/oldnewthing/20090601-00/?p=18083
     std::unique_ptr<wchar_t[]> const args_copy{wcsdup(args.c_str())};
+
+#pragma warning(suppress : 26494)
+    PROCESS_INFORMATION proc_info;
     if (not CreateProcess(
             program.empty() ? nullptr : program.c_str(),
             args_copy.get(),
@@ -317,8 +315,8 @@ std::tuple<DWORD, std::string, std::string> File_Linter::execute(
         proc_info.hProcess, stdout_pipe, stderr_pipe
     );
 
-    DWORD exit_code; // NOLINT(cppcoreguidelines-init-variables)
-    if (not GetExitCodeProcess(proc_info.hProcess, &exit_code))
+    DWORD exit_code;    // NOLINT(cppcoreguidelines-init-variables)
+    if (GetExitCodeProcess(proc_info.hProcess, &exit_code) == FALSE)
     {
         throw System_Error();
     }

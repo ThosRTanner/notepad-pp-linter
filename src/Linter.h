@@ -4,14 +4,23 @@
 // it doesn't understand inheritance
 #include "Plugin/Plugin.h"
 
-#include "Checkstyle_Parser.h"
+//#include "Checkstyle_Parser.h"
+#include "Error_Info.h"
 
-#include <exception>
-#include <filesystem>
+#include <minwindef.h>
+#include <winnt.h>
+
+#include <cstdint>  // For uint32_t
+//#include <exception>
+//#include <filesystem>
 #include <map>
 #include <memory>
 #include <string>
 #include <vector>
+
+struct FuncItem;
+struct NppData;
+struct SCNotification;
 
 namespace Linter
 {
@@ -22,12 +31,12 @@ class Settings;
 
 class Linter : public Plugin
 {
-    typedef Plugin Super;
+    using Super = Plugin;
 
   public:
-    Linter(NppData const &);
+    explicit Linter(NppData const &);
 
-    ~Linter();
+    ~Linter() override;
 
     Linter(Linter const &) = delete;
     Linter(Linter &&) = delete;
@@ -46,7 +55,7 @@ class Linter : public Plugin
     std::vector<FuncItem> &on_get_menu_entries() override;
 
     /** Process scintilla notifications (from beNotified) */
-    virtual void on_notification(SCNotification const *) override;
+    void on_notification(SCNotification const *) override;
 
     // Menu functions
     void edit_config() noexcept;
@@ -67,7 +76,7 @@ class Linter : public Plugin
 
     void clear_error_highlights() noexcept;
 
-    void setup_error_indicator() noexcept;
+    void setup_error_indicator();
 
     static void __stdcall relint_timer_callback(void *, BOOLEAN) noexcept;
 

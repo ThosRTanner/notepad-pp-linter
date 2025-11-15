@@ -13,6 +13,7 @@
 #if __cplusplus >= 202302L
 #include <coroutine>
 #endif
+#include <utility>    //For std::move
 
 namespace Linter
 {
@@ -127,55 +128,47 @@ int List_View::add_column(Column_Data const &col) const noexcept
     return ListView_InsertColumn(handle_, lvc.iSubItem, &lvc);
 }
 
+// I have no idea why clang-tidy thinks this can throw an exception.
+// NOLINTNEXTLINE(readability-function-cognitive-complexity,bugprone-exception-escape)
 void List_View::add_row(Data_Row row, Row_Data const &row_data) const noexcept
 {
-    LVITEM lvi{};
-    lvi.iItem = row;
-    lvi.iSubItem = row_data.sub_item;
+    LVITEM lvi{.iItem = row, .iSubItem = row_data.sub_item};
     if (row_data.state.has_value())
     {
-        if (row_data.state.value().activating.has_value()
-            && row_data.state.value().activating.value())
+        auto const &state = row_data.state.value();
+        if (state.activating.has_value() && state.activating.value())
         {
             lvi.state |= LVIS_ACTIVATING;
             lvi.stateMask |= LVIS_ACTIVATING;
         }
-        if (row_data.state.value().cut.has_value()
-            && row_data.state.value().cut.value())
+        if (state.cut.has_value() && state.cut.value())
         {
             lvi.state |= LVIS_CUT;
             lvi.stateMask |= LVIS_CUT;
         }
-        if (row_data.state.value().drop_hilited.has_value()
-            && row_data.state.value().drop_hilited.value())
+        if (state.drop_hilited.has_value() && state.drop_hilited.value())
         {
             lvi.state |= LVIS_DROPHILITED;
             lvi.stateMask |= LVIS_DROPHILITED;
         }
-        if (row_data.state.value().focused.has_value()
-            && row_data.state.value().focused.value())
+        if (state.focused.has_value() && state.focused.value())
         {
             lvi.state |= LVIS_FOCUSED;
             lvi.stateMask |= LVIS_FOCUSED;
         }
-        if (row_data.state.value().selected.has_value()
-            && row_data.state.value().selected.value())
+        if (state.selected.has_value() && state.selected.value())
         {
             lvi.state |= LVIS_SELECTED;
             lvi.stateMask |= LVIS_SELECTED;
         }
-        if (row_data.state.value().overlay_image.has_value())
+        if (state.overlay_image.has_value())
         {
-            lvi.state |= INDEXTOOVERLAYMASK(
-                row_data.state.value().overlay_image.value()
-            );
+            lvi.state |= INDEXTOOVERLAYMASK(state.overlay_image.value());
             lvi.stateMask |= LVIS_OVERLAYMASK;
         }
-        if (row_data.state.value().state_image.has_value())
+        if (state.state_image.has_value())
         {
-            lvi.state |= INDEXTOSTATEIMAGEMASK(
-                row_data.state.value().state_image.value()
-            );
+            lvi.state |= INDEXTOSTATEIMAGEMASK(state.state_image.value());
             lvi.stateMask |= LVIS_STATEIMAGEMASK;
         }
         lvi.mask |= LVIF_STATE;
@@ -328,23 +321,24 @@ void List_View::hide() const noexcept
 }
 
 void List_View::sort_by_column(
-    Data_Column col, Sort_Callback_Function const &callback,
+    Data_Column col, Sort_Callback_Function callback_fn,
     Sort_Direction direction
 ) const noexcept
 {
     struct Details
     {
         Data_Column column;
-        Sort_Callback_Function const &callback;
+        Sort_Callback_Function callback;
         int direction;
     } const details{
         .column = col,
-        .callback = callback,
+        // This has to be a bug. callback_fn is not accessed after this move
+        .callback = std::move(callback_fn),    // NOLINT
         .direction = direction == Sort_Direction::None ? 0
             : direction == Sort_Direction::Ascending   ? 1
                                                        : -1
     };
-    auto callback_fn =
+    auto c_callback =
         // NOLINTNEXTLINE(bugprone-easily-swappable-parameters)
         [](LPARAM param1, LPARAM param2, LPARAM details) noexcept -> int
     {
@@ -361,7 +355,7 @@ void List_View::sort_by_column(
             * params.callback(param1, param2, params.column);
     };
 
-    ListView_SortItems(handle_, callback_fn, &details);
+    ListView_SortItems(handle_, c_callback, &details);
 }
 
 void List_View::get_screen_coordinates(POINT *point) const noexcept

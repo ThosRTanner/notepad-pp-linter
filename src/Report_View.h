@@ -14,10 +14,15 @@ class Column_Header;
 
 class Report_View : public List_View
 {
-    typedef List_View Super;
+    using Super = List_View;
 
   public:
-    Report_View(HWND list_view);
+    explicit Report_View(HWND list_view);
+
+    Report_View(Report_View const &) = delete;
+    Report_View &operator=(Report_View const &) = delete;
+    Report_View(Report_View &&) = delete;
+    Report_View &operator=(Report_View &&) = delete;
 
     ~Report_View() noexcept override;
 

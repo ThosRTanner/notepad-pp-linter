@@ -19,14 +19,6 @@ using Npp_Plugin = Linter::Linter;
 
 #include <memory>
 
-namespace
-{
-
-// NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
-std::unique_ptr<Npp_Plugin> plugin;
-
-}    // namespace
-
 extern "C" __declspec(dllexport) wchar_t const *getName()
 {
     return Npp_Plugin::get_plugin_name();
@@ -34,5 +26,5 @@ extern "C" __declspec(dllexport) wchar_t const *getName()
 
 extern "C" __declspec(dllexport) void setInfo(NppData data)
 {
-    plugin = std::make_unique<Npp_Plugin>(data);
+    static auto const plugin{std::make_unique<Npp_Plugin>(data)};
 }

@@ -8,9 +8,11 @@
 	{ include: ["<__msvc_chrono.hpp>", "private", "<chrono>", "public"] },
 	{ symbol: ["memcpy", "private", "<string.h>", "public"] },
 	{ symbol: ["std::ignore", "private", "<utility>", "public"] },
+	{ symbol: ["std::move", "private", "<utility>", "public"] },
 	{ symbol: ["std::string_view", "private", "<string_view>", "public"] },
 	{ symbol: ["std::wstring_view", "private", "<string_view>", "public"] },
 	{ symbol: ["towlower", "private", "<cwctype>", "public" ] },
+	{ symbol: ["towupper", "private", "<cwctype>", "public" ] },
 	{ symbol: ["wint_t", "private", "<cwctype>", "public" ] },
 	{ symbol: ["_countof", "private", "<vcruntime.h>", "public" ] },
 ]

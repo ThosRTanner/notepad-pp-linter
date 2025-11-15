@@ -1,17 +1,21 @@
 #pragma once
 
 #include "Indicator.h"
-#include "Menu_Entry.h"
+#include "Menu_Entry.h" // IWYU pragma: keep
+// This would be better than the above. Slightly
+// IWYU pragma: no_forward_declare Menu_Entry
+
+#include "notepad++/PluginInterface.h"
 
 #include <atlcomcli.h>
 #include <msxml6.h>
 
+#include <cstdint>    // for uint32_t
 #include <filesystem>
 #include <string>
 #include <unordered_map>
+#include <utility>    // for pair
 #include <vector>
-
-struct ShortcutKey;
 
 namespace Linter
 {

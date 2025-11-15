@@ -20,19 +20,19 @@ int utfOffset(std::string const &utf8, int unicode_offset) noexcept
         }
         if ((*iter & 0x80) == 0 || (*iter & 0xC0) == 0x80)
         {
-            --unicode_offset;
+            unicode_offset -= 1;
         }
         iter += 1;
         if (iter != end && *iter != 0x0D && *iter != 0x0A)
         {
-            ++result;
+            result += 1;
         }
     }
 
     return result;
 }
 
-std::string convert(std::wstring const &str) noexcept
+std::string convert(std::wstring const &str)
 {
     // The casts here are safe...
 #pragma warning(push)
@@ -68,12 +68,13 @@ std::string convert(std::wstring const &str) noexcept
     return result;
 }
 
-std::wstring convert(std::string_view const str) noexcept
+std::wstring convert(std::string_view const str)
 {
     // The array references are safe, but we could possibly rewrite this
     // using iterators insead of indices.
+    // The static casts are safe according to clang tidy, but not windows.
 #pragma warning(push)
-#pragma warning(disable : 26446)
+#pragma warning(disable : 26446 26472)
     std::wstring result;
     std::size_t pos = 0;
     while (pos < str.length())

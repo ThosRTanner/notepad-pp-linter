@@ -20,8 +20,7 @@ void Column_Header::set_sort_icon(
     auto const count = Header_GetItemCount(handle_);
     for (int column_number = 0; column_number < count; column_number += 1)
     {
-        HDITEM item{};
-        item.mask = HDI_FORMAT;
+        HDITEM item{.mask = HDI_FORMAT};
         Header_GetItem(handle_, column_number, &item);
         item.fmt &= ~(HDF_SORTDOWN | HDF_SORTUP);
         if (column_number == column)

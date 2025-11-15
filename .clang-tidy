@@ -5,10 +5,7 @@ Checks:
 - clang-analyzer-*
 - concurrency-*
 - cppcoreguidelines-*
-
 - hicpp-*
-# Windows macros often break these checks
-- -hicpp-signed-bitwise
 
 - misc-*
 # Disagrees with IWYU tool
@@ -31,19 +28,16 @@ Checks:
 - portability-*
 
 - readability-*
-# Windows BOOL type breaks this check
-- -readability-implicit-bool-conversion
 # Ugh. Really?
 - -readability-math-missing-parentheses
+# Looks pretty readable to me
+- -readability-avoid-nested-conditional-operator
 
 # ---- clang-diagnostics exceptions ----
 
-# complains when we miss an initialiser for something thas has a default initialiser
+# complains when we miss an initialiser for something that has a default
+# initialiser
 - -clang-diagnostic-missing-designated-field-initializers
-
-# clang doesn't like the includes of poppack.h. Given these are in windows
-# includes, I'm not sure why it's complaining about them.
-- -clang-diagnostic-pragma-pack
 
 # appears to be completedly broken when done dynamically from visual studio
 - -clang-diagnostic-pragma-once-outside-header
@@ -56,12 +50,25 @@ Checks:
 # Disabling magic numbers for now, as there are too many to fix
 - -*-magic-numbers
 
-# Currently have too many C-style arrays to enable this check.
+# Currently have too many C-style arrays to enable these checks.
 - -*-avoid-c-arrays
+- -cppcoreguidelines-pro-bounds-constant-array-index
 
 # Unnamed parameters are often useful in overrides.
 - -*-named-parameter
 
-# Problem in atlcomcli.h which I can't work out how to ignore in a more
-# pinpointed fashion
+# Problems in windows headers which I can't work out how to ignore in a more
+# pinpointed fashion (though might be improved in LLVM 22)
+- -clang-analyzer-optin.core.EnumCastOutOfRange
 - -portability-template-virtual-member-function
+# Windows headers are just wrong with these but I have to use some of these
+# macros in the source
+- -hicpp-signed-bitwise
+# clang doesn't like the includes of poppack.h. Given these are in windows
+# includes, I'm not sure why it's complaining about them.
+- -clang-diagnostic-pragma-pack
+
+# It's expected for struct members to be public...
+CheckOptions:
+    key: misc-non-private-member-variables-in-classes.IgnoreClassesWithAllMemberVariablesBeingPublic
+    value: true

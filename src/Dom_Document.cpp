@@ -107,7 +107,7 @@ void Dom_Document::init()
     }
 }
 
-//NOLINT(bugprone-easily-swappable-parameters)
+//NOLINTNEXTLINE(bugprone-easily-swappable-parameters)
 void Dom_Document::checkLoadResults(VARIANT_BOOL resultcode, HRESULT hres) const
 {
     if (not SUCCEEDED(hres))

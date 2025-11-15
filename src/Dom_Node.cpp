@@ -10,11 +10,12 @@
 #include <wtypes.h>
 
 #include <stdexcept>
+#include <utility>    // For std::move
 
 namespace Linter
 {
 
-Dom_Node::Dom_Node(CComPtr<IXMLDOMNode> node) noexcept : node_(node)
+Dom_Node::Dom_Node(CComPtr<IXMLDOMNode> node) noexcept : node_(std::move(node))
 {
 }
 

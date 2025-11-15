@@ -44,7 +44,7 @@ constexpr DWORD BUFFSIZE = 0x4000;
 DWORD read_data(char * const buff, Handle_Wrapper const &pipe)
 {
     DWORD bytes_avail = 0;
-    if (not PeekNamedPipe(pipe, nullptr, 0, nullptr, &bytes_avail, nullptr))
+    if (PeekNamedPipe(pipe, nullptr, 0, nullptr, &bytes_avail, nullptr) == FALSE)
     {
         DWORD const err = GetLastError();
         if (err != ERROR_BROKEN_PIPE)
@@ -54,13 +54,13 @@ DWORD read_data(char * const buff, Handle_Wrapper const &pipe)
     }
     if (bytes_avail != 0)
     {
-        if (not ReadFile(
+        if (ReadFile(
                 pipe,
                 buff,
                 std::min(BUFFSIZE, bytes_avail),
                 &bytes_avail,
                 nullptr
-            ))
+            ) == FALSE)
         {
             throw System_Error();
         }
@@ -124,7 +124,7 @@ Child_Pipe::Pipes Child_Pipe::create_pipes()
 
     HANDLE reader;    // NOLINT(cppcoreguidelines-init-variables)
     HANDLE writer;    // NOLINT(cppcoreguidelines-init-variables)
-    if (not ::CreatePipe(&reader, &writer, &security, 0))
+    if (::CreatePipe(&reader, &writer, &security, 0) == FALSE)
     {
         throw System_Error();
     }
@@ -134,7 +134,7 @@ Child_Pipe::Pipes Child_Pipe::create_pipes()
 
 void Child_Pipe::detach(Handle_Wrapper const &handle)
 {
-    if (not ::SetHandleInformation(handle, HANDLE_FLAG_INHERIT, 0))
+    if (::SetHandleInformation(handle, HANDLE_FLAG_INHERIT, 0) == FALSE)
     {
         throw System_Error();
     }

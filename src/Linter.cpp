@@ -4,6 +4,7 @@
 #include "Encoding.h"
 #include "Error_Info.h"
 #include "File_Linter.h"
+#include "Indicator.h"
 #include "Menu_Entry.h"
 #include "Output_Dialogue.h"
 #include "Settings.h"
@@ -15,21 +16,26 @@
 #include "notepad++/Notepad_plus_msgs.h"
 #include "notepad++/PluginInterface.h"
 #include "notepad++/Scintilla.h"
-#include "notepad++/menuCmdID.h"
 
 #include <combaseapi.h>
-#include <comutil.h>
 #include <handleapi.h>
 #include <objbase.h>
 #include <process.h>
-#include <synchapi.h>
+#include <synchapi.h>   // For WaitForSingleObject
 #include <threadpoollegacyapiset.h>
+#include <winbase.h>    // For WAIT_OBJECT_0
+#include <windef.h>
+#include <winuser.h>
+#include <wtypesbase.h>
 
+// IWYU pragma: no_include <xtree>
 #include <exception>
+#include <filesystem>
+#include <list>
 #include <map>
 #include <memory>
-#include <stdexcept>
 #include <string>
+#include <unordered_map>
 #include <utility>
 #include <vector>
 
@@ -38,6 +44,7 @@
 
 static int constexpr Error_Indicator = INDIC_CONTAINER + 2;
 
+// NOLINTNEXTLINE(cert-err58-cpp)
 DEFINE_PLUGIN_MENU_CALLBACKS(Linter::Linter);
 
 namespace Linter
@@ -100,6 +107,7 @@ wchar_t const *Linter::get_plugin_name() noexcept
 
 std::vector<FuncItem> &Linter::on_get_menu_entries()
 {
+// NOLINTNEXTLINE(cppcoreguidelines-macro-usage)
 #define MAKE_CALLBACK_TOGGLE(entry, method, state) \
     PLUGIN_MENU_MAKE_CALLBACK(                     \
         Linter,                                    \
@@ -110,6 +118,7 @@ std::vector<FuncItem> &Linter::on_get_menu_entries()
         settings_->get_shortcut_key(entry)         \
     )
 
+// NOLINTNEXTLINE(cppcoreguidelines-macro-usage)
 #define MAKE_CALLBACK(entry, method) MAKE_CALLBACK_TOGGLE(entry, method, false)
     menu_entries_ = {
         MAKE_CALLBACK(Menu_Entry::Edit_Config, edit_config),
@@ -202,7 +211,15 @@ void Linter::select_next_lint() noexcept
 {
     if (enabled_)
     {
-        output_dialogue_->select_next_lint();
+        try
+        {
+            output_dialogue_->select_next_lint();
+        }
+        catch (std::exception const &err)
+        {
+            // There is very little we can do with this
+            std::ignore = err;
+        }
     }
 }
 
@@ -210,7 +227,15 @@ void Linter::select_previous_lint() noexcept
 {
     if (enabled_)
     {
-        output_dialogue_->select_previous_lint();
+        try
+        {
+            output_dialogue_->select_previous_lint();
+        }
+        catch (std::exception const &err)
+        {
+            // There is very little we can do with this
+            std::ignore = err;
+        }
     }
 }
 
@@ -255,7 +280,9 @@ void Linter::highlight_errors()
 
     for (Error_Info const &error : errors_)
     {
-        auto position = send_to_editor(SCI_POSITIONFROMLINE, static_cast<WPARAM>(error.line_) - 1);
+        auto position = send_to_editor(
+            SCI_POSITIONFROMLINE, static_cast<WPARAM>(error.line_) - 1
+        );
         position += Encoding::utfOffset(
             get_line_text(error.line_ - 1), error.column_ - 1
         );
@@ -266,6 +293,7 @@ void Linter::highlight_errors()
     }
 }
 
+// NOLINTNEXTLINE(bugprone-easily-swappable-parameters)
 void Linter::highlight_error_at(LRESULT position, uint32_t col) noexcept
 {
     Save_Selected_Indicator const indicator(*this);
@@ -287,9 +315,8 @@ void Linter::clear_error_highlights() noexcept
     send_to_editor(SCI_ANNOTATIONCLEARALL);
 }
 
-void Linter::setup_error_indicator() noexcept
+void Linter::setup_error_indicator()
 {
-#pragma warning(suppress : 26447)
     static std::unordered_map<Indicator::Property, int> const cmd_map = {
         {Indicator::Style,           SCI_INDICSETSTYLE       },
         {Indicator::Colour,          SCI_INDICSETFORE        },
@@ -304,7 +331,6 @@ void Linter::setup_error_indicator() noexcept
 
     for (auto const &[command, value] : settings_->indicator().properties())
     {
-#pragma warning(suppress : 26447)
         send_to_editor(cmd_map.at(command), Error_Indicator, value);
     }
 }
