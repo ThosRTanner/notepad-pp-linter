@@ -9,8 +9,7 @@
 #include <memory>
 #include <string>
 #include <tuple>
-
-class Plugin;
+#include <vector>
 
 namespace Linter
 {
@@ -21,11 +20,11 @@ class File_Linter
 {
   public:
     explicit File_Linter(
-        std::filesystem::path const &target,
-        std::filesystem::path const &plugin_dir,
-        std::filesystem::path const &settings_dir,
+        std::filesystem::path target,
+        std::filesystem::path plugin_dir,
+        std::filesystem::path settings_dir,
         std::vector<Settings::Variable> const &variables,
-        std::string const &text
+        std::string text
     );
 
     File_Linter(File_Linter const &) = delete;
@@ -53,7 +52,7 @@ class File_Linter
     static std::wstring expand_variables(std::wstring const &);
 
     std::tuple<DWORD, std::string, std::string> execute(
-        Settings::Command const &, std::string const *const input = nullptr
+        Settings::Command const &, std::string const * input = nullptr
     ) const;
 
     std::filesystem::path target_;
@@ -66,7 +65,7 @@ class File_Linter
 
     std::vector<std::string> warnings_;
 
-    bool created_temp_file_;
+    bool created_temp_file_{false};
 };
 
 }    // namespace Linter

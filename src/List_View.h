@@ -25,7 +25,7 @@ class List_View
   public:
     // Data_Row is used to identify the actual row in the list view,
     // not the position on screen.
-    typedef int Data_Row;
+    using Data_Row = int;
 
     using Data_Column = typename List_View_Types::Data_Column;
     using Sort_Direction = typename List_View_Types::Sort_Direction;
@@ -127,7 +127,7 @@ class List_View
          */
     };
 
-    List_View(HWND list_view);
+    explicit List_View(HWND);
 
     virtual ~List_View() noexcept;
 
@@ -136,8 +136,8 @@ class List_View
     List_View &operator=(List_View const &) = delete;
 
     // Allow moving
-    List_View(List_View &&);
-    List_View &operator=(List_View &&);
+    List_View(List_View &&) noexcept;
+    List_View &operator=(List_View &&) noexcept;
 
     /** Add a column to the list view
      *
@@ -146,7 +146,7 @@ class List_View
     int add_column(Column_Data const &) const noexcept;
 
     /** Add a row to the list view */
-    void add_row(Data_Row, Row_Data const &) const noexcept;
+    void add_row(Data_Row, Row_Data const &) const;
 
     /** Ensure that there is space for at least total_rows rows in the list view
      */
@@ -209,11 +209,11 @@ class List_View
      * that. With c++26 we could use std::copyable_function.
      */
 #ifdef __cpp_lib_copyable_function
-    typedef int(Sort_Callback)(LPARAM, LPARAM, Data_Column) const noexcept;
-    typedef std::copyable_function<Sort_Callback> Sort_Callback_Function;
+    using Sort_Callback = int(LPARAM, LPARAM, Data_Column) const noexcept;
+    using Sort_Callback_Function = std::copyable_function<Sort_Callback>;
 #else
-    typedef int(Sort_Callback)(LPARAM, LPARAM, Data_Column);
-    typedef std::function<Sort_Callback> Sort_Callback_Function;
+    using Sort_Callback = int(LPARAM, LPARAM, Data_Column);
+    using Sort_Callback_Function = std::function<Sort_Callback>;
 #endif
 
     /** Sort_Direction displayed list by specified column.
@@ -222,14 +222,14 @@ class List_View
      * compare, and the column being sorted by.
      */
     void sort_by_column(
-        Data_Column, Sort_Callback_Function const &, Sort_Direction
+        Data_Column, Sort_Callback_Function, Sort_Direction
     ) const noexcept;
 
     /** Get the coordinates of a position in the list view */
     void get_screen_coordinates(POINT *point) const noexcept;
 
     /** Adjust position and size of list. */
-    void set_window_position(HWND prev_win, RECT const &rc) const noexcept;
+    void set_window_position(HWND prev_win, RECT const &rect) const noexcept;
 
   protected:
     /** Get the handle to the list view */

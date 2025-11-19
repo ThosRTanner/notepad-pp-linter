@@ -20,7 +20,7 @@ class Dom_Node
 
     /** Get the (first) node matching the supplied xpath
      *
-     * Throws an exception of no such node exists
+     * Throws an exception if no such node exists
      */
     Dom_Node get_node(std::string const &xpath) const;
 

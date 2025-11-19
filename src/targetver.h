@@ -8,7 +8,7 @@
 
 // These seem to be a bit out of date.
 #define NTDDI_VERSION NTDDI_VISTA
-#define _WIN32_WINNT _WIN32_WINNT_VISTA
+#define _WIN32_WINNT _WIN32_WINNT_VISTA  // NOLINT
 // #define NTDDI_VERSION NTDDI_WIN7
 // #define _WIN32_WINNT _WIN32_WINNT_WIN7
 #include <sdkddkver.h>

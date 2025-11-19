@@ -41,6 +41,9 @@ void Report_View::sort_by_column(
 ) const noexcept
 {
     Super::sort_by_column(
+#ifndef __cpp_lib_copyable_function
+#pragma warning(suppress: 26447)
+#endif
         current_sort_column_, callback, current_sort_direction_
     );
     if (header_)

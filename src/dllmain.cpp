@@ -13,13 +13,11 @@
 // Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
 #include "Linter.h"
-typedef Linter::Linter Npp_Plugin;
+using Npp_Plugin = Linter::Linter;
 
 #include "notepad++/PluginInterface.h"
 
 #include <memory>
-
-static std::unique_ptr<Npp_Plugin> plugin;
 
 extern "C" __declspec(dllexport) wchar_t const *getName()
 {
@@ -28,5 +26,5 @@ extern "C" __declspec(dllexport) wchar_t const *getName()
 
 extern "C" __declspec(dllexport) void setInfo(NppData data)
 {
-    plugin = std::make_unique<Npp_Plugin>(data);
+    static auto const plugin{std::make_unique<Npp_Plugin>(data)};
 }

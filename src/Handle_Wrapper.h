@@ -10,7 +10,7 @@ namespace Linter
 class Handle_Wrapper
 {
   public:
-    explicit Handle_Wrapper(HANDLE h);
+    explicit Handle_Wrapper(HANDLE);
     Handle_Wrapper(Handle_Wrapper const &) = delete;
     Handle_Wrapper(Handle_Wrapper &&other) noexcept;
     Handle_Wrapper &operator=(Handle_Wrapper const &) = delete;
@@ -19,7 +19,7 @@ class Handle_Wrapper
 
     void close() const noexcept;
 
-    operator HANDLE() const noexcept;
+    operator HANDLE() const noexcept;    // NOLINT(hicpp-explicit-conversions)
 
     /** Write a string to the handle
      *

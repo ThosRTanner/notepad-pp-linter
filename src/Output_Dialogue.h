@@ -1,18 +1,23 @@
 #pragma once
-#include "Checkstyle_Parser.h"
+//#include "Checkstyle_Parser.h"
+#include "Error_Info.h"
 #include "Report_View.h"
 
 #include "Plugin/Docking_Dialogue_Interface.h"
 
 #include <intsafe.h>
+#include <minwindef.h>
+#include <windef.h>
 
 #include <array>
-#include <functional>
-#include <optional>
+//#include <functional>
+//#include <optional>
+#include <string_view>
 #include <vector>
 
 // IWYU says you need commtrl.h for this, but it's a forward reference.
-typedef struct tagNMLVCUSTOMDRAW NMLVCUSTOMDRAW;
+struct tagNMLVCUSTOMDRAW;
+using NMLVCUSTOMDRAW = tagNMLVCUSTOMDRAW;
 
 namespace Linter
 {
@@ -30,17 +35,17 @@ enum class Menu_Entry : int;
  */
 class Output_Dialogue : protected Docking_Dialogue_Interface
 {
-    typedef Docking_Dialogue_Interface Super;
+    using Super = Docking_Dialogue_Interface;
 
   public:
-    Output_Dialogue(Menu_Entry dlg_num, Linter const &);
+    Output_Dialogue(Menu_Entry, Linter const &);
 
     Output_Dialogue(Output_Dialogue const &) = delete;
     Output_Dialogue(Output_Dialogue &&) = delete;
     Output_Dialogue &operator=(Output_Dialogue const &) = delete;
     Output_Dialogue &operator=(Output_Dialogue &&) = delete;
 
-    ~Output_Dialogue();
+    ~Output_Dialogue() override;
 
     void display() noexcept;
 
@@ -51,13 +56,13 @@ class Output_Dialogue : protected Docking_Dialogue_Interface
     void add_system_error(Error_Info const &);
 
     /** Add a list of lint errors to the lint error list */
-    void add_lint_errors(std::vector<Error_Info> const &lints);
+    void add_lint_errors(std::vector<Error_Info> const &);
 
     /** Selects the next lint message */
-    void select_next_lint() noexcept;
+    void select_next_lint();
 
     /** Selects the next previous message */
-    void select_previous_lint() noexcept;
+    void select_previous_lint();
 
   private:
     enum Tab
@@ -74,14 +79,17 @@ class Output_Dialogue : protected Docking_Dialogue_Interface
     struct TabDefinition
     {
         TabDefinition(
-            wchar_t const *name, UINT id, Tab tab, Output_Dialogue const &parent
+            wchar_t const *name, UINT view_id, Tab tab_id,
+            Output_Dialogue const &parent
         );
 
+        // NOLINTBEGIN(misc-non-private-member-variables-in-classes)
         wchar_t const *tab_name;
         UINT list_view_id;
         Tab tab;
         Report_View report_view;
         std::vector<Error_Info> errors;
+        // NOLINTEND(misc-non-private-member-variables-in-classes)
     };
 
     Message_Return on_dialogue_message(
@@ -116,7 +124,7 @@ class Output_Dialogue : protected Docking_Dialogue_Interface
     void add_errors(Tab tab, std::vector<Error_Info> const &lints);
 
     /** Skip to the n-th lint forward or backward */
-    void select_lint(int n) noexcept;
+    void select_lint(int n);
 
     /** Add text to end of buffer */
     void append_text(std::string_view text) const noexcept;
@@ -127,7 +135,7 @@ class Output_Dialogue : protected Docking_Dialogue_Interface
     ) const noexcept;
 
     /** Move to the line/column of the displayed error */
-    void show_selected_lint(List_View::Data_Row selected_item) noexcept;
+    void show_selected_lint(Report_View::Data_Row selected_item);
 
     /** Copy selected messages to clipboard */
     void copy_to_clipboard();

@@ -223,14 +223,14 @@
     <ClInclude Include="src\Report_View.h">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\Casts.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
     <ClInclude Include="src\Column_Header.h">
       <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="src\List_View_Types.h">
       <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Docking_Dialogue_Interface\Plugin\Casts.h">
+      <Filter>Git Submodules\Docking Dialogue Interface</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -263,6 +263,7 @@
     <None Include="PSScriptAnalyzerSettings.psd1" />
     <None Include="Changes.md" />
     <None Include=".remarkrc.yaml" />
+    <None Include=".clang-tidy" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="src\linter.ico">

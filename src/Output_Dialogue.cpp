@@ -1,28 +1,37 @@
 #include "Output_Dialogue.h"
 
-#include "Plugin/Plugin.h"
-
-#include "Casts.h"
-#include "Checkstyle_Parser.h"
+//#include "Checkstyle_Parser.h"
 #include "Clipboard.h"
 #include "Encoding.h"
 #include "Error_Info.h"
 #include "Linter.h"
-#include "Menu_Entry.h"
+//#include "Menu_Entry.h"
+#include "Report_View.h"
 #include "Settings.h"
-#include "System_Error.h"
+//#include "System_Error.h"
+
+#include "Plugin/Casts.h"
+#include "Plugin/Plugin.h"
 
 #include "notepad++/menuCmdID.h"
+#include "notepad++/Notepad_plus_msgs.h"
+#include "notepad++/Scintilla.h"
 
 #include "resource.h"
 
 #include <CommCtrl.h>
 #include <intsafe.h>
-
-#include <cstddef>
+#include <winuser.h>    // For tagNMHDR, AppendMenu
+//#include <cstddef>
+#include <cstdio>    // For snprintf
+#include <filesystem>
+#if __cplusplus >= 202302L
+#include <generator>
+#endif
+#include <optional>     // For optional, nullopt
 #include <sstream>
 #include <string>
-#include <type_traits>
+//#include <type_traits>
 #include <utility>
 #include <vector>
 
@@ -95,9 +104,7 @@ Output_Dialogue::Output_Dialogue(Menu_Entry menu_entry, Linter const &plugin) :
     );
 }
 
-Output_Dialogue::~Output_Dialogue()
-{
-}
+Output_Dialogue::~Output_Dialogue() = default;
 
 void Output_Dialogue::display() noexcept
 {
@@ -118,7 +125,7 @@ void Output_Dialogue::clear_lint_info()
 
 void Output_Dialogue::add_system_error(Error_Info const &err)
 {
-    std::vector<Error_Info> errs = {err};
+    std::vector<Error_Info> const errs = {err};
     add_errors(Tab::System_Error, errs);
 }
 
@@ -127,17 +134,18 @@ void Output_Dialogue::add_lint_errors(std::vector<Error_Info> const &errs)
     add_errors(Tab::Lint_Error, errs);
 }
 
-void Output_Dialogue::select_next_lint() noexcept
+void Output_Dialogue::select_next_lint()
 {
     select_lint(1);
 }
 
-void Output_Dialogue::select_previous_lint() noexcept
+void Output_Dialogue::select_previous_lint()
 {
     select_lint(-1);
 }
 
 Output_Dialogue::Message_Return Output_Dialogue::on_dialogue_message(
+    // NOLINTNEXTLINE(bugprone-easily-swappable-parameters)
     UINT message, WPARAM wParam, LPARAM lParam
 )
 {
@@ -253,22 +261,25 @@ Output_Dialogue::Message_Return Output_Dialogue::process_dlg_notify(
     LPARAM lParam
 )
 {
-    auto const notify_header = cast_to<NMHDR const *, LPARAM>(lParam);
+    auto const *const notify_header =
+        windows_cast_to<NMHDR const *, LPARAM>(lParam);
     switch (notify_header->code)
     {
         case LVN_KEYDOWN:
             if (notify_header->idFrom == current_tab_->list_view_id)
             {
                 NMLVKEYDOWN const *pnkd =
-                    cast_to<LPNMLVKEYDOWN, LPARAM>(lParam);
+                    windows_cast_to<LPNMLVKEYDOWN, LPARAM>(lParam);
+
                 if (pnkd->wVKey == 'A'
                     && (::GetKeyState(VK_CONTROL) & 0x8000U) != 0)
                 {
                     current_report_view_->select_all();
                     return TRUE;
                 }
-                else if (pnkd->wVKey == 'C'
-                         && (::GetKeyState(VK_CONTROL) & 0x8000U) != 0)
+
+                if (pnkd->wVKey == 'C'
+                    && (::GetKeyState(VK_CONTROL) & 0x8000U) != 0)
                 {
                     copy_to_clipboard();
                     return TRUE;
@@ -279,8 +290,8 @@ Output_Dialogue::Message_Return Output_Dialogue::process_dlg_notify(
         case LVN_COLUMNCLICK:
             if (notify_header->idFrom == current_tab_->list_view_id)
             {
-                auto const column_click =
-                    cast_to<NMLISTVIEW const *, LPARAM>(lParam);
+                auto const *const column_click =
+                    windows_cast_to<NMLISTVIEW const *, LPARAM>(lParam);
                 // ENHANCMENT Should check if we've clicked shift key here and
                 // add this column to the sort order rather than replacing it.
                 // Using the shift key multiple times should cycle between
@@ -298,8 +309,8 @@ Output_Dialogue::Message_Return Output_Dialogue::process_dlg_notify(
         case NM_DBLCLK:
             if (notify_header->idFrom == current_tab_->list_view_id)
             {
-                auto const item_activate =
-                    cast_to<NMITEMACTIVATE const *, LPARAM>(lParam);
+                auto const *const item_activate =
+                    windows_cast_to<NMITEMACTIVATE const *, LPARAM>(lParam);
                 int const selected_item = item_activate->iItem;
                 if (selected_item != -1)
                 {
@@ -315,7 +326,7 @@ Output_Dialogue::Message_Return Output_Dialogue::process_dlg_notify(
             if (notify_header->idFrom == current_tab_->list_view_id)
             {
                 return process_custom_draw(
-                    cast_to<NMLVCUSTOMDRAW *, LPARAM>(lParam)
+                    windows_cast_to<NMLVCUSTOMDRAW *, LPARAM>(lParam)
                 );
             }
             break;
@@ -340,8 +351,9 @@ Output_Dialogue::Message_Return Output_Dialogue::process_custom_draw(
 {
     switch (custom_draw->nmcd.dwDrawStage)
     {
-        case CDDS_PREPAINT:
-            return CDRF_NOTIFYITEMDRAW;
+        case CDDS_PREPAINT:                // NOLINT(bugprone-branch-clone)
+            return CDRF_NOTIFYITEMDRAW;    // This and the value below are the
+                                           // same!
 
         case CDDS_ITEMPREPAINT:
             return CDRF_NOTIFYSUBITEMDRAW;
@@ -349,12 +361,13 @@ Output_Dialogue::Message_Return Output_Dialogue::process_custom_draw(
         case CDDS_ITEMPREPAINT | CDDS_SUBITEM:
             if (custom_draw->iSubItem == Column_Message)
             {
-                List_View::Data_Row const row = current_report_view_->get_index(
+                Report_View::Data_Row const row = current_report_view_->get_index(
                     windows_static_cast<int, DWORD_PTR>(
                         custom_draw->nmcd.dwItemSpec
                     )
                 );
-                if (static_cast<std::size_t>(row) >= current_tab_->errors.size())
+                if (static_cast<std::size_t>(row)
+                    >= current_tab_->errors.size())
                 {
                     // For reasons I don't entirely understand, windows paints
                     // an entry for a line that doesn't exist. So don't do
@@ -396,16 +409,21 @@ void Output_Dialogue::selected_tab_changed() noexcept
 
 void Output_Dialogue::window_pos_changed() noexcept
 {
-    RECT const rc = getClientRect();
+    RECT const rect = getClientRect();
 
     ::MoveWindow(
-        tab_bar_, rc.left, rc.top, rc.right - rc.left, rc.bottom - rc.top, TRUE
+        tab_bar_,
+        rect.left,
+        rect.top,
+        rect.right - rect.left,
+        rect.bottom - rect.top,
+        TRUE
     );
 
-    TabCtrl_AdjustRect(tab_bar_, FALSE, &rc);
+    TabCtrl_AdjustRect(tab_bar_, FALSE, &rect);
     for (auto const &tab : tab_definitions_)
     {
-        tab.report_view.set_window_position(tab_bar_, rc);
+        tab.report_view.set_window_position(tab_bar_, rect);
     }
 }
 
@@ -475,7 +493,7 @@ void Output_Dialogue::add_errors(Tab tab, std::vector<Error_Info> const &lints)
     }
 }
 
-void Output_Dialogue::select_lint(int n) noexcept
+void Output_Dialogue::select_lint(int n)
 {
     int const rows = current_report_view_->get_num_rows();
     if (rows == 0)
@@ -507,8 +525,8 @@ void Output_Dialogue::append_text_with_style(
 }
 
 void Output_Dialogue::show_selected_lint(
-    List_View::Data_Row selected_item
-) noexcept
+    Report_View::Data_Row selected_item
+)
 {
     Error_Info const &lint_error = current_tab_->errors[selected_item];
 
@@ -530,7 +548,7 @@ void Output_Dialogue::show_selected_lint(
             plugin()->send_to_notepad(NPPM_MENUCOMMAND, 0, IDM_FILE_NEW);
             plugin()->send_to_editor(SCI_SETILEXER, 0, nullptr);
             constexpr int style = STYLE_LASTPREDEFINED + 1;
-            plugin()->send_to_editor(SCI_STYLESETUNDERLINE, style, true);
+            plugin()->send_to_editor(SCI_STYLESETUNDERLINE, style, TRUE);
 
             append_text_with_style("Command:", style);
             // This should not throw if the command line is valid UTF16.
@@ -539,8 +557,10 @@ void Output_Dialogue::show_selected_lint(
                 "\n\n" + Encoding::convert(lint_error.command_) + "\n\n"
             );
             append_text_with_style("Return code: ", style);
-            char buff[20];
-            std::snprintf(&buff[0], sizeof(buff), "%uld", lint_error.result_);
+            char buff[20];    // NOLINT(cppcoreguidelines-init-variables)
+            std::ignore = std::snprintf(
+                &buff[0], sizeof(buff), "%lu", lint_error.result_
+            );
             append_text(&buff[0]);
             append_text("\n\n");
             append_text_with_style("Output:", style);
@@ -629,6 +649,7 @@ void Output_Dialogue::copy_to_clipboard()
 #pragma warning(suppress : 26440)
 #endif
 int Output_Dialogue::sort_call_function(
+    // NOLINTNEXTLINE(bugprone-easily-swappable-parameters)
     LPARAM row1_index, LPARAM row2_index, Report_View::Data_Column column
 )
 #ifdef __cpp_lib_copyable_function
@@ -673,14 +694,14 @@ int Output_Dialogue::sort_call_function(
 }
 
 Output_Dialogue::TabDefinition::TabDefinition(
-    wchar_t const *name, UINT id, Tab tab, Output_Dialogue const &parent
+    wchar_t const *name, UINT view_id, Tab tab_id, Output_Dialogue const &parent
 ) :
     tab_name(name),
-    list_view_id(id),
-    tab(tab),
-    report_view(parent.GetDlgItem(id))
+    list_view_id(view_id),
+    tab(tab_id),
+    report_view(parent.GetDlgItem(windows_static_cast<int, UINT>(view_id)))
 {
-    typedef Report_View::Column_Data Column_Data;
+    using Column_Data = Report_View::Column_Data;
 
     // Note: The first column is implicitly left justified so the 'right' here
     // is a little optimistic.

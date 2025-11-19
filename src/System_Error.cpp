@@ -1,5 +1,7 @@
 #include "System_Error.h"
 
+#include "Plugin/Casts.h"
+
 #include <comdef.h>
 #include <comutil.h>
 #include <errhandlingapi.h>
@@ -7,11 +9,12 @@
 #include <oaidl.h>
 #include <oleauto.h>
 
-#include <cstdio>
-#include <cstring>
+#include <cstdio>    // For std::snprintf
 #include <exception>
 #include <source_location>
+#include <span>
 #include <string>
+#include <string_view>
 #include <system_error>
 #include <utility>
 
@@ -30,24 +33,26 @@ System_Error::System_Error(
 {
 }
 
-System_Error::System_Error(
+System_Error::System_Error( // NOLINT(*-member-init)
     DWORD err, std::source_location const &location
 ) noexcept
 {
     try
     {
-        std::snprintf(
+        what_length_ = std::snprintf(
             &what_string_[0],
             sizeof(what_string_),
             "%08lx %s",
             err,
-            std::generic_category().message(err).c_str()
+            std::generic_category()
+                .message(windows_static_cast<int, DWORD>(err))
+                .c_str()
         );
     }
     catch (std::exception const &e)
     {
 #pragma warning(suppress : 26447)    // MS Bug with e.what() decl
-        std::snprintf(
+        what_length_ = std::snprintf(
             &what_string_[0],
             sizeof(what_string_),
             "Error code %08lx then got %s",
@@ -58,25 +63,27 @@ System_Error::System_Error(
     addLocationToMessage(location);
 }
 
-System_Error::System_Error(
+System_Error::System_Error( // NOLINT(*-member-init)
     DWORD err, std::string const &info, std::source_location const &location
 ) noexcept
 {
     try
     {
-        std::snprintf(
+        what_length_ = std::snprintf(
             &what_string_[0],
             sizeof(what_string_),
             "%s - %08lx %s",
             info.c_str(),
             err,
-            std::generic_category().message(err).c_str()
+            std::generic_category()
+                .message(windows_static_cast<int, DWORD>(err))
+                .c_str()
         );
     }
     catch (std::exception const &e)
     {
 #pragma warning(suppress : 26447)    // MS Bug with e.what() decl
-        std::snprintf(
+        what_length_ = std::snprintf(
             &what_string_[0],
             sizeof(what_string_),
             "%s - Error code %08lx then got %s",
@@ -88,17 +95,17 @@ System_Error::System_Error(
     addLocationToMessage(location);
 }
 
-System_Error::System_Error(
+System_Error::System_Error( // NOLINT(*-member-init)
     HRESULT err, std::source_location const &location
 ) noexcept
 {
     IErrorInfo *err_info{nullptr};
     std::ignore = GetErrorInfo(0, &err_info);
-    _com_error error{err, err_info};
+    _com_error const error{err, err_info};
     try
     {
         _bstr_t const msg{error.ErrorMessage()};
-        std::snprintf(
+        what_length_ = std::snprintf(
             &what_string_[0],
             sizeof(what_string_),
             "%08lx %s",
@@ -109,7 +116,7 @@ System_Error::System_Error(
     catch (std::exception const &e)
     {
 #pragma warning(suppress : 26447)    // MS Bug with e.what() decl
-        std::snprintf(
+        what_length_ = std::snprintf(
             &what_string_[0],
             sizeof(what_string_),
             "Got error %08lx but couldn't decode because %s",
@@ -120,17 +127,17 @@ System_Error::System_Error(
     addLocationToMessage(location);
 }
 
-System_Error::System_Error(
+System_Error::System_Error( // NOLINT(*-member-init)
     HRESULT err, std::string const &info, std::source_location const &location
 ) noexcept
 {
     IErrorInfo *err_info{nullptr};
     std::ignore = ::GetErrorInfo(0, &err_info);
-    _com_error error{err, err_info};
+    _com_error const error{err, err_info};
     try
     {
         _bstr_t const msg{error.ErrorMessage()};
-        std::snprintf(
+        what_length_ = std::snprintf(
             &what_string_[0],
             sizeof(what_string_),
             "%s - %08lx %s",
@@ -142,7 +149,7 @@ System_Error::System_Error(
     catch (std::exception const &e)
     {
 #pragma warning(suppress : 26447)    // MS Bug with e.what() decl
-        std::snprintf(
+        what_length_ = std::snprintf(
             &what_string_[0],
             sizeof(what_string_),
             "%s - Got error %08lx but couldn't decode because %s",
@@ -169,21 +176,32 @@ char const *System_Error::what() const noexcept
     return &what_string_[0];
 }
 
-void System_Error::addLocationToMessage(std::source_location const &location
+void System_Error::addLocationToMessage(
+    std::source_location const &location
 ) noexcept
 {
-    auto const full_path = location.file_name();
-    char const *const file_name = std::strrchr(full_path, '\\');
-    std::size_t const used{std::strlen(&what_string_[0])};
-    std::snprintf(
-        &what_string_[used],
-        sizeof(what_string_) - used,
+    std::string_view filename{location.file_name()};
+    if (auto const pos = filename.rfind('\\'); pos != std::string_view::npos)
+    {
+        filename = filename.substr(pos + 1);
+    }
+    // Windows somewhat annoyingly issues a warning about std::span being used
+    // instead of gsl::span. We can ignore this here as we don't use the []
+    // operator.
+#pragma warning(push)
+#pragma warning(disable : 26821)
+    auto const what = std::span{what_string_};
+    auto const free_data = what.subspan(what_length_);
+#pragma warning(pop)
+    auto *const start = &*free_data.begin();
+    std::ignore = std::snprintf(
+        start,
+        &*free_data.rbegin() - start + 1,
         " at %s:%u %s",
-        (file_name == nullptr ? full_path : &file_name[1]),
+        &*filename.begin(),
         location.line(),
         location.function_name()
     );
-    what_string_[sizeof(what_string_) - 1] = 0;
 }
 
 }    // namespace Linter

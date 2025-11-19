@@ -19,8 +19,6 @@
 #include <utility>
 #include <vector>
 
-#include <stddef.h>
-
 namespace Linter
 {
 
@@ -43,10 +41,10 @@ namespace
 
 constexpr DWORD BUFFSIZE = 0x4000;
 
-DWORD read_data(char *const buff, Handle_Wrapper const &pipe)
+DWORD read_data(char * const buff, Handle_Wrapper const &pipe)
 {
     DWORD bytes_avail = 0;
-    if (not PeekNamedPipe(pipe, NULL, 0, NULL, &bytes_avail, NULL))
+    if (PeekNamedPipe(pipe, nullptr, 0, nullptr, &bytes_avail, nullptr) == FALSE)
     {
         DWORD const err = GetLastError();
         if (err != ERROR_BROKEN_PIPE)
@@ -56,9 +54,13 @@ DWORD read_data(char *const buff, Handle_Wrapper const &pipe)
     }
     if (bytes_avail != 0)
     {
-        if (not ReadFile(
-                pipe, buff, std::min(BUFFSIZE, bytes_avail), &bytes_avail, NULL
-            ))
+        if (ReadFile(
+                pipe,
+                buff,
+                std::min(BUFFSIZE, bytes_avail),
+                &bytes_avail,
+                nullptr
+            ) == FALSE)
         {
             throw System_Error();
         }
@@ -74,7 +76,7 @@ std::pair<std::string, std::string> Child_Pipe::read_output_pipes(
 {
     std::vector<char> buffer;
     buffer.resize(BUFFSIZE);
-    auto const buff{&*buffer.begin()};
+    char * const buff{&*buffer.begin()};
 
     std::string res1;
     std::string res2;
@@ -93,8 +95,6 @@ std::pair<std::string, std::string> Child_Pipe::read_output_pipes(
     bool more_to_read = true;
     while (more_to_read)
     {
-        more_to_read = false;
-
         auto const state = WaitForSingleObject(process, 50);
         if (state == WAIT_FAILED)
         {
@@ -122,19 +122,19 @@ Child_Pipe::Pipes Child_Pipe::create_pipes()
         .bInheritHandle = TRUE,
     };
 
-    HANDLE reader;
-    HANDLE writer;
-    if (not ::CreatePipe(&reader, &writer, &security, 0))
+    HANDLE reader;    // NOLINT(cppcoreguidelines-init-variables)
+    HANDLE writer;    // NOLINT(cppcoreguidelines-init-variables)
+    if (::CreatePipe(&reader, &writer, &security, 0) == FALSE)
     {
         throw System_Error();
     }
 
-    return {Handle_Wrapper(reader), Handle_Wrapper(writer)};
+    return {.reader_ = Handle_Wrapper(reader), .writer_ = Handle_Wrapper(writer)};
 }
 
 void Child_Pipe::detach(Handle_Wrapper const &handle)
 {
-    if (not ::SetHandleInformation(handle, HANDLE_FLAG_INHERIT, 0))
+    if (::SetHandleInformation(handle, HANDLE_FLAG_INHERIT, 0) == FALSE)
     {
         throw System_Error();
     }

@@ -31,24 +31,24 @@ Linter::Dom_Document::Dom_Document(
     // pXD->put_resolveExternals(VARIANT_TRUE);
 
     // Treat whitespace according to the schema.
-    HRESULT hr = document_->put_preserveWhiteSpace(FALSE);
-    if (not SUCCEEDED(hr))
+    HRESULT hres = document_->put_preserveWhiteSpace(FALSE);
+    if (not SUCCEEDED(hres))
     {
-        throw System_Error(hr, "Can't set preserveWhiteSpace");
+        throw System_Error(hres, "Can't set preserveWhiteSpace");
     }
 
     // Assign the schema cache to the DOMDocument's schemas collection.
-    hr = document_->putref_schemas(CComVariant(schemas));
-    if (not SUCCEEDED(hr))
+    hres = document_->putref_schemas(CComVariant(schemas));
+    if (not SUCCEEDED(hres))
     {
-        throw System_Error(hr, "Can't use schema collection");
+        throw System_Error(hres, "Can't use schema collection");
     }
 
-    CComVariant value{xml_file.c_str()};
+    CComVariant const value{xml_file.c_str()};
     VARIANT_BOOL resultCode = FALSE;
-    hr = document_->load(value, &resultCode);
+    hres = document_->load(value, &resultCode);
 
-    checkLoadResults(resultCode, hr);
+    checkLoadResults(resultCode, hres);
 }
 
 Dom_Document::Dom_Document(std::string const &xml)
@@ -56,10 +56,10 @@ Dom_Document::Dom_Document(std::string const &xml)
     init();
 
     VARIANT_BOOL resultCode = FALSE;
-    HRESULT const hr =
+    HRESULT const hres =
         document_->loadXML(static_cast<_bstr_t>(xml.c_str()), &resultCode);
 
-    checkLoadResults(resultCode, hr);
+    checkLoadResults(resultCode, hres);
 }
 
 Dom_Document::~Dom_Document() = default;
@@ -67,11 +67,11 @@ Dom_Document::~Dom_Document() = default;
 Dom_Node_List Dom_Document::get_node_list(std::string const &xpath) const
 {
     CComPtr<IXMLDOMNodeList> nodes;
-    HRESULT const hr =
+    HRESULT const hres =
         document_->selectNodes(static_cast<_bstr_t>(xpath.c_str()), &nodes);
-    if (not SUCCEEDED(hr))
+    if (not SUCCEEDED(hres))
     {
-        throw System_Error(hr, "Can't execute XPath " + xpath);
+        throw System_Error(hres, "Can't execute XPath " + xpath);
     }
     return Dom_Node_List(nodes);
 }
@@ -79,13 +79,13 @@ Dom_Node_List Dom_Document::get_node_list(std::string const &xpath) const
 std::optional<Dom_Node> Dom_Document::get_node(std::string const &xpath) const
 {
     CComPtr<IXMLDOMNode> node;
-    HRESULT const hr =
+    HRESULT const hres =
         document_->selectSingleNode(static_cast<_bstr_t>(xpath.c_str()), &node);
-    if (not SUCCEEDED(hr))
+    if (not SUCCEEDED(hres))
     {
-        throw System_Error(hr, "Can't execute XPath " + xpath);
+        throw System_Error(hres, "Can't execute XPath " + xpath);
     }
-    if (hr == S_FALSE)
+    if (hres == S_FALSE)
     {
         return std::nullopt;
     }
@@ -94,24 +94,25 @@ std::optional<Dom_Node> Dom_Document::get_node(std::string const &xpath) const
 
 void Dom_Document::init()
 {
-    HRESULT hr = document_.CoCreateInstance(__uuidof(DOMDocument60));
-    if (not SUCCEEDED(hr))
+    HRESULT hres = document_.CoCreateInstance(__uuidof(DOMDocument60));
+    if (not SUCCEEDED(hres))
     {
-        throw System_Error(hr, "Can't create IID_IXMLDOMDocument2");
+        throw System_Error(hres, "Can't create IID_IXMLDOMDocument2");
     }
 
-    hr = document_->put_async(VARIANT_FALSE);
-    if (not SUCCEEDED(hr))
+    hres = document_->put_async(VARIANT_FALSE);
+    if (not SUCCEEDED(hres))
     {
-        throw System_Error(hr, "Can't XMLDOMDocument2::put_async");
+        throw System_Error(hres, "Can't XMLDOMDocument2::put_async");
     }
 }
 
-void Dom_Document::checkLoadResults(VARIANT_BOOL resultcode, HRESULT hr) const
+//NOLINTNEXTLINE(bugprone-easily-swappable-parameters)
+void Dom_Document::checkLoadResults(VARIANT_BOOL resultcode, HRESULT hres) const
 {
-    if (not SUCCEEDED(hr))
+    if (not SUCCEEDED(hres))
     {
-        throw System_Error(hr);
+        throw System_Error(hres);
     }
     if (resultcode == VARIANT_FALSE)
     {

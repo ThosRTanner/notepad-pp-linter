@@ -2,6 +2,7 @@
 
 #include <intsafe.h>
 
+#include <cstddef>
 #include <exception>
 #include <source_location>
 #include <string>
@@ -55,12 +56,13 @@ class System_Error : public std::exception
     System_Error &operator=(System_Error const &) noexcept;
     System_Error &operator=(System_Error &&) noexcept;
 
-    ~System_Error();
+    ~System_Error() override;
 
     char const *what() const noexcept override;
 
   private:
     char what_string_[2048];
+    std::size_t what_length_;
 
     void addLocationToMessage(std::source_location const &location) noexcept;
 };

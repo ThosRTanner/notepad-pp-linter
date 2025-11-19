@@ -1,0 +1,82 @@
+---
+Checks:
+- bugprone-*
+- cert-*
+- clang-analyzer-*
+- concurrency-*
+- cppcoreguidelines-*
+- hicpp-*
+
+- misc-*
+# Disagrees with IWYU tool
+- -misc-include-cleaner
+# complains about templates being defined in headers
+- -misc-use-internal-linkage
+
+- modernize-*
+# It's horrible with templates and makes code less readable
+- -modernize-use-trailing-return-type
+# Ditto. This also causes a bunch of compile issues due to casts.
+- -modernize-return-braced-init-list
+# This seems wrong
+- -modernize-use-nodiscard
+
+- performance-*
+# Makes no sense unless memory size is hugely critical.
+- -performance-enum-size
+
+- portability-*
+
+- readability-*
+# Ugh. Really?
+- -readability-math-missing-parentheses
+# Looks pretty readable to me
+- -readability-avoid-nested-conditional-operator
+# clang-tidy SOMETIMES thinks a member function should be static when it clearly
+# can't be. Disabling this check as it's more trouble than it's worth.
+# See https://github.com/llvm/llvm-project/issues/149152
+- -readability-convert-member-functions-to-static
+
+# ---- clang-diagnostics exceptions ----
+
+# complains when we miss an initialiser for something that has a default
+# initialiser
+- -clang-diagnostic-missing-designated-field-initializers
+
+# appears to be completedly broken when done dynamically from visual studio
+- -clang-diagnostic-pragma-once-outside-header
+
+# ---- General exceptions to the rules ----
+
+# Still using printf family in some places for simplicity.
+- -*-vararg
+
+# Disabling magic numbers for now, as there are too many to fix
+- -*-magic-numbers
+
+# Currently have too many C-style arrays to enable these checks.
+- -*-avoid-c-arrays
+- -cppcoreguidelines-pro-bounds-constant-array-index
+
+# Unnamed parameters are often useful in overrides.
+- -*-named-parameter
+
+# Problems in windows headers which I can't work out how to ignore in a more
+# pinpointed fashion (though might be improved in LLVM 22)
+- -clang-analyzer-optin.core.EnumCastOutOfRange
+- -portability-template-virtual-member-function
+# Windows headers are just wrong with these but I have to use some of these
+# macros in the source
+- -hicpp-signed-bitwise
+# clang doesn't like the includes of poppack.h. Given these are in windows
+# includes, I'm not sure why it's complaining about them.
+- -clang-diagnostic-pragma-pack
+
+# It's expected for struct members to be public...
+CheckOptions:
+    key: misc-non-private-member-variables-in-classes.IgnoreClassesWithAllMemberVariablesBeingPublic
+    value: true
+
+# Seriously why would you not want to include headers?
+HeaderFilterRegex: .*
+ExcludeHeaderFilterRegex: (Docking_Dialogue_Interface.plugintemplate.src.*|resource\.h)
