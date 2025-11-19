@@ -76,8 +76,7 @@ File_Linter::File_Linter(
     temp_file_{get_temp_file_name()},
     variables_{variables},
     text_{std::move(text)},
-    env_{std::make_unique<Environment_Wrapper>()},
-    created_temp_file_{false}
+    env_{std::make_unique<Environment_Wrapper>()}
 {
     setup_environment();
 }

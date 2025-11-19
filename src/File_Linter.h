@@ -65,7 +65,7 @@ class File_Linter
 
     std::vector<std::string> warnings_;
 
-    bool created_temp_file_;
+    bool created_temp_file_{false};
 };
 
 }    // namespace Linter

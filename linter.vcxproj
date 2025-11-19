@@ -418,6 +418,7 @@
     <ClInclude Include="Docking_Dialogue_Interface\notepad++\PluginInterface.h" />
     <ClInclude Include="Docking_Dialogue_Interface\notepad++\Scintilla.h" />
     <ClInclude Include="Docking_Dialogue_Interface\Plugin\Callback_Context.h" />
+    <ClInclude Include="Docking_Dialogue_Interface\Plugin\Casts.h" />
     <ClInclude Include="Docking_Dialogue_Interface\Plugin\Dialogue_Interface.h" />
     <ClInclude Include="Docking_Dialogue_Interface\Plugin\Docking_Dialogue_Interface.h" />
     <ClInclude Include="Docking_Dialogue_Interface\Plugin\Min_Win_Defs.h" />

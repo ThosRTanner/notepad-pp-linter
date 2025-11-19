@@ -32,6 +32,10 @@ Checks:
 - -readability-math-missing-parentheses
 # Looks pretty readable to me
 - -readability-avoid-nested-conditional-operator
+# clang-tidy SOMETIMES thinks a member function should be static when it clearly
+# can't be. Disabling this check as it's more trouble than it's worth.
+# See https://github.com/llvm/llvm-project/issues/149152
+- -readability-convert-member-functions-to-static
 
 # ---- clang-diagnostics exceptions ----
 
@@ -72,3 +76,7 @@ Checks:
 CheckOptions:
     key: misc-non-private-member-variables-in-classes.IgnoreClassesWithAllMemberVariablesBeingPublic
     value: true
+
+# Seriously why would you not want to include headers?
+HeaderFilterRegex: .*
+ExcludeHeaderFilterRegex: (Docking_Dialogue_Interface.plugintemplate.src.*|resource\.h)

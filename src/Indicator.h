@@ -26,7 +26,7 @@ class Indicator
         Hover_Colour,
     };
 
-    typedef std::unordered_map<Property, uint32_t> Properties;
+    using Properties = std::unordered_map<Property, uint32_t>;
 
     bool colour_as_message() const noexcept;
 

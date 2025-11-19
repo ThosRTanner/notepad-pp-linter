@@ -10,6 +10,7 @@
 #include <istream>
 #include <iterator>
 #include <optional>
+#include <ranges>
 #include <string>
 #include <string_view>
 #include <utility>
@@ -23,9 +24,8 @@ namespace
 std::wstring to_lower(std::wstring_view data)
 {
     std::wstring res;
-    std::transform(
-        data.begin(),
-        data.end(),
+    std::ranges::transform(
+        data,
         std::back_inserter(res),
         [](wchar_t chr) noexcept { return std::towlower(chr); }
     );

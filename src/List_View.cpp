@@ -129,8 +129,8 @@ int List_View::add_column(Column_Data const &col) const noexcept
 }
 
 // I have no idea why clang-tidy thinks this can throw an exception.
-// NOLINTNEXTLINE(readability-function-cognitive-complexity,bugprone-exception-escape)
-void List_View::add_row(Data_Row row, Row_Data const &row_data) const noexcept
+// NOLINTNEXTLINE(readability-function-cognitive-complexity)
+void List_View::add_row(Data_Row row, Row_Data const &row_data) const
 {
     LVITEM lvi{.iItem = row, .iSubItem = row_data.sub_item};
     if (row_data.state.has_value())

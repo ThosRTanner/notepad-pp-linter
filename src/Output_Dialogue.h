@@ -83,11 +83,13 @@ class Output_Dialogue : protected Docking_Dialogue_Interface
             Output_Dialogue const &parent
         );
 
+        // NOLINTBEGIN(misc-non-private-member-variables-in-classes)
         wchar_t const *tab_name;
         UINT list_view_id;
         Tab tab;
         Report_View report_view;
         std::vector<Error_Info> errors;
+        // NOLINTEND(misc-non-private-member-variables-in-classes)
     };
 
     Message_Return on_dialogue_message(

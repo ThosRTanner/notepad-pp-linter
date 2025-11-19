@@ -9,11 +9,12 @@
 #include <oaidl.h>
 #include <oleauto.h>
 
-#include <cstdio>
-#include <cstring>
+#include <cstdio>    // For std::snprintf
 #include <exception>
 #include <source_location>
+#include <span>
 #include <string>
+#include <string_view>
 #include <system_error>
 #include <utility>
 
@@ -38,7 +39,7 @@ System_Error::System_Error( // NOLINT(*-member-init)
 {
     try
     {
-        std::ignore = std::snprintf(
+        what_length_ = std::snprintf(
             &what_string_[0],
             sizeof(what_string_),
             "%08lx %s",
@@ -51,7 +52,7 @@ System_Error::System_Error( // NOLINT(*-member-init)
     catch (std::exception const &e)
     {
 #pragma warning(suppress : 26447)    // MS Bug with e.what() decl
-        std::ignore = std::snprintf(
+        what_length_ = std::snprintf(
             &what_string_[0],
             sizeof(what_string_),
             "Error code %08lx then got %s",
@@ -68,7 +69,7 @@ System_Error::System_Error( // NOLINT(*-member-init)
 {
     try
     {
-        std::ignore = std::snprintf(
+        what_length_ = std::snprintf(
             &what_string_[0],
             sizeof(what_string_),
             "%s - %08lx %s",
@@ -82,7 +83,7 @@ System_Error::System_Error( // NOLINT(*-member-init)
     catch (std::exception const &e)
     {
 #pragma warning(suppress : 26447)    // MS Bug with e.what() decl
-        std::ignore = std::snprintf(
+        what_length_ = std::snprintf(
             &what_string_[0],
             sizeof(what_string_),
             "%s - Error code %08lx then got %s",
@@ -104,7 +105,7 @@ System_Error::System_Error( // NOLINT(*-member-init)
     try
     {
         _bstr_t const msg{error.ErrorMessage()};
-        std::ignore = std::snprintf(
+        what_length_ = std::snprintf(
             &what_string_[0],
             sizeof(what_string_),
             "%08lx %s",
@@ -115,7 +116,7 @@ System_Error::System_Error( // NOLINT(*-member-init)
     catch (std::exception const &e)
     {
 #pragma warning(suppress : 26447)    // MS Bug with e.what() decl
-        std::ignore = std::snprintf(
+        what_length_ = std::snprintf(
             &what_string_[0],
             sizeof(what_string_),
             "Got error %08lx but couldn't decode because %s",
@@ -136,7 +137,7 @@ System_Error::System_Error( // NOLINT(*-member-init)
     try
     {
         _bstr_t const msg{error.ErrorMessage()};
-        std::ignore = std::snprintf(
+        what_length_ = std::snprintf(
             &what_string_[0],
             sizeof(what_string_),
             "%s - %08lx %s",
@@ -148,7 +149,7 @@ System_Error::System_Error( // NOLINT(*-member-init)
     catch (std::exception const &e)
     {
 #pragma warning(suppress : 26447)    // MS Bug with e.what() decl
-        std::ignore = std::snprintf(
+        what_length_ = std::snprintf(
             &what_string_[0],
             sizeof(what_string_),
             "%s - Got error %08lx but couldn't decode because %s",
@@ -179,18 +180,28 @@ void System_Error::addLocationToMessage(
     std::source_location const &location
 ) noexcept
 {
-    char const *const full_path = location.file_name();
-    char const *const file_name = std::strrchr(full_path, '\\');
-    std::size_t const used{std::strlen(&what_string_[0])};
+    std::string_view filename{location.file_name()};
+    if (auto const pos = filename.rfind('\\'); pos != std::string_view::npos)
+    {
+        filename = filename.substr(pos + 1);
+    }
+    // Windows somewhat annoyingly issues a warning about std::span being used
+    // instead of gsl::span. We can ignore this here as we don't use the []
+    // operator.
+#pragma warning(push)
+#pragma warning(disable : 26821)
+    auto const what = std::span{what_string_};
+    auto const free_data = what.subspan(what_length_);
+#pragma warning(pop)
+    auto *const start = &*free_data.begin();
     std::ignore = std::snprintf(
-        &what_string_[used],
-        sizeof(what_string_) - used,
+        start,
+        &*free_data.rbegin() - start + 1,
         " at %s:%u %s",
-        (file_name == nullptr ? full_path : &file_name[1]),
+        &*filename.begin(),
         location.line(),
         location.function_name()
     );
-    what_string_[sizeof(what_string_) - 1] = 0;
 }
 
 }    // namespace Linter

@@ -229,6 +229,9 @@
     <ClInclude Include="src\List_View_Types.h">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="Docking_Dialogue_Interface\Plugin\Casts.h">
+      <Filter>Git Submodules\Docking Dialogue Interface</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="src\Resource.rc">

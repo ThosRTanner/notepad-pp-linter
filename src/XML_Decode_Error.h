@@ -1,6 +1,8 @@
 #pragma once
 #include <exception>
 
+// clang-tidy is being silly here
+// NOLINTNEXTLINE(cppcoreguidelines-virtual-class-destructor)
 struct IXMLDOMParseError;
 
 namespace Linter

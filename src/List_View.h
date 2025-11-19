@@ -146,7 +146,7 @@ class List_View
     int add_column(Column_Data const &) const noexcept;
 
     /** Add a row to the list view */
-    void add_row(Data_Row, Row_Data const &) const noexcept;
+    void add_row(Data_Row, Row_Data const &) const;
 
     /** Ensure that there is space for at least total_rows rows in the list view
      */
