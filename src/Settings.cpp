@@ -13,9 +13,7 @@
 #include <atlcomcli.h>
 #include <comutil.h>
 #include <intsafe.h>
-//#include <msxml.h>
 #include <msxml6.h>
-//#include <oleauto.h>
 #include <wingdi.h>     // For RGB
 #include <winuser.h>    // For VK_...
 
@@ -24,7 +22,6 @@
 #include <exception>
 #include <filesystem>
 #include <list>
-//#include <locale>
 #include <optional>
 #include <regex>
 #include <sstream>
