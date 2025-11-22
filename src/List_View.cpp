@@ -6,6 +6,7 @@
 #include "Plugin/Casts.h"
 
 #include <CommCtrl.h>
+#include <intsafe.h>
 #include <minwindef.h>
 #include <windef.h>
 #include <winuser.h>
@@ -25,9 +26,7 @@ List_View::List_View(HWND handle) : handle_(handle)
         throw ::Linter::System_Error("Could not create list box");
     }
 
-    ListView_SetExtendedListViewStyle(
-        handle, LVS_EX_FULLROWSELECT | LVS_EX_AUTOSIZECOLUMNS
-    );
+    set_extended_style_flags(LVS_EX_AUTOSIZECOLUMNS);
 }
 
 List_View::~List_View() noexcept = default;
@@ -376,6 +375,12 @@ void List_View::set_window_position(
         rect.bottom - rect.top,
         0
     );
+}
+
+/** Manipulate flags */
+DWORD List_View::modify_extended_style_flags(DWORD mask, DWORD style) const noexcept
+{
+    return ListView_SetExtendedListViewStyleEx(handle_, mask, style);
 }
 
 int List_View::get_first_selected_item() const noexcept

@@ -238,6 +238,15 @@ class List_View
         return handle_;
     }
 
+    /** Set extended style flags */
+    void set_extended_style_flags(DWORD style) const noexcept
+    {
+        modify_extended_style_flags(style, style);
+    }
+
+    /** Modify extended style flags */
+    DWORD modify_extended_style_flags(DWORD mask, DWORD style) const noexcept;
+
   private:
     HWND handle_;
 
