@@ -1,4 +1,5 @@
 #pragma once
+
 #include <exception>
 
 // clang-tidy is being silly here

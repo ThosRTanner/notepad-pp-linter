@@ -1,37 +1,32 @@
 #include "Output_Dialogue.h"
 
-//#include "Checkstyle_Parser.h"
 #include "Clipboard.h"
 #include "Encoding.h"
 #include "Error_Info.h"
 #include "Linter.h"
-//#include "Menu_Entry.h"
 #include "Report_View.h"
 #include "Settings.h"
-//#include "System_Error.h"
 
 #include "Plugin/Casts.h"
 #include "Plugin/Plugin.h"
 
-#include "notepad++/menuCmdID.h"
 #include "notepad++/Notepad_plus_msgs.h"
 #include "notepad++/Scintilla.h"
+#include "notepad++/menuCmdID.h"
 
 #include "resource.h"
 
 #include <CommCtrl.h>
 #include <intsafe.h>
 #include <winuser.h>    // For tagNMHDR, AppendMenu
-//#include <cstddef>
-#include <cstdio>    // For snprintf
+#include <cstdio>       // For snprintf
 #include <filesystem>
 #if __cplusplus >= 202302L
 #include <generator>
 #endif
-#include <optional>     // For optional, nullopt
+#include <optional>    // For optional, nullopt
 #include <sstream>
 #include <string>
-//#include <type_traits>
 #include <utility>
 #include <vector>
 
@@ -361,11 +356,12 @@ Output_Dialogue::Message_Return Output_Dialogue::process_custom_draw(
         case CDDS_ITEMPREPAINT | CDDS_SUBITEM:
             if (custom_draw->iSubItem == Column_Message)
             {
-                Report_View::Data_Row const row = current_report_view_->get_index(
-                    windows_static_cast<int, DWORD_PTR>(
-                        custom_draw->nmcd.dwItemSpec
-                    )
-                );
+                Report_View::Data_Row const row =
+                    current_report_view_->get_index(
+                        windows_static_cast<int, DWORD_PTR>(
+                            custom_draw->nmcd.dwItemSpec
+                        )
+                    );
                 if (static_cast<std::size_t>(row)
                     >= current_tab_->errors.size())
                 {
@@ -524,9 +520,7 @@ void Output_Dialogue::append_text_with_style(
     plugin()->send_to_editor(SCI_SETSTYLING, text.length(), style);
 }
 
-void Output_Dialogue::show_selected_lint(
-    Report_View::Data_Row selected_item
-)
+void Output_Dialogue::show_selected_lint(Report_View::Data_Row selected_item)
 {
     Error_Info const &lint_error = current_tab_->errors[selected_item];
 

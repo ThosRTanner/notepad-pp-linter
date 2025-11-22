@@ -1,4 +1,5 @@
 #pragma once
+
 #include <windef.h>    // for HWND
 
 #include "List_View_Types.h"
