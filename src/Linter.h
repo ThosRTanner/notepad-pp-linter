@@ -11,8 +11,6 @@
 #include <winnt.h>
 
 #include <cstdint>  // For uint32_t
-//#include <exception>
-//#include <filesystem>
 #include <map>
 #include <memory>
 #include <string>

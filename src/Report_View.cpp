@@ -17,6 +17,7 @@ Report_View::Report_View(HWND list_view) :
     // columns without one.
     header_(std::make_unique<Column_Header>(ListView_GetHeader(list_view)))
 {
+    set_extended_style_flags(LVS_EX_FULLROWSELECT | LVS_EX_HEADERDRAGDROP);
 }
 
 Report_View::~Report_View() noexcept = default;
@@ -42,7 +43,7 @@ void Report_View::sort_by_column(
 {
     Super::sort_by_column(
 #ifndef __cpp_lib_copyable_function
-#pragma warning(suppress: 26447)
+#pragma warning(suppress : 26447)
 #endif
         current_sort_column_, callback, current_sort_direction_
     );

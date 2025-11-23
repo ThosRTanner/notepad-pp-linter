@@ -1,5 +1,5 @@
 #pragma once
-//#include "Checkstyle_Parser.h"
+
 #include "Error_Info.h"
 #include "Report_View.h"
 
@@ -10,8 +10,6 @@
 #include <windef.h>
 
 #include <array>
-//#include <functional>
-//#include <optional>
 #include <string_view>
 #include <vector>
 

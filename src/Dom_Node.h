@@ -1,4 +1,5 @@
 #pragma once
+
 #include <atlcomcli.h>
 #include <msxml.h>
 
