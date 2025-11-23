@@ -9,6 +9,11 @@
    1. When sorted, currently the list is sub sorted by line and column, in the currently selected direction.
    1. When notepad++ starts, the error display will be sorted by line and column. While whatever selection you make is kept throughout the editing session, it is not saved on exit.
 
+1. Added support for dragging column headers to rearrange. Fixes #71.
+
+   1. The column order applies to the current tab only. Altering the order in the "Lint Errors" tab doesn't affect the "System Errors" tab and vice versa.
+   1. The order of columns isn't saved on exit.
+
 ## 1.0.1
 
 1. Added the ability to display error details. If you double click an entry in the system errors tab, either:

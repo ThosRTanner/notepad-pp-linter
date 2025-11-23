@@ -392,15 +392,12 @@ void Output_Dialogue::selected_tab_changed() noexcept
     current_report_view_ = &current_tab_->report_view;
     for (auto const &tab : tab_definitions_)
     {
-        if (&tab == current_tab_)
-        {
-            tab.report_view.show();
-        }
-        else
+        if (&tab != current_tab_)
         {
             tab.report_view.hide();
         }
     }
+    current_report_view_->show();
 }
 
 void Output_Dialogue::window_pos_changed() noexcept

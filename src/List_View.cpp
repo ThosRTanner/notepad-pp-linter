@@ -378,7 +378,9 @@ void List_View::set_window_position(
 }
 
 /** Manipulate flags */
-DWORD List_View::modify_extended_style_flags(DWORD mask, DWORD style) const noexcept
+DWORD List_View::modify_extended_style_flags(
+    DWORD mask, DWORD style
+) const noexcept
 {
     return ListView_SetExtendedListViewStyleEx(handle_, mask, style);
 }
