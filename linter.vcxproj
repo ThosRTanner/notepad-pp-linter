@@ -111,7 +111,6 @@
     <OutDir>$(SolutionDir)$(ShortProjectName)\$(Platform)\$(Configuration)\</OutDir>
     <IntDir>$(ShortProjectName)\build\$(Platform)\$(Configuration)\</IntDir>
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
-    <RunCodeAnalysis>true</RunCodeAnalysis>
     <EnableClangTidyCodeAnalysis>true</EnableClangTidyCodeAnalysis>
     <ClangTidyExtraArgs>-Isrc/</ClangTidyExtraArgs>
     <ClangTidyPrependExtraArgs>-Wno-unused-command-line-argument</ClangTidyPrependExtraArgs>
@@ -120,7 +119,6 @@
     <OutDir>$(SolutionDir)$(ShortProjectName)\$(Platform)\$(Configuration)\</OutDir>
     <IntDir>$(ShortProjectName)\build\$(Platform)\$(Configuration)\</IntDir>
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
-    <RunCodeAnalysis>true</RunCodeAnalysis>
     <EnableClangTidyCodeAnalysis>true</EnableClangTidyCodeAnalysis>
     <ClangTidyExtraArgs>-Isrc/</ClangTidyExtraArgs>
     <ClangTidyPrependExtraArgs>-Wno-unused-command-line-argument</ClangTidyPrependExtraArgs>
@@ -132,13 +130,11 @@
     <ClangTidyPrependExtraArgs>-Wno-unused-command-line-argument</ClangTidyPrependExtraArgs>
     <ClangTidyExtraArgs>-Isrc/</ClangTidyExtraArgs>
     <EnableClangTidyCodeAnalysis>true</EnableClangTidyCodeAnalysis>
-    <RunCodeAnalysis>true</RunCodeAnalysis>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <OutDir>$(SolutionDir)$(ShortProjectName)\$(Platform)\$(Configuration)\</OutDir>
     <IntDir>$(ShortProjectName)\build\$(Platform)\$(Configuration)\</IntDir>
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
-    <RunCodeAnalysis>true</RunCodeAnalysis>
     <EnableClangTidyCodeAnalysis>true</EnableClangTidyCodeAnalysis>
     <ClangTidyExtraArgs>-Isrc/</ClangTidyExtraArgs>
     <ClangTidyPrependExtraArgs>-Wno-unused-command-line-argument</ClangTidyPrependExtraArgs>
@@ -147,7 +143,6 @@
     <OutDir>$(SolutionDir)$(ShortProjectName)\$(Platform)\$(Configuration)\</OutDir>
     <IntDir>$(ShortProjectName)\build\$(Platform)\$(Configuration)\</IntDir>
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
-    <RunCodeAnalysis>true</RunCodeAnalysis>
     <EnableClangTidyCodeAnalysis>true</EnableClangTidyCodeAnalysis>
     <ClangTidyExtraArgs>-Isrc/</ClangTidyExtraArgs>
     <ClangTidyPrependExtraArgs>-Wno-unused-command-line-argument</ClangTidyPrependExtraArgs>
@@ -156,7 +151,6 @@
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
     <OutDir>$(SolutionDir)$(ShortProjectName)\$(Platform)\$(Configuration)\</OutDir>
     <IntDir>$(ShortProjectName)\build\$(Platform)\$(Configuration)\</IntDir>
-    <RunCodeAnalysis>true</RunCodeAnalysis>
     <EnableClangTidyCodeAnalysis>true</EnableClangTidyCodeAnalysis>
     <ClangTidyExtraArgs>-Isrc/</ClangTidyExtraArgs>
     <ClangTidyPrependExtraArgs>-Wno-unused-command-line-argument</ClangTidyPrependExtraArgs>

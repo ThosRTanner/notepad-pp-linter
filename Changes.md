@@ -1,6 +1,6 @@
 # Change log
 
-## 1.0.2
+## 1.0.2 (unreleased)
 
 1. Added support for clicking on column headers in the linter results tab to sort by that column. Fixes #72.
 
@@ -13,6 +13,8 @@
 
    1. The column order applies to the current tab only. Altering the order in the "Lint Errors" tab doesn't affect the "System Errors" tab and vice versa.
    1. The order of columns isn't saved on exit.
+
+1. When creating a config file, put in enough xml to make it valid. Fixes #24.
 
 ## 1.0.1
 
