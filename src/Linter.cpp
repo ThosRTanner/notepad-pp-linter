@@ -21,7 +21,7 @@
 #include <handleapi.h>
 #include <objbase.h>
 #include <process.h>
-#include <synchapi.h>   // For WaitForSingleObject
+#include <synchapi.h>    // For WaitForSingleObject
 #include <threadpoollegacyapiset.h>
 #include <winbase.h>    // For WAIT_OBJECT_0
 #include <windef.h>
@@ -199,7 +199,57 @@ void Linter::on_notification(SCNotification const *notification)
 
 void Linter::edit_config() noexcept
 {
-    send_to_notepad(NPPM_DOOPEN, 0, settings_->settings_file().c_str());
+    if (send_to_notepad(NPPM_DOOPEN, 0, settings_->settings_file().c_str())
+        == FALSE)
+    {
+        return;
+    }
+    if (send_to_editor(SCI_GETLENGTH) != 0)
+    {
+        // File isn't empty, nothing more to do
+        return;
+    }
+    // New file, add boilerplate
+    char const *const boilerplate = R"(<?xml version="1.0" encoding="utf-8" ?>
+
+<!-- Linter++ configuration -->
+
+<LinterPP>
+  <!-- Note: The order of the sections is not important.
+       All sections apart from the 'linters' section are optional.
+  -->
+
+  <linters>
+    <!-- You must specify at least one linter.
+         Read the documnentation for more details!
+    -->
+    <linter>
+      <extensions>
+        <extension>.ext</extension>
+      </extensions>
+      <commands>
+        <command>
+          <program>path\\to\\my_linter</program>
+          <args>--option1=value1 --etc %%</args>
+        </command>
+      </commands>
+    </linter>
+  </linters>
+
+  <!-- indicator section -->
+
+  <!-- messages section -->
+
+  <!-- misc section -->
+
+  <!-- shortcuts section -->
+
+  <!-- variables section -->
+
+</LinterPP>
+)";
+    send_to_editor(SCI_APPENDTEXT, strlen(boilerplate), boilerplate);
+    send_to_notepad(NPPM_SAVECURRENTFILE);
 }
 
 void Linter::show_results() noexcept
