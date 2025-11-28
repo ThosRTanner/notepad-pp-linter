@@ -29,6 +29,7 @@
 #include <wtypesbase.h>
 
 // IWYU pragma: no_include <xtree>
+#include <cstring>    // For std::strlen
 #include <exception>
 #include <filesystem>
 #include <list>
@@ -248,7 +249,7 @@ void Linter::edit_config() noexcept
 
 </LinterPP>
 )";
-    send_to_editor(SCI_APPENDTEXT, strlen(boilerplate), boilerplate);
+    send_to_editor(SCI_APPENDTEXT, std::strlen(boilerplate), boilerplate);
     send_to_notepad(NPPM_SAVECURRENTFILE);
 }
 
@@ -435,6 +436,7 @@ unsigned int Linter::run_linter() noexcept
 {
     try
     {
+        output_dialogue_->disable_redraw();
         try
         {
             apply_linters();
@@ -460,6 +462,7 @@ unsigned int Linter::run_linter() noexcept
             );
             show_tooltip(wstr);
         }
+        output_dialogue_->enable_redraw();
     }
     catch (std::exception const &e)
     {
