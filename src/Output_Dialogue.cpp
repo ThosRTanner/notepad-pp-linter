@@ -97,6 +97,8 @@ Output_Dialogue::Output_Dialogue(Menu_Entry menu_entry, Linter const &plugin) :
             LR_LOADMAP3DCOLORS | LR_LOADTRANSPARENT
         ))
     );
+
+    InvalidateRect();
 }
 
 Output_Dialogue::~Output_Dialogue() = default;
