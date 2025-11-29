@@ -231,6 +231,12 @@ class List_View
     /** Adjust position and size of list. */
     void set_window_position(HWND prev_win, RECT const &rect) const noexcept;
 
+    /** Disable redrawing of the list view */
+    void disable_redraw() const noexcept;
+
+    /** Enable redrawing of the list view */
+    void enable_redraw() const noexcept;
+
   protected:
     /** Get the handle to the list view */
     HWND handle() const noexcept

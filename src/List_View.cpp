@@ -377,6 +377,25 @@ void List_View::set_window_position(
     );
 }
 
+/** Disable redrawing of the list view */
+void List_View::disable_redraw() const noexcept
+{
+    ::SendMessage(handle_, WM_SETREDRAW, FALSE, 0);
+}
+
+/** Enable redrawing of the list view */
+void List_View::enable_redraw() const noexcept
+{
+    ::SendMessage(handle_, WM_SETREDRAW, TRUE, 0);
+    // InvalidateRect(handle_, nullptr, TRUE);
+    ::RedrawWindow(
+        handle_,
+        nullptr,
+        nullptr,
+        RDW_ERASE | RDW_FRAME | RDW_INVALIDATE | RDW_ALLCHILDREN
+    );
+}
+
 /** Manipulate flags */
 DWORD List_View::modify_extended_style_flags(
     DWORD mask, DWORD style
