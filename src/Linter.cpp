@@ -29,7 +29,6 @@
 #include <wtypesbase.h>
 
 // IWYU pragma: no_include <xtree>
-#include <cstring>    // For std::strlen
 #include <exception>
 #include <filesystem>
 #include <list>
@@ -211,7 +210,7 @@ void Linter::edit_config() noexcept
         return;
     }
     // New file, add boilerplate
-    char const *const boilerplate = R"(<?xml version="1.0" encoding="utf-8" ?>
+    char const boilerplate[] = R"(<?xml version="1.0" encoding="utf-8" ?>
 
 <!-- Linter++ configuration -->
 
@@ -249,7 +248,7 @@ void Linter::edit_config() noexcept
 
 </LinterPP>
 )";
-    send_to_editor(SCI_APPENDTEXT, std::strlen(boilerplate), boilerplate);
+    send_to_editor(SCI_APPENDTEXT, sizeof(boilerplate) - 1, &boilerplate[0]);
     send_to_notepad(NPPM_SAVECURRENTFILE);
 }
 
@@ -334,9 +333,11 @@ void Linter::highlight_errors()
         auto position = send_to_editor(
             SCI_POSITIONFROMLINE, static_cast<WPARAM>(error.line_) - 1
         );
-        position += Encoding::utfOffset(
+        // This cast seems pretty pointless though visual c++ editor complains
+        // about sub expressions overflowing otherwise.
+        position += static_cast<LRESULT>(Encoding::utfOffset(
             get_line_text(error.line_ - 1), error.column_ - 1
-        );
+        ));
         errors_by_position_[position] = error.message_;
         highlight_error_at(
             position, settings_->get_message_colour(error.severity_)
