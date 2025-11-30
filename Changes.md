@@ -11,10 +11,16 @@
 
 1. Added support for dragging column headers to rearrange. Fixes #71.
 
-   1. The column order applies to the current tab only. Altering the order in the "Lint Errors" tab doesn't affect the "System Errors" tab and vice versa.
+   1. The column order applies to the current tab only. Altering the order in the `Lint Errors` tab doesn't affect the `System Errors` tab and vice versa.
    1. The order of columns isn't saved on exit.
 
 1. When creating a config file, put in enough xml to make it valid. Fixes #24.
+
+1. Make sure empty dialogue is properly painted on startup. Fixes #84.
+
+1. Use `WM_SETREDRAW` to prevent flickering when updating the error list. Fixes #87.
+
+1. Relint file on save in case it has been modified. Fixes #52.
 
 ## 1.0.1
 

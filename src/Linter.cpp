@@ -160,19 +160,20 @@ void Linter::on_notification(SCNotification const *notification)
         case NPPN_READY:
             send_to_notepad(NPPM_ADDSCNMODIFIEDFLAGS, 0, Modification_Flags);
             notepad_is_ready_ = true;
+            // New file, mark as changed
             mark_file_changed();
             break;
 
-        case NPPN_BUFFERACTIVATED:
+        case NPPN_BUFFERACTIVATED:    // NOLINT(bugprone-branch-clone)
+            // New file, mark as changed
+            // At this point, we should kill any existing lint.
             mark_file_changed();
             break;
 
         case NPPN_FILESAVED:
-            if (get_document_path(notification->nmhdr.idFrom)
-                == settings_->settings_file())
-            {
-                mark_file_changed();
-            }
+            // If we were very clever, we could check if the file had actually
+            // changed.
+            mark_file_changed();
             break;
 
         case SCN_MODIFIED:
