@@ -97,6 +97,8 @@ Output_Dialogue::Output_Dialogue(Menu_Entry menu_entry, Linter const &plugin) :
             LR_LOADMAP3DCOLORS | LR_LOADTRANSPARENT
         ))
     );
+
+    InvalidateRect();
 }
 
 Output_Dialogue::~Output_Dialogue() = default;
@@ -137,6 +139,18 @@ void Output_Dialogue::select_next_lint()
 void Output_Dialogue::select_previous_lint()
 {
     select_lint(-1);
+}
+
+/** Disable redrawing */
+void Output_Dialogue::disable_redraw() const noexcept
+{
+    current_report_view_->disable_redraw();
+}
+
+/** Enable redrawing */
+void Output_Dialogue::enable_redraw() const noexcept
+{
+    current_report_view_->enable_redraw();
 }
 
 Output_Dialogue::Message_Return Output_Dialogue::on_dialogue_message(
@@ -482,7 +496,6 @@ void Output_Dialogue::add_errors(Tab tab, std::vector<Error_Info> const &lints)
     {
         report_view.autosize_columns();
         report_view.sort_by_column(sort_callback_);
-        InvalidateRect();
     }
 }
 

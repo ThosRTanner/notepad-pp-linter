@@ -160,19 +160,20 @@ void Linter::on_notification(SCNotification const *notification)
         case NPPN_READY:
             send_to_notepad(NPPM_ADDSCNMODIFIEDFLAGS, 0, Modification_Flags);
             notepad_is_ready_ = true;
+            // New file, mark as changed
             mark_file_changed();
             break;
 
-        case NPPN_BUFFERACTIVATED:
+        case NPPN_BUFFERACTIVATED:    // NOLINT(bugprone-branch-clone)
+            // New file, mark as changed
+            // At this point, we should kill any existing lint.
             mark_file_changed();
             break;
 
         case NPPN_FILESAVED:
-            if (get_document_path(notification->nmhdr.idFrom)
-                == settings_->settings_file())
-            {
-                mark_file_changed();
-            }
+            // If we were very clever, we could check if the file had actually
+            // changed.
+            mark_file_changed();
             break;
 
         case SCN_MODIFIED:
@@ -210,7 +211,7 @@ void Linter::edit_config() noexcept
         return;
     }
     // New file, add boilerplate
-    char const *const boilerplate = R"(<?xml version="1.0" encoding="utf-8" ?>
+    char const boilerplate[] = R"(<?xml version="1.0" encoding="utf-8" ?>
 
 <!-- Linter++ configuration -->
 
@@ -248,7 +249,7 @@ void Linter::edit_config() noexcept
 
 </LinterPP>
 )";
-    send_to_editor(SCI_APPENDTEXT, strlen(boilerplate), boilerplate);
+    send_to_editor(SCI_APPENDTEXT, sizeof(boilerplate) - 1, &boilerplate[0]);
     send_to_notepad(NPPM_SAVECURRENTFILE);
 }
 
@@ -333,9 +334,11 @@ void Linter::highlight_errors()
         auto position = send_to_editor(
             SCI_POSITIONFROMLINE, static_cast<WPARAM>(error.line_) - 1
         );
-        position += Encoding::utfOffset(
+        // This cast seems pretty pointless though visual c++ editor complains
+        // about sub expressions overflowing otherwise.
+        position += static_cast<LRESULT>(Encoding::utfOffset(
             get_line_text(error.line_ - 1), error.column_ - 1
-        );
+        ));
         errors_by_position_[position] = error.message_;
         highlight_error_at(
             position, settings_->get_message_colour(error.severity_)
@@ -435,6 +438,7 @@ unsigned int Linter::run_linter() noexcept
 {
     try
     {
+        output_dialogue_->disable_redraw();
         try
         {
             apply_linters();
@@ -460,6 +464,7 @@ unsigned int Linter::run_linter() noexcept
             );
             show_tooltip(wstr);
         }
+        output_dialogue_->enable_redraw();
     }
     catch (std::exception const &e)
     {

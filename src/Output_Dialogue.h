@@ -62,6 +62,12 @@ class Output_Dialogue : protected Docking_Dialogue_Interface
     /** Selects the next previous message */
     void select_previous_lint();
 
+    /** Disable redrawing */
+    void disable_redraw() const noexcept;
+
+    /** Enable redrawing */
+    void enable_redraw() const noexcept;
+
   private:
     enum Tab
     {
