@@ -24,7 +24,6 @@
 #include <synchapi.h>    // For WaitForSingleObject
 #include <threadpoollegacyapiset.h>
 #include <winbase.h>    // For WAIT_OBJECT_0
-#include <windef.h>
 #include <winuser.h>
 #include <wtypesbase.h>
 
@@ -91,7 +90,10 @@ Linter::Linter(NppData const &data) :
         std::make_unique<Output_Dialogue>(Menu_Entry::Show_Results, *this)
     ),
     timer_queue_(::CreateTimerQueue()),
-    enabled_(settings_->enabled())
+    enabled_(settings_->enabled()),
+    npp_statusbar_(FindWindowEx(
+        get_notepad_window(), nullptr, L"msctls_statusbar32", nullptr
+    ))
 {
 }
 
@@ -608,29 +610,13 @@ void Linter::show_tooltip()
 
 void Linter::show_tooltip(std::wstring message)
 {
-    const LRESULT position = send_to_editor(SCI_GETCURRENTPOS);
-
-    HWND npp_statusbar = FindWindowEx(
-        get_notepad_window(), nullptr, L"msctls_statusbar32", nullptr
-    );
-
+    LRESULT const position = send_to_editor(SCI_GETCURRENTPOS);
     auto const error = errors_by_position_.find(position);
-    if (error != errors_by_position_.end())
-    {
-        ::SendMessage(
-            npp_statusbar,
-            WM_SETTEXT,
-            0,
-            windows_cast_to<LPARAM, wchar_t const *>(
-                (std::wstring(L" - ") + error->second).c_str()
-            )
-        );
-    }
-    else
+    if (error == errors_by_position_.end())
     {
         wchar_t title[256];
         ::SendMessage(
-            npp_statusbar,
+            npp_statusbar_,
             WM_GETTEXT,
             sizeof(title) / sizeof(title[0]) - 1,
             windows_cast_to<LPARAM, wchar_t *>(&title[0])
@@ -645,12 +631,23 @@ void Linter::show_tooltip(std::wstring message)
         if (not message.empty())
         {
             ::SendMessage(
-                npp_statusbar,
+                npp_statusbar_,
                 WM_SETTEXT,
                 0,
                 windows_cast_to<LPARAM, wchar_t const *>(message.c_str())
             );
         }
+    }
+    else
+    {
+        ::SendMessage(
+            npp_statusbar_,
+            WM_SETTEXT,
+            0,
+            windows_cast_to<LPARAM, wchar_t const *>(
+                (std::wstring(L" - ") + error->second).c_str()
+            )
+        );
     }
 }
 

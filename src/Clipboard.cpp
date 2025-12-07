@@ -28,7 +28,6 @@ Clipboard::~Clipboard()
     ::CloseClipboard();
 }
 
-// NOLINTNEXTLINE(readability-convert-member-functions-to-static)
 void Clipboard::empty()
 {
     if (::EmptyClipboard() == FALSE)

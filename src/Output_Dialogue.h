@@ -159,6 +159,9 @@ class Output_Dialogue : protected Docking_Dialogue_Interface
 
     // Sorting callback function pointer.
     Report_View::Sort_Callback_Function sort_callback_;
+
+    // Initial font for the output dialogue
+    HFONT initial_font_;
 };
 
 }    // namespace Linter

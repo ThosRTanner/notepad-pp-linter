@@ -237,6 +237,9 @@ class List_View
     /** Enable redrawing of the list view */
     void enable_redraw() const noexcept;
 
+    /** Change the current font */
+    void set_font(HFONT font) const noexcept;
+
   protected:
     /** Get the handle to the list view */
     HWND handle() const noexcept

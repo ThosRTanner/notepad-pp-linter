@@ -4,13 +4,13 @@
 // it doesn't understand inheritance
 #include "Plugin/Plugin.h"
 
-//#include "Checkstyle_Parser.h"
 #include "Error_Info.h"
 
 #include <minwindef.h>
+#include <windef.h>    // For HWND
 #include <winnt.h>
 
-#include <cstdint>  // For uint32_t
+#include <cstdint>    // For uint32_t
 #include <map>
 #include <memory>
 #include <string>
@@ -127,6 +127,8 @@ class Linter : public Plugin
 
     // FIXME - abstract this into the plugin class
     std::vector<FuncItem> menu_entries_;
+
+    HWND npp_statusbar_;
 };
 
 }    // namespace Linter

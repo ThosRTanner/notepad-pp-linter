@@ -19,6 +19,7 @@
 #include <CommCtrl.h>
 #include <intsafe.h>
 #include <winuser.h>    // For tagNMHDR, AppendMenu
+
 #include <cstdio>       // For snprintf
 #include <filesystem>
 #if __cplusplus >= 202302L
@@ -45,7 +46,8 @@ enum List_Column
     Column_Message
 };
 
-/** Context menu items
+/** Context menu items.
+ * 
  * Ensure they don't clash with anything in the resource file.
  */
 enum Context_Menu_Entry
@@ -82,6 +84,10 @@ Output_Dialogue::Output_Dialogue(Menu_Entry menu_entry, Linter const &plugin) :
 {
     initialise_dialogue();
     selected_tab_changed();
+
+    initial_font_ = windows_cast_to<HFONT, LRESULT>(
+        SendMessage(GetDlgItem(IDC_LIST_OUTPUT), WM_GETFONT, 0, 0)
+    );
 
     // Possibly one should free the icon up, but I don't see the dialogue memory
     // being freed up anywhere.
@@ -147,9 +153,13 @@ void Output_Dialogue::disable_redraw() const noexcept
     current_report_view_->disable_redraw();
 }
 
-/** Enable redrawing */
+/** Enable redrawing and set the appropriate font */
 void Output_Dialogue::enable_redraw() const noexcept
 {
+    auto const new_font = settings_->font();
+    current_report_view_->set_font(
+        new_font == nullptr ? initial_font_ : new_font
+    );
     current_report_view_->enable_redraw();
 }
 

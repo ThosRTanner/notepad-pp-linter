@@ -74,8 +74,10 @@ Checks:
 
 # It's expected for struct members to be public...
 CheckOptions:
-    key: misc-non-private-member-variables-in-classes.IgnoreClassesWithAllMemberVariablesBeingPublic
-    value: true
+- key: misc-non-private-member-variables-in-classes.IgnoreClassesWithAllMemberVariablesBeingPublic
+  value: true
+- key: readability-qualified-auto.AllowedTypes
+  value: 'HFONT'
 
 # Seriously why would you not want to include headers?
 HeaderFilterRegex: .*
