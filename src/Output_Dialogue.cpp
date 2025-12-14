@@ -20,7 +20,7 @@
 #include <intsafe.h>
 #include <winuser.h>    // For tagNMHDR, AppendMenu
 
-#include <cstdio>       // For snprintf
+#include <cstdio>    // For snprintf
 #include <filesystem>
 #if __cplusplus >= 202302L
 #include <generator>
@@ -47,7 +47,7 @@ enum List_Column
 };
 
 /** Context menu items.
- * 
+ *
  * Ensure they don't clash with anything in the resource file.
  */
 enum Context_Menu_Entry
@@ -79,15 +79,13 @@ Output_Dialogue::Output_Dialogue(Menu_Entry menu_entry, Linter const &plugin) :
             Report_View::Data_Column column
         ) noexcept
         { return this->sort_call_function(row1_index, row2_index, column); }
-    )
-
+    ),
+    initial_font_{windows_cast_to<HFONT, LRESULT>(
+        SendMessage(GetDlgItem(IDC_LIST_OUTPUT), WM_GETFONT, 0, 0)
+    )}
 {
     initialise_dialogue();
     selected_tab_changed();
-
-    initial_font_ = windows_cast_to<HFONT, LRESULT>(
-        SendMessage(GetDlgItem(IDC_LIST_OUTPUT), WM_GETFONT, 0, 0)
-    );
 
     // Possibly one should free the icon up, but I don't see the dialogue memory
     // being freed up anywhere.
@@ -156,7 +154,7 @@ void Output_Dialogue::disable_redraw() const noexcept
 /** Enable redrawing and set the appropriate font */
 void Output_Dialogue::enable_redraw() const noexcept
 {
-    auto const new_font = settings_->font();
+    HFONT const new_font = settings_->font();    // NOLINT(misc-misplaced-const)
     current_report_view_->set_font(
         new_font == nullptr ? initial_font_ : new_font
     );

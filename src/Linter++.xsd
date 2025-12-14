@@ -410,8 +410,12 @@
       <xs:documentation>
         Specify the font to use in the message window.
 
-        You can specify either a typeface name (e.g. "Courier New") or a
-        font style (e.g. "monospace"), but not both.
+        If you specify a typeface, and it doesn't exist on the system, then
+        windows tries to match it using the specified style.
+
+        Note: Should m/s get off their backsides and implement XSD 1.1, then
+        this could be made to ensure that at least one of the typeface or style
+        elements is present.
 
         You can also specify height (in pixels), width (in pixels), weight
         (e.g. "bold" or 700), and whether the font is italic, underlined or
@@ -424,18 +428,17 @@
         CreateFont function in the Windows API.
       </xs:documentation>
     </xs:annotation>
-    <xs:sequence>
-      <xs:choice minOccurs="0">
-        <xs:element name="typeface" type="nonemptystring"/>
-        <xs:element name="style" type="font_style"/>
-      </xs:choice>
+    <xs:all>
+      <!-- FIXME Ensure at least one of typeface or style is present -->
+      <xs:element name="typeface" type="nonemptystring" minOccurs="0"/>
+      <xs:element name="style" type="font_style" minOccurs="0"/>
       <xs:element name="height" type="xs:positiveInteger" minOccurs="0"/>
       <xs:element name="width" type="xs:positiveInteger" minOccurs="0"/>
       <xs:element name="weight" type="font_weight" minOccurs="0"/>
       <xs:element name="italic" type="presence" minOccurs="0"/>
       <xs:element name="underline" type="presence" minOccurs="0"/>
       <xs:element name="strikethrough" type="presence" minOccurs="0"/>
-    </xs:sequence>
+    </xs:all>
   </xs:complexType>
 
   <xs:complexType name="misc">

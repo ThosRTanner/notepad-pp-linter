@@ -82,7 +82,10 @@ Settings::Settings(::Linter::Linter const &linter) :
     }
 }
 
-Settings::~Settings() = default;
+Settings::~Settings()
+{
+    ::DeleteObject(font_);
+}
 
 uint32_t Settings::get_message_colour(std::wstring const &colour) const noexcept
 {
@@ -287,6 +290,9 @@ void Settings::read_misc(Dom_Document const &settings)
     {
         enabled_ = false;
     }
+
+    ::DeleteObject(font_);
+    font_ = nullptr;
     auto const font_node = settings.get_node("//font");
     if (font_node.has_value())
     {
@@ -296,28 +302,66 @@ void Settings::read_misc(Dom_Document const &settings)
 
 void Settings::read_font_config(Dom_Node const &font_node)
 {
+    static std::unordered_map<std::wstring, int> const weights{
+        {L"thin",       100},
+        {L"ultralight", 200},
+        {L"light",      300},
+        {L"regular",    400},
+        {L"medium",     500},
+        {L"semibold",   600},
+        {L"bold",       700},
+        {L"ultrabold",  800},
+        {L"black",      900}
+    };
+
+    static std::unordered_map<std::wstring, int> const styles{
+        {L"monospace",    FIXED_PITCH   },
+        {L"proportional", VARIABLE_PITCH},
+        {L"modern",       FF_MODERN     },
+        {L"roman",        FF_ROMAN      },
+        {L"swiss",        FF_SWISS      },
+        {L"script",       FF_SCRIPT     },
+        {L"decorative",   FF_DECORATIVE }
+    };
+
     std::optional<std::wstring> typeface;
     if (auto const typeface_node = font_node.get_optional_node("./typeface"))
     {
         typeface = typeface_node->get_value();
     }
-    ::DeleteObject(font_);
+
+    // Note: Some of the parameters in CreateFont are hardcoded and best guess.
+    // The charset parameter in particular is a mess, as the documentation
+    // advises both against and for using DEFAULT_CHARSET.
+    // See
+    // https://learn.microsoft.com/en-us/windows/win32/api/wingdi/nf-wingdi-createfonta
     font_ = CreateFont(
         ([& font_node]() -> int
         {
             auto const height = font_node.get_optional_node("./height");
-            return height.has_value() ?
-                    static_cast<int>(std::stol(height->get_value())) : 0;
+            return height.has_value() ? std::stoi(height->get_value()) : 0;
         })(),
         ([& font_node]() -> int
         {
             auto const width = font_node.get_optional_node("./width");
-            return width.has_value() ?
-                static_cast<int>(std::stol(width->get_value())) : 0;
+            return width.has_value() ? std::stoi(width->get_value()) : 0;
         })(),
-        0/*[in] int cEscapement*/,
-        0/*[in] int cOrientation*/,
-        0/*[in] TBD int cWeight*/,
+        0 /*cEscapement*/,
+        0 /*cOrientation*/,
+        ([& font_node]() -> int
+        {
+            auto const weight_node = font_node.get_optional_node("./weight");
+            if (not weight_node.has_value())
+            {
+                return 0;
+            }
+            std::wstring const &weight = weight_node->get_value();
+            if (auto value = weights.find(weight); value != weights.end())
+            {
+                return value->second;
+            }
+            return std::stoi(weight);
+        })(),
         font_node.get_optional_node("./italic").has_value() ? TRUE : FALSE,
         font_node.get_optional_node("./underline").has_value() ? TRUE : FALSE,
         font_node.get_optional_node("./strikethrough").has_value() ? TRUE : FALSE,
@@ -325,74 +369,27 @@ void Settings::read_font_config(Dom_Node const &font_node)
         OUT_DEFAULT_PRECIS,
         CLIP_DEFAULT_PRECIS,
         CLEARTYPE_QUALITY,
-        0/*[in] TBD DWORD iPitchAndFamily*/,
+        ([& font_node]() -> int {
+            auto style = FF_DONTCARE;
+            auto const styles_node = font_node.get_optional_node("./style");
+            if (not styles_node.has_value())
+            {
+                return style;
+            }
+            for (auto const style_node : styles_node->get_node_list("./*"))
+            {
+                auto const style_str = style_node.get_name();
+                if (auto const style_it = styles.find(style_str);
+                    style_it != styles.end())
+                {
+                    style |= style_it->second;
+                }
+            }
+            return style;                    
+        })(),
         typeface.has_value() ? typeface->c_str() : nullptr
     );
-    /*
-    auto const style_node = font_node.get_optional_node("./style");
-    if (style_node.has_value())
-    {
-        font_config.style = style_node->get_value();
-    }
-    auto const weight_node = font_node.get_optional_node("./weight");
-    if (weight_node.has_value())
-    {
-        // FIXME : This could be a string like "bold" or a number.
-        font_config.weight = weight_node->get_value();
-    }
-    */
 }
-/*
-  <xs:complexType name="font">
-    <xs:annotation>
-      <xs:documentation>
-        Specify the font to use in the message window.
-
-        You can specify either a typeface name (e.g. "Courier New") or a
-        font style (e.g. "monospace"), but not both.
-
-        You can also specify height (in pixels), width (in pixels), weight
-        (e.g. "bold" or 700), and whether the font is italic, underlined or
-        strikethrough.
-
-        If you don't specify any font settings, the default font for
-        notepad++ will be used.
-
-        The parameters correspond roughly to the parameters of the
-        CreateFont function in the Windows API.
-      </xs:documentation>
-    </xs:annotation>
-    <xs:sequence>
-      <xs:choice minOccurs="0">
-        <xs:element name="typeface" type="nonemptystring"/>
-        <xs:element name="style" type="font_style"/>
-      </xs:choice>
-      <xs:element name="height" type="xs:positiveInteger" minOccurs="0"/>
-      <xs:element name="width" type="xs:positiveInteger" minOccurs="0"/>
-      <xs:element name="weight" type="font_weight" minOccurs="0"/>
-      <xs:element name="italic" type="presence" minOccurs="0"/>
-      <xs:element name="underline" type="presence" minOccurs="0"/>
-      <xs:element name="strikethrough" type="presence" minOccurs="0"/>
-    </xs:sequence>
-    <!--
-    see
-  https://learn.microsoft.com/en-us/windows/win32/api/wingdi/nf-wingdi-createfonta
-
-    Check if we should support the negative height meaning
-
-    [in] int    cEscapement, //always 0 for now
-    [in] int    cOrientation, //always 0 for now
-    [in] DWORD  iCharSet, // Set to DEFAULT_CHARSET . worlds worst API design
-  but hopefully people won't be using weird charsets. Per the documentation: To
-  ensure consistent results when creating a font, do not specify OEM_CHARSET or
-  DEFAULT_CHARSET. If you specify a typeface name in the pszFaceName parameter,
-  make sure that the iCharSet value matches the character set of the typeface
-  specified in pszFaceName. Seriously? [in] DWORD  iOutPrecision, =>
-  OUT_DEFAULT_PRECIS (probably. OUT_TT_PRECIS maybe) [in] DWORD  iClipPrecision,
-  => CLIP_DEFAULT_PRECIS [in] DWORD  iQuality,=> CLEARTYPE_QUALITY
-    -->
-  </xs:complexType>
-  */
 
 Settings::Command Settings::read_command(Dom_Node const &command_node)
 {

@@ -76,7 +76,8 @@ Checks:
 CheckOptions:
 - key: misc-non-private-member-variables-in-classes.IgnoreClassesWithAllMemberVariablesBeingPublic
   value: true
-- key: readability-qualified-auto.AllowedTypes
+# This one doesn't seem to work at all...
+- key: misc-const-correctness.AllowedTypes
   value: 'HFONT'
 
 # Seriously why would you not want to include headers?
