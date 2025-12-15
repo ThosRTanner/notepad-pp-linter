@@ -429,7 +429,6 @@
       </xs:documentation>
     </xs:annotation>
     <xs:all>
-      <!-- FIXME Ensure at least one of typeface or style is present -->
       <xs:element name="typeface" type="nonemptystring" minOccurs="0"/>
       <xs:element name="style" type="font_style" minOccurs="0"/>
       <xs:element name="height" type="xs:positiveInteger" minOccurs="0"/>
