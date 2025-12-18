@@ -11,6 +11,8 @@
 #include <msxml6.h>
 #include <windef.h>    // for HFONT
 
+#include <wil/resource.h>
+
 #include <cstdint>    // for uint32_t
 #include <filesystem>
 #include <string>
@@ -92,7 +94,7 @@ class Settings
     /** Get the font to use in the message window */
     HFONT font() const noexcept
     {
-        return font_;
+        return font_.get();
     }
 
   private:
@@ -151,7 +153,7 @@ class Settings
     // Startup enabled or not
     bool enabled_{true};
 
-    HFONT font_{nullptr};
+    wil::unique_hfont font_;
 };
 
 }    // namespace Linter

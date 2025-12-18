@@ -82,10 +82,7 @@ Settings::Settings(::Linter::Linter const &linter) :
     }
 }
 
-Settings::~Settings()
-{
-    ::DeleteObject(font_);
-}
+Settings::~Settings() = default;
 
 uint32_t Settings::get_message_colour(std::wstring const &colour) const noexcept
 {
@@ -291,8 +288,7 @@ void Settings::read_misc(Dom_Document const &settings)
         enabled_ = false;
     }
 
-    ::DeleteObject(font_);
-    font_ = nullptr;
+    font_.reset();
     auto const font_node = settings.get_node("//font");
     if (font_node.has_value())
     {
@@ -335,7 +331,7 @@ void Settings::read_font_config(Dom_Node const &font_node)
     // advises both against and for using DEFAULT_CHARSET.
     // See
     // https://learn.microsoft.com/en-us/windows/win32/api/wingdi/nf-wingdi-createfonta
-    font_ = CreateFont(
+    font_.reset(CreateFont(
         ([& font_node]() -> int
         {
             auto const height = font_node.get_optional_node("./height");
@@ -388,7 +384,7 @@ void Settings::read_font_config(Dom_Node const &font_node)
             return style;                    
         })(),
         typeface.has_value() ? typeface->c_str() : nullptr
-    );
+    ));
 }
 
 Settings::Command Settings::read_command(Dom_Node const &command_node)

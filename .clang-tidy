@@ -82,4 +82,4 @@ CheckOptions:
 
 # Seriously why would you not want to include headers?
 HeaderFilterRegex: .*
-ExcludeHeaderFilterRegex: (Docking_Dialogue_Interface.plugintemplate.src.*|resource\.h)
+ExcludeHeaderFilterRegex: (wil\\.*\.h|Docking_Dialogue_Interface\\plugintemplate/src[/\\].*\.h|resource\.h)

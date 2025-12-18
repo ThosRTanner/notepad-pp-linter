@@ -24,6 +24,12 @@ jobs:
     - name: Add msbuild to PATH
       uses: microsoft/setup-msbuild@v2
 
+    - name: Install NuGet Cli
+      uses: nuget/setup-nuget@v1
+
+    - name: Install dependencies
+      run: nuget restore
+
     - name: MSBuild of plugin dll
       working-directory: .\
       # Force the toolset to 143, c++ version to c++20 and clang tidy to off

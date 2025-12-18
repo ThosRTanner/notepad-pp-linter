@@ -264,6 +264,7 @@
     <None Include="Changes.md" />
     <None Include=".remarkrc.yaml" />
     <None Include=".clang-tidy" />
+    <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="src\linter.ico">
@@ -289,5 +290,9 @@
     <CopyFileToFolders Include="tools\markdown-linter.ps1">
       <Filter>Tools</Filter>
     </CopyFileToFolders>
+  </ItemGroup>
+  <ItemGroup>
+    <Natvis Include="$(MSBuildThisFileDirectory)..\..\natvis\wil.natvis" />
+    <Natvis Include="$(MSBuildThisFileDirectory)..\..\natvis\wil.natstepfilter" />
   </ItemGroup>
 </Project>
