@@ -22,6 +22,8 @@
 
 1. Relint file on save in case it has been modified. Fixes #52.
 
+1. Added support for specifying a typeface in linter.xml. Fixes #73.
+
 ## 1.0.1
 
 1. Added the ability to display error details. If you double click an entry in the system errors tab, either:

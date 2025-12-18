@@ -47,10 +47,22 @@ category. All of them are optional.
 ```xml
 <misc>
   <disabled/>
+  <font>
+    <!-- add as many or as few things as you need. All are optional. -->
+    <typeface>Times New Roman</typeface>
+    <style>Type style (used if typeface not specified or can't be found)</style>
+    <height>height in device units</height>
+    <width>width in device units</width>
+    <weight>weight in textual or numeric format</weight>
+    <italic/>
+    <underline/>
+    <strikethrough/>
+  </font>
 </misc>
 ```
 
 1. disabled - if this is supplied, the plugin will be disabled on startup, as if you'd used the 'Enabled' toggle to switch it off.
+1. font - this allows you to specify the font to use in the tab list. It is a little complicated in an attempt to match the windows `CreateFont` api. Please see that for style names and weight names. I'd suggest not mixing a font name and a font style as the results can be really confusing if you you pick a weight that isn't supported...
 
 ### Indicator
 

@@ -387,12 +387,18 @@ void List_View::disable_redraw() const noexcept
 void List_View::enable_redraw() const noexcept
 {
     ::SendMessage(handle_, WM_SETREDRAW, TRUE, 0);
-    // InvalidateRect(handle_, nullptr, TRUE);
     ::RedrawWindow(
         handle_,
         nullptr,
         nullptr,
         RDW_ERASE | RDW_FRAME | RDW_INVALIDATE | RDW_ALLCHILDREN
+    );
+}
+
+void List_View::set_font(HFONT font) const noexcept
+{
+    ::SendMessage(
+        handle_, WM_SETFONT, windows_cast_to<WPARAM, HFONT>(font), TRUE
     );
 }
 

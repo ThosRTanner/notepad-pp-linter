@@ -74,9 +74,12 @@ Checks:
 
 # It's expected for struct members to be public...
 CheckOptions:
-    key: misc-non-private-member-variables-in-classes.IgnoreClassesWithAllMemberVariablesBeingPublic
-    value: true
+- key: misc-non-private-member-variables-in-classes.IgnoreClassesWithAllMemberVariablesBeingPublic
+  value: true
+# This one doesn't seem to work at all...
+- key: misc-const-correctness.AllowedTypes
+  value: 'HFONT'
 
 # Seriously why would you not want to include headers?
 HeaderFilterRegex: .*
-ExcludeHeaderFilterRegex: (Docking_Dialogue_Interface.plugintemplate.src.*|resource\.h)
+ExcludeHeaderFilterRegex: (wil\\.*\.h|Docking_Dialogue_Interface\\plugintemplate/src[/\\].*\.h|resource\.h)

@@ -13,6 +13,7 @@
 #include <atlcomcli.h>
 #include <comutil.h>
 #include <intsafe.h>
+#include <minwindef.h>    // For FALSE, TRUE
 #include <msxml6.h>
 #include <wingdi.h>     // For RGB
 #include <winuser.h>    // For VK_...
@@ -60,6 +61,7 @@ Settings::Settings(::Linter::Linter const &linter) :
     }
 
     CComVariant const xsd{settings_xsd_.c_str()};
+
     hres = settings_schema_->add(bstr_t(""), xsd);
     if (not SUCCEEDED(hres))
     {
@@ -285,6 +287,104 @@ void Settings::read_misc(Dom_Document const &settings)
     {
         enabled_ = false;
     }
+
+    font_.reset();
+    auto const font_node = settings.get_node("//font");
+    if (font_node.has_value())
+    {
+        read_font_config(*font_node);
+    }
+}
+
+void Settings::read_font_config(Dom_Node const &font_node)
+{
+    static std::unordered_map<std::wstring, int> const weights{
+        {L"thin",       100},
+        {L"ultralight", 200},
+        {L"light",      300},
+        {L"regular",    400},
+        {L"medium",     500},
+        {L"semibold",   600},
+        {L"bold",       700},
+        {L"ultrabold",  800},
+        {L"black",      900}
+    };
+
+    static std::unordered_map<std::wstring, int> const styles{
+        {L"monospace",    FIXED_PITCH   },
+        {L"proportional", VARIABLE_PITCH},
+        {L"modern",       FF_MODERN     },
+        {L"roman",        FF_ROMAN      },
+        {L"swiss",        FF_SWISS      },
+        {L"script",       FF_SCRIPT     },
+        {L"decorative",   FF_DECORATIVE }
+    };
+
+    std::optional<std::wstring> typeface;
+    if (auto const typeface_node = font_node.get_optional_node("./typeface"))
+    {
+        typeface = typeface_node->get_value();
+    }
+
+    // Note: Some of the parameters in CreateFont are hardcoded and best guess.
+    // The charset parameter in particular is a mess, as the documentation
+    // advises both against and for using DEFAULT_CHARSET.
+    // See
+    // https://learn.microsoft.com/en-us/windows/win32/api/wingdi/nf-wingdi-createfonta
+    font_.reset(CreateFont(
+        ([& font_node]() -> int
+        {
+            auto const height = font_node.get_optional_node("./height");
+            return height.has_value() ? std::stoi(height->get_value()) : 0;
+        })(),
+        ([& font_node]() -> int
+        {
+            auto const width = font_node.get_optional_node("./width");
+            return width.has_value() ? std::stoi(width->get_value()) : 0;
+        })(),
+        0 /*cEscapement*/,
+        0 /*cOrientation*/,
+        ([& font_node]() -> int
+        {
+            auto const weight_node = font_node.get_optional_node("./weight");
+            if (not weight_node.has_value())
+            {
+                return 0;
+            }
+            std::wstring const &weight = weight_node->get_value();
+            if (auto value = weights.find(weight); value != weights.end())
+            {
+                return value->second;
+            }
+            return std::stoi(weight);
+        })(),
+        font_node.get_optional_node("./italic").has_value() ? TRUE : FALSE,
+        font_node.get_optional_node("./underline").has_value() ? TRUE : FALSE,
+        font_node.get_optional_node("./strikethrough").has_value() ? TRUE : FALSE,
+        DEFAULT_CHARSET,
+        OUT_DEFAULT_PRECIS,
+        CLIP_DEFAULT_PRECIS,
+        CLEARTYPE_QUALITY,
+        ([& font_node]() -> int {
+            auto style = FF_DONTCARE;
+            auto const styles_node = font_node.get_optional_node("./style");
+            if (not styles_node.has_value())
+            {
+                return style;
+            }
+            for (auto const style_node : styles_node->get_node_list("./*"))
+            {
+                auto const style_str = style_node.get_name();
+                if (auto const style_it = styles.find(style_str);
+                    style_it != styles.end())
+                {
+                    style |= style_it->second;
+                }
+            }
+            return style;                    
+        })(),
+        typeface.has_value() ? typeface->c_str() : nullptr
+    ));
 }
 
 Settings::Command Settings::read_command(Dom_Node const &command_node)

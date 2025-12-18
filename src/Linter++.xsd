@@ -40,7 +40,7 @@
     </xs:annotation>
   </xs:complexType>
 
-  <xs:simpleType name="style">
+  <xs:simpleType name="indicator_style">
     <xs:annotation>
       <xs:documentation>
         These are the valid indicator types - see the scintilla documentation.
@@ -83,7 +83,7 @@
     </xs:annotation>
     <!-- FIXME ENSURE THIS HAS SOMETHING IN IT -->
     <xs:all>
-      <xs:element name="style" type="style" minOccurs="0"/>
+      <xs:element name="style" type="indicator_style" minOccurs="0"/>
       <xs:element name="colour" minOccurs="0">
         <xs:complexType>
           <xs:choice>
@@ -106,7 +106,7 @@
         <xs:complexType>
           <!-- FIXME ENSURE THIS HAS SOMETHING IN IT -->
           <xs:all>
-            <xs:element name="style" type="style" minOccurs="0"/>
+            <xs:element name="style" type="indicator_style" minOccurs="0"/>
             <xs:element name="colour" type="colour" minOccurs="0"/>
           </xs:all>
         </xs:complexType>
@@ -345,6 +345,101 @@
     </xs:sequence>
   </xs:complexType>
 
+  <xs:complexType name="font_style">
+    <xs:annotation>
+      <xs:documentation>
+        Font styles.
+
+        Choose one or more of the following:
+
+        Monospace     Any monospace font (probably includes things like
+                      FixedSys font as well as Modern).
+
+        Proportional  Any non-monospace font.
+
+        Modern        Monospace font with or without serifs. Monospace fonts
+                      are usually modern, e.g. Courier New.
+
+        Roman         Proportional font with serifs, e.g. Times New Roman.
+
+        Swiss         Proportional font without serifs, e.g. Arial.
+
+        Script        Font that is designed to look like handwriting, e.g.
+                      Script and Cursive.
+
+        Decorative    Novelty font, e.g. Old English.
+      </xs:documentation>
+    </xs:annotation>
+    <xs:all>
+      <xs:element name="monospace" type="presence" minOccurs="0"/>
+      <xs:element name="proportional" type="presence" minOccurs="0"/>
+      <xs:element name="modern" type="presence" minOccurs="0"/>
+      <xs:element name="roman" type="presence" minOccurs="0"/>
+      <xs:element name="swiss" type="presence" minOccurs="0"/>
+      <xs:element name="script" type="presence" minOccurs="0"/>
+      <xs:element name="decorative" type="presence" minOccurs="0"/>
+    </xs:all>
+  </xs:complexType>
+
+  <xs:simpleType name="font_weight_by_number">
+    <xs:restriction base="xs:positiveInteger">
+      <xs:maxInclusive value="1000"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="font_weight_by_name">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="thin"/>
+      <xs:enumeration value="ultralight"/>
+      <xs:enumeration value="light"/>
+      <xs:enumeration value="regular"/>
+      <xs:enumeration value="medium"/>
+      <xs:enumeration value="semibold"/>
+      <xs:enumeration value="bold"/>
+      <xs:enumeration value="ultrabold"/>
+      <xs:enumeration value="black"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="font_weight">
+    <xs:union memberTypes="font_weight_by_number font_weight_by_name" />
+  </xs:simpleType>
+
+  <xs:complexType name="font">
+    <xs:annotation>
+      <xs:documentation>
+        Specify the font to use in the message window.
+
+        If you specify a typeface, and it doesn't exist on the system, then
+        windows tries to match it using the specified style.
+
+        Note: Should m/s get off their backsides and implement XSD 1.1, then
+        this could be made to ensure that at least one of the typeface or style
+        elements is present.
+
+        You can also specify height (in pixels), width (in pixels), weight
+        (e.g. "bold" or 700), and whether the font is italic, underlined or
+        strikethrough.
+
+        If you don't specify any font settings, the default font for
+        notepad++ will be used.
+
+        The parameters correspond roughly to the parameters of the
+        CreateFont function in the Windows API.
+      </xs:documentation>
+    </xs:annotation>
+    <xs:all>
+      <xs:element name="typeface" type="nonemptystring" minOccurs="0"/>
+      <xs:element name="style" type="font_style" minOccurs="0"/>
+      <xs:element name="height" type="xs:positiveInteger" minOccurs="0"/>
+      <xs:element name="width" type="xs:positiveInteger" minOccurs="0"/>
+      <xs:element name="weight" type="font_weight" minOccurs="0"/>
+      <xs:element name="italic" type="presence" minOccurs="0"/>
+      <xs:element name="underline" type="presence" minOccurs="0"/>
+      <xs:element name="strikethrough" type="presence" minOccurs="0"/>
+    </xs:all>
+  </xs:complexType>
+
   <xs:complexType name="misc">
     <xs:annotation>
       <xs:documentation>
@@ -357,11 +452,12 @@
           <xs:documentation>
             If present, then plugin will be inactive on startup.
           </xs:documentation>
-        </xs:annotation>        
+        </xs:annotation>
       </xs:element>
+      <xs:element name="font" type="font" minOccurs="0"/>
     </xs:all>
   </xs:complexType>
-  
+
   <xs:element name="LinterPP">
     <xs:annotation>
       <xs:documentation>

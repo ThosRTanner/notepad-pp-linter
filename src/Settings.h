@@ -9,6 +9,9 @@
 
 #include <atlcomcli.h>
 #include <msxml6.h>
+#include <windef.h>    // for HFONT
+
+#include <wil/resource.h>
 
 #include <cstdint>    // for uint32_t
 #include <filesystem>
@@ -88,6 +91,12 @@ class Settings
 
     static uint32_t read_colour_node(Dom_Node const &node);
 
+    /** Get the font to use in the message window */
+    HFONT font() const noexcept
+    {
+        return font_.get();
+    }
+
   private:
     void read_settings();
 
@@ -108,6 +117,8 @@ class Settings
 
     /** Process <misc> XML element */
     void read_misc(Dom_Document const &settings);
+
+    void read_font_config(Dom_Node const &font_node);
 
     /** Process <command> XML element */
     static Command read_command(Dom_Node const &command_node);
@@ -141,6 +152,8 @@ class Settings
 
     // Startup enabled or not
     bool enabled_{true};
+
+    wil::unique_hfont font_;
 };
 
 }    // namespace Linter
