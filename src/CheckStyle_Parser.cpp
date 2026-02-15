@@ -4,6 +4,7 @@
 #include "Dom_Node.h"
 #include "Dom_Node_List.h"
 #include "Error_Info.h"
+#include "Encoding.h"
 
 #include <cstddef>
 #include <string>
@@ -12,9 +13,12 @@
 namespace Linter
 {
 
-std::vector<Error_Info> Checkstyle_Parser::get_errors(std::string const &xml)
+std::vector<Error_Info> Checkstyle_Parser::get_errors(std::string const &input)
 {
-    Dom_Document const document{xml};
+    // This is an xml file so first thing we do is to make it into a wide string.
+    // This is a bit of an assumption bit the msxml parser expects UTF-8
+    // input and this is what most linters produce, so it seems reasonable.
+    Dom_Document const document{Encoding::convert(input)};
 
     // Sample errors:
     //

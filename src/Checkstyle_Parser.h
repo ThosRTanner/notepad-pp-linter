@@ -11,7 +11,7 @@ struct Error_Info;
 class Checkstyle_Parser
 {
   public:
-    static std::vector<Error_Info> get_errors(std::string const &xml);
+    static std::vector<Error_Info> get_errors(std::string const &);
 };
 
 }    // namespace Linter
