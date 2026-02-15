@@ -1,6 +1,10 @@
 # Change log
 
-## 1.0.2 (unreleased)
+## 1.0.3
+
+1. Treat checkstyle output from executed commands as UTF-8. Fixes #88.
+
+## 1.0.2
 
 1. Added support for clicking on column headers in the linter results tab to sort by that column. Fixes #72.
 

@@ -51,7 +51,7 @@ Linter::Dom_Document::Dom_Document(
     checkLoadResults(resultCode, hres);
 }
 
-Dom_Document::Dom_Document(std::string const &xml)
+Dom_Document::Dom_Document(std::wstring const &xml)
 {
     init();
 

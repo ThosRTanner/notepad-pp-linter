@@ -28,7 +28,7 @@ class Dom_Document
     Dom_Document(std::filesystem::path const &, CComPtr<IXMLDOMSchemaCollection2> &);
 
     /** Creates an XML document from the supplied UTF8 string */
-    explicit Dom_Document(std::string const &xml);
+    explicit Dom_Document(std::wstring const &xml);
 
     Dom_Document(Dom_Document const &) = delete;
     Dom_Document(Dom_Document &&) = delete;

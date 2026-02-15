@@ -352,7 +352,7 @@ void Settings::read_font_config(Dom_Node const &font_node)
                 return 0;
             }
             std::wstring const &weight = weight_node->get_value();
-            if (auto value = weights.find(weight); value != weights.end())
+            if (auto const value = weights.find(weight); value != weights.end())
             {
                 return value->second;
             }
