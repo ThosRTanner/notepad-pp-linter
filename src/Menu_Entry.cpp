@@ -14,7 +14,9 @@ std::wstring get_menu_string(Menu_Entry entry)
         {Menu_Entry::Show_Results,       L"Show linter results"  },
         {Menu_Entry::Show_Next_Lint,     L"Show next message"    },
         {Menu_Entry::Show_Previous_Lint, L"Show previous message"},
-        {Menu_Entry::Toggle_Enabled,     L"Enabled"              }
+        {Menu_Entry::Toggle_Enabled,     L"Enabled"              },
+        {Menu_Entry::About,              L"About..."             },
+        {Menu_Entry::Help,               L"Help"                 }
     };
     return strings.at(entry);
 }
@@ -26,7 +28,9 @@ Menu_Entry get_menu_entry_from_element(std::wstring const &element_name)
         {L"show",     Menu_Entry::Show_Results      },
         {L"next",     Menu_Entry::Show_Next_Lint    },
         {L"previous", Menu_Entry::Show_Previous_Lint},
-        {L"enabled",  Menu_Entry::Toggle_Enabled    }
+        {L"enabled",  Menu_Entry::Toggle_Enabled    },
+        {L"about",    Menu_Entry::About             },
+        {L"help",     Menu_Entry::Help              }
     };
     return strings.at(element_name);
 }

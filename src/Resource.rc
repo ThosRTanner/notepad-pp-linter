@@ -73,7 +73,7 @@ BEGIN
             VALUE "FileDescription", "A Notepad++ checkstyle-compatible linter plugin"
             VALUE "FileVersion", GIT_VERSION_STRING
             VALUE "InternalName", "Notepad++ Linter++"
-            VALUE "LegalCopyright", "Copyright (C) 2025"
+            VALUE "LegalCopyright", "Copyright (C) 2025-2026"
             VALUE "OriginalFilename", "Notepad++ Linter++"
             VALUE "ProductName", "Notepad++ Linter++"
             VALUE "ProductVersion", GIT_VERSION_STRING
@@ -101,6 +101,10 @@ BEGIN
         TOPMARGIN, 7
         BOTTOMMARGIN, 175
     END
+
+    IDD_ABOUT_DIALOG, DIALOG
+    BEGIN
+    END
 END
 #endif    // APSTUDIO_INVOKED
 
@@ -121,6 +125,22 @@ BEGIN
     CONTROL         "",IDC_LIST_LINTS,"SysListView32",LVS_REPORT | LVS_SHOWSELALWAYS | LVS_ALIGNLEFT | WS_BORDER | WS_TABSTOP,198,71,177,104
 END
 
+IDD_ABOUT_DIALOG DIALOGEX 0, 0, 310, 178
+STYLE DS_SETFONT | DS_MODALFRAME | DS_3DLOOK | DS_FIXEDSYS | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "About Linter++"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    DEFPUSHBUTTON   "Close",IDOK,131,156,50,14
+    LTEXT           "Version:",IDC_ABOUT_VERSION_TEXT,52,29,28,8
+    LTEXT           GIT_VERSION_STRING,IDC_ABOUT_VERSION,97,29,65,8
+    GROUPBOX        "Linter++",IDC_ABOUT_GROUP_BOX,36,5,245,147,BS_CENTER
+    LTEXT           "Home page",IDC_ABOUT_HOMEPAGE_TEXT,52,77,40,8
+    LTEXT           "Author",IDC_ABOUT_AUTHOR_TEXT,52,51,23,8
+    LTEXT           "Thos R Tanner",IDC_ABOUT_AUTHOR,97,51,51,8
+    CONTROL         "<a href=""https://github.com/ThosRTanner/notepad-pp-linter"">https://github.com/ThosRTanner/notepad-pp-linter</a>",IDC_ABOUT_HOMEPAGE_LINK,
+                    "SysLink",WS_TABSTOP,97,77,182,10
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -128,6 +148,16 @@ END
 //
 
 IDD_OUTPUT AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
+
+IDD_DIALOG_ABOUT AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
+
+IDD_ABOUT_DIALOG AFX_DIALOG_LAYOUT
 BEGIN
     0
 END

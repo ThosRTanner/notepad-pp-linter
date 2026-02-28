@@ -8,10 +8,15 @@ namespace Linter
 enum class Menu_Entry : int
 {
     Edit_Config,
+    Separator_1,
     Show_Results,
     Show_Next_Lint,
     Show_Previous_Lint,
-    Toggle_Enabled
+    Separator_2,
+    Toggle_Enabled,
+    Separator_3,
+    About,
+    Help
 };
 
 /** Get the display string for the menu entry */

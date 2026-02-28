@@ -3,6 +3,9 @@
 ## 1.0.3
 
 1. Treat checkstyle output from executed commands as UTF-8. Fixes #88.
+1. Added a link to the github README.md in the linter++ menu. Fixes #96.
+1. Tidied up some typos in the README.md.
+1. Added an "About" menu entry.
 
 ## 1.0.2
 
@@ -28,6 +31,8 @@
 
 1. Added support for specifying a typeface in linter.xml. Fixes #73.
 
+1. Used WIL to simplify some of the code and make it more robust.
+
 ## 1.0.1
 
 1. Added the ability to display error details. If you double click an entry in the system errors tab, either:
@@ -43,8 +48,8 @@
 
 1. Added support for creating your own environment variables (with the `<variables>` XML tag) and also added two new environment variables:
 
-   - LINTER_PLUGIN_DIR - Directory where linter++.dll is installed
-   - LINTER_CONFIG_DIR - Directory where your linter++.xml is installed.
+   - `LINTER_PLUGIN_DIR` - Directory where linter++.dll is installed
+   - `LINTER_CONFIG_DIR` - Directory where your linter++.xml is installed.
 
 1. Added some powershell scripts into the plugin directory which can be used for linting markdown files and powershell scripts.
 

@@ -113,6 +113,9 @@
     <ClCompile Include="src\Column_Header.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\About_Dialogue.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Clipboard.h">
@@ -231,6 +234,9 @@
     </ClInclude>
     <ClInclude Include="Docking_Dialogue_Interface\Plugin\Casts.h">
       <Filter>Git Submodules\Docking Dialogue Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="src\About_Dialogue.h">
+      <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

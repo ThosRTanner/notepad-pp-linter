@@ -7,9 +7,9 @@ It is a fork of both:
 - the 'linter' plugin by deadem
 - the now defunct jslintnpp plugin by Martin Vladic.
 
-![Document window](/img/1.jpg?raw=true)
+![Document window](./img/1.jpg?raw=true)
 
-![Dockable error window](/img/2.png?raw=true)
+![Dockable error window](./img/2.png?raw=true)
 
 ## Installation
 
@@ -21,8 +21,19 @@ It is a fork of both:
 1. It has a docking window similar to that provided by the jslint plugin, which displays a list of all the detected errors in the file (by default sorted by line), and the tool which detected the issue.
 1. There are menu entries which allow you to see the next or previous message. You don't need the dialogue window open to use these.
 1. The window will also display (in a separate tab) any messages resulting from failures to execute checker programs.
-1. It is no longer necessary to restart notepad++ after changing the configuration (unless you change the shortcut keys).
+1. It is no longer necessary to restart Notepad++ after changing the configuration (unless you change the shortcut keys).
 1. The linter configuration file has changed considerably, and it now gets validated against an xsd file.
+
+## Linter++ Menu
+
+The following menu entries are available under the Linter++ menu:
+
+1. Edit config - Opens the configuration file in notepad++. If the file doesn't exist, a new one will be created with some default content.
+1. Show linter results - Shows the error list if not already visible. Gives the error list focus.
+1. Show previous message - Moves the cursor to the line and column of the next message in the current file, and, if the error list is visible, will move the selection in the error list to the relevant message.
+1. Show next message - Moves the cursor to the line and column of the next message in the current file, and, if the error list is visible, will move the selection in the error list to the relevant message.
+1. Enabled - if this is toggled off, linting will not take place until it is toggled back on. By default, when notepad is started, the the menu entry will be ticked. You can change this by adding a `<disabled/>` tag to the `<misc>` section in linter++.xml.
+1. Help - Opens the Linter++ README.md in your default browser.
 
 ## Configuration
 
@@ -61,8 +72,8 @@ category. All of them are optional.
 </misc>
 ```
 
-1. disabled - if this is supplied, the plugin will be disabled on startup, as if you'd used the 'Enabled' toggle to switch it off.
-1. font - this allows you to specify the font to use in the tab list. It is a little complicated in an attempt to match the windows `CreateFont` api. Please see that for style names and weight names. I'd suggest not mixing a font name and a font style as the results can be really confusing if you you pick a weight that isn't supported...
+1. `disabled` - if this is supplied, the plugin will be disabled on startup, as if you'd used the 'Enabled' toggle to switch it off.
+1. `font` - this allows you to specify the font to use in the tab list. It is a little complicated in an attempt to match the windows `CreateFont` api. Please see that for style names and weight names. I'd suggest not mixing a font name and a font style as the results can be really confusing if you you pick a weight that isn't supported...
 
 ### Indicator
 
@@ -90,7 +101,7 @@ You can control all the various settings for a scintilla indicator here. Your xm
 
 If you use `<as_message/>` instead of `<shade>...</shade>` in the top level `<colour>...</colour>` block, then the colour of the indicator will match the colour of the message in the message window. This sadly isn't available for the hover colour.
 
-It's best to read the scintilla documentation and play around a little bit to determine what works best for you.
+It's best to read the [scintilla documentation](https://www.scintilla.org/ScintillaDoc.html#Indicators) and play around a little bit to determine what works best for you.
 
 ### Messages
 
@@ -126,30 +137,30 @@ There may be some other keys which you'd like to use for shortcuts (only F1-F12,
 
 Notes:
 
-1. Changing the shortcuts will not take effect till next time you start notepad++
+1. Changing the shortcuts will not take effect till next time you start Notepad++
 1. Notepad++ determines which shortcuts get which keypresses, so take care not to clash with shortcuts from other plugins.
 
 ### Environment Variables
 
-As you can see below, you can use windows environment variables in your command line. linter++ also provides some of its own variables and allows you to define your own variables.
+As you can see below, you can use windows environment variables in your command line. Linter++ also provides some of its own variables and allows you to define your own variables.
 
 Please note that these variables also get passed to the called linters as environment variables.
 
 #### Predefined variables
 
-There are also some pseudo environment variables provided by linter++:
+There are also some pseudo environment variables provided by Linter++:
 
-- %LINTER_PLUGIN_DIR% - Directory where linter++.dll is installed
-- %LINTER_CONFIG_DIR% - Directory where your linter++.xml is installed.
-- %LINTER_TARGET% - temporary linter file
-- %TARGET% - original file (e.g. `c:\users\me\fred.js`)
-- %TARGET_DIR% - directory of original file (e.g. `c:\users\me`)
-- %TARGET_EXT% - extension of original file (e.g. `.js`)
-- %TARGET_FILENAME% - filename of original file (e.g. `fred.js`)
+- `%LINTER_PLUGIN_DIR%` - Directory where Linter++.dll is installed
+- `%LINTER_CONFIG_DIR%` - Directory where your Linter++.xml is installed.
+- `%LINTER_TARGET%` - temporary linter file
+- `%TARGET%` - original file (e.g. `c:\users\me\fred.js`)
+- `%TARGET_DIR%` - directory of original file (e.g. `c:\users\me`)
+- `%TARGET_EXT%` - extension of original file (e.g. `.js`)
+- `%TARGET_FILENAME%` - filename of original file (e.g. `fred.js`)
 
 #### User defined variables
 
-You can define your own variables to use if the supplied ones aren't enough, by adding a `<variables>` section to the XML so the following will define a GIT_REPO_ROOT which can be used in linter commands (or other variable definitions).
+You can define your own variables to use if the supplied ones aren't enough, by adding a `<variables>` section to the XML so the following will define a `GIT_REPO_ROOT` variable which can be used in linter commands (or other variable definitions).
 
 ```xml
 <variables>
@@ -261,7 +272,7 @@ Putting all those together, we get this:
 
   <variables>
     <variable>
-      <name>GIT_REPO_ROOT%</name>
+      <name>GIT_REPO_ROOT</name>
       <command>
         <program>%ProgramFiles%\GIT\cmd\git.exe</program>
         <args>rev-parse --show-toplevel</args>

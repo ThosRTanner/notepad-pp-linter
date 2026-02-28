@@ -382,6 +382,7 @@
     <ClCompile Include="Docking_Dialogue_Interface\Plugin\Non_Modal_Dialogue_Base.cpp" />
     <ClCompile Include="Docking_Dialogue_Interface\Plugin\Non_Modal_Dialogue_Interface.cpp" />
     <ClCompile Include="Docking_Dialogue_Interface\Plugin\Plugin.cpp" />
+    <ClCompile Include="src\About_Dialogue.cpp" />
     <ClCompile Include="src\Clipboard.cpp" />
     <ClCompile Include="src\Column_Header.cpp" />
     <ClCompile Include="src\dllmain.cpp" />
@@ -427,6 +428,7 @@
     <ClInclude Include="Docking_Dialogue_Interface\Plugin\Non_Modal_Dialogue_Base.h" />
     <ClInclude Include="Docking_Dialogue_Interface\Plugin\Non_Modal_Dialogue_Interface.h" />
     <ClInclude Include="Docking_Dialogue_Interface\Plugin\Plugin.h" />
+    <ClInclude Include="src\About_Dialogue.h" />
     <ClInclude Include="src\Clipboard.h" />
     <ClInclude Include="src\Column_Header.h" />
     <ClInclude Include="src\Dom_Document.h" />

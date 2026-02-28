@@ -1,5 +1,6 @@
 #include "Linter.h"
 
+#include "About_Dialogue.h"
 #include "Checkstyle_Parser.h"
 #include "Encoding.h"
 #include "Error_Info.h"
@@ -21,6 +22,7 @@
 #include <handleapi.h>
 #include <objbase.h>
 #include <process.h>
+#include <shellapi.h>
 #include <synchapi.h>    // For WaitForSingleObject
 #include <threadpoollegacyapiset.h>
 #include <winbase.h>    // For WAIT_OBJECT_0
@@ -40,6 +42,7 @@
 
 #pragma comment(lib, "msxml6.lib")
 #pragma comment(lib, "shlwapi.lib")
+#pragma comment(lib, "Shell32")
 
 static int constexpr Error_Indicator = INDIC_CONTAINER + 2;
 
@@ -122,15 +125,26 @@ std::vector<FuncItem> &Linter::on_get_menu_entries()
 
 // NOLINTNEXTLINE(cppcoreguidelines-macro-usage)
 #define MAKE_CALLBACK(entry, method) MAKE_CALLBACK_TOGGLE(entry, method, false)
+
+// NOLINTNEXTLINE(cppcoreguidelines-macro-usage)
+#define MAKE_SEPARATOR(entry) \
+    PLUGIN_MENU_MAKE_SEPARATOR(Linter, static_cast<int>(entry))
+
     menu_entries_ = {
         MAKE_CALLBACK(Menu_Entry::Edit_Config, edit_config),
+        MAKE_SEPARATOR(Menu_Entry::Separator_1),
         MAKE_CALLBACK(Menu_Entry::Show_Results, show_results),
         MAKE_CALLBACK(Menu_Entry::Show_Previous_Lint, select_previous_lint),
         MAKE_CALLBACK(Menu_Entry::Show_Next_Lint, select_next_lint),
+        MAKE_SEPARATOR(Menu_Entry::Separator_2),
         MAKE_CALLBACK_TOGGLE(
             Menu_Entry::Toggle_Enabled, toggle_enable, enabled_
-        )
+        ),
+        MAKE_SEPARATOR(Menu_Entry::Separator_3),
+        MAKE_CALLBACK(Menu_Entry::About, show_about),
+        MAKE_CALLBACK(Menu_Entry::Help, show_help)
     };
+
     return menu_entries_;
 }
 
@@ -302,6 +316,24 @@ void Linter::toggle_enable() noexcept
         enabled_ ? MF_CHECKED : MF_UNCHECKED
     );
     mark_file_changed();    // Force an update
+}
+
+void Linter::show_about() const
+{
+    About_Dialogue const dialogue(*this);
+    dialogue.get_result();
+}
+
+void Linter::show_help() const noexcept
+{
+    ShellExecute(
+        nullptr, //notepad++ window?
+        nullptr,
+        L"https://thosrtanner.github.io/notepad-pp-linter/",
+        nullptr,
+        nullptr,
+        SW_SHOWNORMAL
+    );
 }
 
 void Linter::mark_file_changed() noexcept

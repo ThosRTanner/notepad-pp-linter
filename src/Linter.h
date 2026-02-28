@@ -61,6 +61,8 @@ class Linter : public Plugin
     void select_next_lint() noexcept;
     void select_previous_lint() noexcept;
     void toggle_enable() noexcept;
+    void show_about() const;
+    void show_help() const noexcept;
 
     // Mark the current file changed and relint if necessary
     void mark_file_changed() noexcept;
