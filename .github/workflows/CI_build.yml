@@ -44,7 +44,7 @@ jobs:
 
     - name: Archive artifacts release build
       if: matrix.build_configuration == 'Release'
-      uses: actions/upload-artifact@v6
+      uses: actions/upload-artifact@v7
       with:
         name: plugin_dll_${{ matrix.build_platform }}
         path: Linter++\${{ matrix.build_platform }}\${{ matrix.build_configuration }}
