@@ -3,7 +3,7 @@
 #include "Dom_Node.h"
 #include "Settings.h"
 
-#include <plugintemplate/src/Scintilla.h>
+#include "notepad++/Scintilla.h"
 
 #include <algorithm>
 #include <cwctype>
