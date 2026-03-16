@@ -114,6 +114,7 @@
     <EnableClangTidyCodeAnalysis>true</EnableClangTidyCodeAnalysis>
     <ClangTidyExtraArgs>-Isrc/</ClangTidyExtraArgs>
     <ClangTidyPrependExtraArgs>-Wno-unused-command-line-argument</ClangTidyPrependExtraArgs>
+    <ExternalIncludePath>$(SolutionDir)packages;$(SolutionDir)Docking_Dialogue_Interface\plugintemplate;$(VC_IncludePath);$(WindowsSDK_IncludePath)</ExternalIncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">
     <OutDir>$(SolutionDir)$(ShortProjectName)\$(Platform)\$(Configuration)\</OutDir>
@@ -122,6 +123,7 @@
     <EnableClangTidyCodeAnalysis>true</EnableClangTidyCodeAnalysis>
     <ClangTidyExtraArgs>-Isrc/</ClangTidyExtraArgs>
     <ClangTidyPrependExtraArgs>-Wno-unused-command-line-argument</ClangTidyPrependExtraArgs>
+    <ExternalIncludePath>$(SolutionDir)packages;$(SolutionDir)Docking_Dialogue_Interface\plugintemplate;$(VC_IncludePath);$(WindowsSDK_IncludePath)</ExternalIncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
@@ -130,6 +132,7 @@
     <ClangTidyPrependExtraArgs>-Wno-unused-command-line-argument</ClangTidyPrependExtraArgs>
     <ClangTidyExtraArgs>-Isrc/</ClangTidyExtraArgs>
     <EnableClangTidyCodeAnalysis>true</EnableClangTidyCodeAnalysis>
+    <ExternalIncludePath>$(SolutionDir)packages;$(SolutionDir)Docking_Dialogue_Interface\plugintemplate;$(VC_IncludePath);$(WindowsSDK_IncludePath)</ExternalIncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <OutDir>$(SolutionDir)$(ShortProjectName)\$(Platform)\$(Configuration)\</OutDir>
@@ -138,6 +141,7 @@
     <EnableClangTidyCodeAnalysis>true</EnableClangTidyCodeAnalysis>
     <ClangTidyExtraArgs>-Isrc/</ClangTidyExtraArgs>
     <ClangTidyPrependExtraArgs>-Wno-unused-command-line-argument</ClangTidyPrependExtraArgs>
+    <ExternalIncludePath>$(SolutionDir)packages;$(SolutionDir)Docking_Dialogue_Interface\plugintemplate;$(VC_IncludePath);$(WindowsSDK_IncludePath)</ExternalIncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'">
     <OutDir>$(SolutionDir)$(ShortProjectName)\$(Platform)\$(Configuration)\</OutDir>
@@ -146,6 +150,7 @@
     <EnableClangTidyCodeAnalysis>true</EnableClangTidyCodeAnalysis>
     <ClangTidyExtraArgs>-Isrc/</ClangTidyExtraArgs>
     <ClangTidyPrependExtraArgs>-Wno-unused-command-line-argument</ClangTidyPrependExtraArgs>
+    <ExternalIncludePath>$(SolutionDir)packages;$(SolutionDir)Docking_Dialogue_Interface\plugintemplate;$(VC_IncludePath);$(WindowsSDK_IncludePath)</ExternalIncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
@@ -154,6 +159,7 @@
     <EnableClangTidyCodeAnalysis>true</EnableClangTidyCodeAnalysis>
     <ClangTidyExtraArgs>-Isrc/</ClangTidyExtraArgs>
     <ClangTidyPrependExtraArgs>-Wno-unused-command-line-argument</ClangTidyPrependExtraArgs>
+    <ExternalIncludePath>$(SolutionDir)packages;$(SolutionDir)Docking_Dialogue_Interface\plugintemplate;$(VC_IncludePath);$(WindowsSDK_IncludePath)</ExternalIncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -166,7 +172,6 @@
       <LanguageStandard>stdcpp23</LanguageStandard>
       <LanguageStandard_C>stdc17</LanguageStandard_C>
       <AdditionalIncludeDirectories>Docking_Dialogue_Interface;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <TreatAngleIncludeAsExternal>true</TreatAngleIncludeAsExternal>
       <DisableAnalyzeExternal>true</DisableAnalyzeExternal>
     </ClCompile>
     <Link>
@@ -205,7 +210,6 @@
       <LanguageStandard>stdcpp23</LanguageStandard>
       <LanguageStandard_C>stdc17</LanguageStandard_C>
       <AdditionalIncludeDirectories>Docking_Dialogue_Interface;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <TreatAngleIncludeAsExternal>true</TreatAngleIncludeAsExternal>
       <DisableAnalyzeExternal>true</DisableAnalyzeExternal>
     </ClCompile>
     <Link>
@@ -240,7 +244,6 @@
       <LanguageStandard>stdcpp23</LanguageStandard>
       <LanguageStandard_C>stdc17</LanguageStandard_C>
       <AdditionalIncludeDirectories>Docking_Dialogue_Interface;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <TreatAngleIncludeAsExternal>true</TreatAngleIncludeAsExternal>
       <DisableAnalyzeExternal>true</DisableAnalyzeExternal>
     </ClCompile>
     <Link>
@@ -279,7 +282,6 @@
       <LanguageStandard>stdcpp23</LanguageStandard>
       <LanguageStandard_C>stdc17</LanguageStandard_C>
       <AdditionalIncludeDirectories>Docking_Dialogue_Interface;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <TreatAngleIncludeAsExternal>true</TreatAngleIncludeAsExternal>
       <DisableAnalyzeExternal>true</DisableAnalyzeExternal>
     </ClCompile>
     <Link>
@@ -320,7 +322,6 @@
       <LanguageStandard>stdcpp23</LanguageStandard>
       <LanguageStandard_C>stdc17</LanguageStandard_C>
       <AdditionalIncludeDirectories>Docking_Dialogue_Interface;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <TreatAngleIncludeAsExternal>true</TreatAngleIncludeAsExternal>
       <DisableAnalyzeExternal>true</DisableAnalyzeExternal>
     </ClCompile>
     <Link>
@@ -357,7 +358,6 @@
       <LanguageStandard>stdcpp23</LanguageStandard>
       <LanguageStandard_C>stdc17</LanguageStandard_C>
       <AdditionalIncludeDirectories>Docking_Dialogue_Interface;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <TreatAngleIncludeAsExternal>true</TreatAngleIncludeAsExternal>
       <DisableAnalyzeExternal>true</DisableAnalyzeExternal>
     </ClCompile>
     <Link>
