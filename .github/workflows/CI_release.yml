@@ -35,3 +35,30 @@ jobs:
             gh release upload "${{ github.event.release.tag_name }}" "$dest" -R "$repo"
         }
         gh release edit "${{ github.event.release.tag_name }}" --notes-file Notes -R "$repo"
+
+    - name: get-release-info
+      id: get_release_info
+      env:
+        GH_TOKEN: ${{ github.token }}
+      # 1) Strip off the sha256: prefix from the digest to get just the hash value.
+      # 2) Fix the names up to match the naming convention in nppPluginList.
+      run: >-
+        $info = gh api repos/${{ github.repository }}/releases/tags/${{ github.event.release.tag_name }}
+        --jq '.assets | map({(
+        .name | .[11:-4] | ascii_downcase | if . == "win32" then "x86" else . end
+        ):
+        {sha: .digest | .[7:], url: .browser_download_url}}) | add'
+
+        echo "info=$info">> $env:GITHUB_OUTPUT
+
+    - name: print-release-info
+      run: |
+        echo '{"release": "${{ github.event.release.tag_name }}", "info": ${{ toJson(steps.get_release_info.outputs.info) }}}'
+
+    - name: update-version-info
+      uses: peter-evans/repository-dispatch@v4
+      with:
+        token: ${{ secrets.LINTER_VERSION_UPDATED }}
+        repository: ThosRTanner/nppPluginList
+        event-type: version_updated
+        client-payload: '{"release": "${{ github.event.release.tag_name }}", "info": ${{ toJson(steps.get_release_info.outputs.info) }}}'
