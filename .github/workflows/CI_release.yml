@@ -35,3 +35,53 @@ jobs:
             gh release upload "${{ github.event.release.tag_name }}" "$dest" -R "$repo"
         }
         gh release edit "${{ github.event.release.tag_name }}" --notes-file Notes -R "$repo"
+
+    - name: get-release-info
+      id: get_release_info
+      env:
+        GH_TOKEN: ${{ github.token }}
+      # 1) Strip off the sha256: prefix from the digest to get just the hash value.
+      # 2) Fix the names up to match the naming convention in nppPluginList.
+      run: >-
+        $info = gh api repos/${{ github.repository }}/releases/tags/${{ github.event.release.tag_name }}
+        --jq '.assets | map({(
+        .name | .[11:-4] | ascii_downcase | if . == "win32" then "x86" else . end
+        ):
+        {sha: .digest | .[7:], url: .browser_download_url}}) | add'
+
+        echo "info=$info">> $env:GITHUB_OUTPUT
+
+    - name: get-dispatch-token
+      id: get_dispatch_token
+      uses: actions/create-github-app-token@v2
+      with:
+        app-id: ${{ secrets.TOKEN_GETTER }}
+        private-key: ${{ secrets.TOKEN_KEY }}
+        permission-contents: write
+        repositories: nppPluginList
+
+    - name: get-push-token
+      id: get_push_token
+      uses: actions/create-github-app-token@v2
+      with:
+        app-id: ${{ secrets.TOKEN_GETTER }}
+        private-key: ${{ secrets.TOKEN_KEY }}
+        permission-pull-requests: write
+        permission-contents: write
+        permission-workflows: true
+        repositories: nppPluginList
+
+    - name: update-version-info
+      uses: peter-evans/repository-dispatch@v4
+      with:
+        #token: ${{ secrets.LINTER_VERSION_UPDATED }}
+        token: ${{ steps.get_dispatch_token.outputs.token }}
+        repository: ThosRTanner/nppPluginList
+        event-type: version_updated
+        client-payload: |-
+          {
+            "name": "Linter++",
+            "release": "${{ github.event.release.tag_name }}",
+            "token": "${{ steps.get_push_token.outputs.token }}",
+            "info": ${{ toJson(steps.get_release_info.outputs.info) }}
+          }
