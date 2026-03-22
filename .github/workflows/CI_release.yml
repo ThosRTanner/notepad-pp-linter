@@ -14,24 +14,53 @@ jobs:
     runs-on: windows-latest
     needs: [build-release]
     steps:
-    - name: get-data
-      uses: actions/download-artifact@v8
+    - name: Checkout repo
+      uses: actions/checkout@v6
 
-    - name: update-notes
-      env:
-        GH_TOKEN: ${{ github.token }}
+    - name: install-python
+      uses: actions/setup-python@v4
+
+    - name: install-dependencies
       run: |
-        echo "# Plugin Checksums" > Notes
-        echo "" >> Notes
-        echo "| File | SHA-256 |" >> Notes
-        echo "| - | - |" >> Notes
-        $repo = "${{ github.repository }}"
-        Get-ChildItem -Directory | ForEach-Object {
-            $source = $_.Name
-            $dest = "$source.zip"
-            Compress-Archive -Path "$source/*" -DestinationPath "$dest"
-            $sha256 = (Get-FileHash "$dest").Hash
-            echo "| $dest | $sha256 |" >> Notes
-            gh release upload "${{ github.event.release.tag_name }}" "$dest" -R "$repo"
-        }
-        gh release edit "${{ github.event.release.tag_name }}" --notes-file Notes -R "$repo"
+        python -m pip install --upgrade pip
+        pip install docopt-ng ghapi github3.py "smart-open[http]"
+
+    - name: set-release-info
+      id: set_release_info
+      env:
+        GITHUB_OBJECT: ${{ toJson(github) }}
+      run: |
+        python github-action-scripts/get_npp_release_info.py --info plugin_info.json >> $env:GITHUB_OUTPUT
+
+    - name: get-dispatch-token
+      id: get_dispatch_token
+      uses: actions/create-github-app-token@v2
+      with:
+        app-id: ${{ secrets.TOKEN_GETTER }}
+        private-key: ${{ secrets.TOKEN_KEY }}
+        permission-contents: write
+        repositories: nppPluginList
+
+    - name: get-push-token
+      id: get_push_token
+      uses: actions/create-github-app-token@v2
+      with:
+        app-id: ${{ secrets.TOKEN_GETTER }}
+        private-key: ${{ secrets.TOKEN_KEY }}
+        permission-contents: write
+        permission-pull-requests: write
+        permission-workflows: write
+        repositories: nppPluginList
+        skip-token-revoke: true
+
+    - name: update-version-info
+      uses: peter-evans/repository-dispatch@v4
+      with:
+        token: ${{ steps.get_dispatch_token.outputs.token }}
+        repository: ThosRTanner/nppPluginList
+        event-type: version_updated
+        client-payload: |-
+          {
+            "token": "${{ steps.get_push_token.outputs.token }}",
+            "info": ${{ toJson(steps.set_release_info.outputs.info) }}
+          }

@@ -1,0 +1,8 @@
+{
+  "author": "Tom Tanner",
+  "description": "Allows realtime code check against any checkstyle-compatible linter: jshint, eslint, jscs, phpcs, csslint, and many others.",
+  "display-name": "Linter++",
+  "folder-name": "Linter++",
+  "homepage": "https://github.com/thosrtanner/notepad-pp-linter",
+  "npp-compatible-versions": "[8.7.5,]"
+}

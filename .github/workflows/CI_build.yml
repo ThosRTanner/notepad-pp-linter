@@ -44,7 +44,7 @@ jobs:
 
     - name: Archive artifacts release build
       if: matrix.build_configuration == 'Release'
-      uses: actions/upload-artifact@v7
+      uses: actions/upload-artifact@v5 # v7 breaks act - see https://github.com/nektos/act/issues/6022
       with:
         name: plugin_dll_${{ matrix.build_platform }}
         path: Linter++\${{ matrix.build_platform }}\${{ matrix.build_configuration }}

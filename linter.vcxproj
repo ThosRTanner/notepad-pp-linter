@@ -490,8 +490,10 @@
       </SubType>
     </None>
     <None Include="gen_version_h.ps1" />
+    <None Include="github-action-scripts\get_npp_release_info.py" />
     <None Include="iwyu.bat" />
     <None Include="packages.config" />
+    <None Include="plugin_info.json" />
     <None Include="post-build.ps1" />
     <None Include="PSScriptAnalyzerSettings.psd1" />
     <None Include="README.md" />

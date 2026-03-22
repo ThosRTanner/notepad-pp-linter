@@ -1,5 +1,9 @@
 # Change log
 
+## 1.0.4
+
+1. Reworked the release action to automate the generation of a PR to the nppPluginList repo. 
+
 ## 1.0.3
 
 1. Treat checkstyle output from executed commands as UTF-8. Fixes #88.

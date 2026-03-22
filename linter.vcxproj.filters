@@ -30,6 +30,9 @@
     <Filter Include="Tools">
       <UniqueIdentifier>{ede8516c-f06b-48fa-a025-d6c5f716e506}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Github Action Scripts">
+      <UniqueIdentifier>{caa427b7-18ff-4b58-8e97-b8af4cc50f21}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Clipboard.cpp">
@@ -271,6 +274,10 @@
     <None Include=".remarkrc.yaml" />
     <None Include=".clang-tidy" />
     <None Include="packages.config" />
+    <None Include="plugin_info.json" />
+    <None Include="github-action-scripts\get_npp_release_info.py">
+      <Filter>Github Action Scripts</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Image Include="src\linter.ico">
