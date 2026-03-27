@@ -34,7 +34,7 @@ jobs:
 
     - name: get-dispatch-token
       id: get_dispatch_token
-      uses: actions/create-github-app-token@v2
+      uses: actions/create-github-app-token@v3
       with:
         app-id: ${{ secrets.TOKEN_GETTER }}
         private-key: ${{ secrets.TOKEN_KEY }}
@@ -43,7 +43,7 @@ jobs:
 
     - name: get-push-token
       id: get_push_token
-      uses: actions/create-github-app-token@v2
+      uses: actions/create-github-app-token@v3
       with:
         app-id: ${{ secrets.TOKEN_GETTER }}
         private-key: ${{ secrets.TOKEN_KEY }}
